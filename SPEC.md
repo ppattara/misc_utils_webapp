@@ -1,4 +1,4 @@
-# Misc Utils: specification
+# misc_utils_webapp: specification
 
 This document describes the app in enough detail to rebuild it from scratch, or something very close to it. It always describes the current version. Whenever `index.html` changes, this file changes with it (see the rules in `CLAUDE.md`).
 
@@ -13,8 +13,8 @@ This document describes the app in enough detail to rebuild it from scratch, or 
 
 In order:
 
-1. `<head>`: `charset` utf-8, viewport `width=device-width, initial-scale=1`, `<title>Misc Utils</title>`, and one `<style>` block with two parts: shared styles, then page-specific styles.
-2. `<header class="app-header">` containing a `.container` with the app title (`<h1 class="app-title">Misc Utils</h1>`) and an empty `<nav class="tabs" id="tabs" aria-label="Pages">` that the shared script fills.
+1. `<head>`: `charset` utf-8, viewport `width=device-width, initial-scale=1`, an empty `<title></title>` that the shared script fills in, and one `<style>` block with two parts: shared styles, then page-specific styles.
+2. `<header class="app-header">` containing a `.container` with an empty `<nav class="tabs" id="tabs" aria-label="Pages">` that the shared script fills. The app has no name, so the header shows only the tabs.
 3. `<main class="container">` containing the pages, one `<section class="page">` each.
 4. The shared navigation `<script>`.
 5. Page scripts, one `<script>` element per page that needs one.
@@ -27,14 +27,14 @@ Each page is a `<section>` that is a direct child of `<main>`:
 
 ```html
 <section class="page" id="unit-converter" data-title="Unit converter">
-  <h2>Unit converter</h2>
+  <h1>Unit converter</h1>
   ...
 </section>
 ```
 
 - `id`: a slug of lowercase letters, digits and dashes, unique in the file. It is the page's address in the URL.
-- `data-title`: the tab label, also used in the browser tab title. If it is missing, the id is used instead.
-- The content starts with an `<h2>` holding the page name.
+- `data-title`: the tab label, also used as the browser tab title. If it is missing, the id is used instead.
+- The content starts with an `<h1>` holding the page name. Since the app has no name of its own, this is the page's main heading.
 - Tabs appear in the same order as the sections in the file. The first section is the default page.
 
 ### 3.2 Navigation
@@ -50,14 +50,14 @@ Showing a page:
 - If there is no hash, or no page has that id, the first page is shown. The URL is not rewritten.
 - The shown section gets the class `is-active`. CSS hides every other page with `.page:not(.is-active) { display: none !important; }`. The `!important` stops a page's own `display` rule from un-hiding it.
 - The matching tab link gets `aria-current="page"`, and the attribute is removed from the other links.
-- The document title becomes `<page title> · Misc Utils`.
+- The document title (the label on the browser tab) becomes the page's title, with nothing added to it.
 
 Links use `#/<id>` rather than `#<id>` because a fragment that matches an element id makes the browser scroll to that element. With the `/`, no element matches.
 
 ### 3.3 Adding a page
 
 1. Copy an existing `<section class="page">` block and put it where its tab should appear.
-2. Give it a new `id` and `data-title`, and update its `<h2>`.
+2. Give it a new `id` and `data-title`, and update its `<h1>`.
 3. Add any page-specific CSS in the "Page-specific styles" part of the `<style>` block, with every rule scoped under the page's id (for example `#unit-converter .result { ... }`).
 4. Add any page-specific JavaScript in a new `<script>` element after the shared script, wrapped in `(() => { ... })();`. This keeps its variables private, and an error in it can't break other pages or the tab bar.
 5. Document the page in section 5 of this file and in `README.md`.
@@ -82,16 +82,16 @@ The shared script needs no changes.
 
 - `--radius: 10px` for card corners. `box-sizing: border-box` on all elements. `body` has no margin.
 - `.container`: max width 960px, centered, 16px padding left and right. Used by the header's inner wrapper and by `<main>`.
-- Header: `--surface` background with a 1px `--border` bottom border. The title is 1.25rem with no margin, 12px padding above and 8px below. The tab bar is a wrapping flex row with 8px gaps and 12px padding below.
+- Header: `--surface` background with a 1px `--border` bottom border. It holds only the tab bar, a wrapping flex row with 8px gaps and 12px padding above and below.
 - Tabs: pill-shaped links with 6px × 14px padding, a 1px `--border` border, 999px radius, `--text` color, no underline, and no line breaks inside a label. On hover, the border turns `--accent`. The active tab has an `--accent` background and border, and `--accent-text` text.
 - `<main>`: 24px padding above and 48px below.
-- Page card: `--surface` background, 1px `--border` border, `--radius` corners, 20px padding. The page's `<h2>` has no top margin.
+- Page card: `--surface` background, 1px `--border` border, `--radius` corners, 20px padding. The page's `<h1>` is 1.5rem, with no top margin and 20px below.
 - `.placeholder`: text in `--muted`, used for "nothing here yet" notes.
 
 ## 5. Pages
 
 | Tab | id | Purpose | Content |
 |---|---|---|---|
-| Page 1 | `page-1` | Not decided yet | Placeholder: `<h2>Page 1</h2>` and a `.placeholder` paragraph, "Nothing here yet." |
+| Page 1 | `page-1` | Not decided yet | Placeholder: `<h1>Page 1</h1>` and a `.placeholder` paragraph, "Nothing here yet." |
 | Page 2 | `page-2` | Not decided yet | Same placeholder, titled Page 2 |
 | Page 3 | `page-3` | Not decided yet | Same placeholder, titled Page 3 |

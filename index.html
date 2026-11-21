@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Misc Utils</title>
+  <title></title>
   <style>
     /* ============================================================
        Shared styles
@@ -53,17 +53,11 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .app-title {
-      margin: 0;
-      padding: 12px 0 8px;
-      font-size: 1.25rem;
-    }
-
     .tabs {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      padding-bottom: 12px;
+      padding: 12px 0;
     }
 
     .tabs a {
@@ -97,7 +91,10 @@
 
     .page:not(.is-active) { display: none !important; }
 
-    .page > h2 { margin-top: 0; }
+    .page > h1 {
+      margin: 0 0 20px;
+      font-size: 1.5rem;
+    }
 
     .placeholder { color: var(--muted); }
 
@@ -111,7 +108,6 @@
 <body>
   <header class="app-header">
     <div class="container">
-      <h1 class="app-title">Misc Utils</h1>
       <nav class="tabs" id="tabs" aria-label="Pages"></nav>
     </div>
   </header>
@@ -121,22 +117,22 @@
          Pages: each <section class="page"> below becomes one tab, in this order.
          To add a page, copy a section and give it:
            - a unique id (lowercase letters, digits, dashes); its link is index.html#/<id>
-           - a data-title (the tab label)
+           - a data-title (the tab label, also used as the browser tab title)
          The tab bar is built automatically. See SPEC.md for the full conventions.
          ========================================================== -->
 
     <section class="page" id="page-1" data-title="Page 1">
-      <h2>Page 1</h2>
+      <h1>Page 1</h1>
       <p class="placeholder">Nothing here yet.</p>
     </section>
 
     <section class="page" id="page-2" data-title="Page 2">
-      <h2>Page 2</h2>
+      <h1>Page 2</h1>
       <p class="placeholder">Nothing here yet.</p>
     </section>
 
     <section class="page" id="page-3" data-title="Page 3">
-      <h2>Page 3</h2>
+      <h1>Page 3</h1>
       <p class="placeholder">Nothing here yet.</p>
     </section>
   </main>
@@ -148,7 +144,6 @@
       if (pages.length === 0) return;
 
       const nav = document.getElementById('tabs');
-      const appTitle = document.title;
       const titleOf = (page) => page.dataset.title || page.id;
 
       const links = pages.map((page) => {
@@ -167,7 +162,7 @@
           if (i === active) link.setAttribute('aria-current', 'page');
           else link.removeAttribute('aria-current');
         });
-        document.title = titleOf(pages[active]) + ' · ' + appTitle;
+        document.title = titleOf(pages[active]);
       }
 
       window.addEventListener('hashchange', showPage);
