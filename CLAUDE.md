@@ -33,6 +33,11 @@ A change isn't finished until the code and all three files agree. When reporting
 - Read `SPEC.md` before changing the app. It covers the structure, conventions and constraints (one self-contained file, no external dependencies), including how to add a page.
 - To check a change, open `index.html` in a browser. There is no server or build step.
 
+## Decisions
+- **Saved settings** (owner, 2026-11-22): pages may remember their settings in the browser's `localStorage` only, never in files, a database or an account. If the browser's data is cleared, settings simply return to their defaults. Keep this simple. The convention is in `SPEC.md` section 3.4.
+- **Browser tab title** (owner, 2026-11-22): the title is normally the page name, but while a Work Timer countdown runs it shows the time left instead (`SPEC.md` 3.2 and 5.1).
+
 ## Status
 - v1: blank shell with three placeholder pages (Page 1, Page 2, Page 3) and the shared tab navigation.
-- Next: the owner will describe the utility for each page.
+- v2 (2026-11-22): the first page is now the Work Timer (`#/work-timer`, replacing Page 1). It has work and rest countdowns, random reminder dings during work, a settings sidebar with saved settings and sound previews, the countdown in the browser tab title, and a keep-screen-on button. Pages 2 and 3 are still placeholders.
+- Next: the owner will describe the utilities for Pages 2 and 3.

@@ -7,6 +7,7 @@ This document describes the app in enough detail to rebuild it from scratch, or 
 - A personal collection of everyday utilities in one web app, with one utility per page. Pages are switched with tabs.
 - The whole app is a single static file, `index.html`, with all HTML, CSS and JavaScript inline.
 - There is no backend, database, user login or build step, and no external dependencies (no frameworks, CDNs or web fonts). The app works offline, opened directly from disk (`file://`) or served from any static host.
+- Nothing is sent anywhere. A page may remember its own settings in the browser's `localStorage` (see 3.4). Nothing else is stored.
 - Target browsers: current Chrome, Safari, Firefox and Edge, on desktop and mobile. Plain modern JavaScript (ES2015+) is fine.
 
 ## 2. Structure of `index.html`
@@ -50,7 +51,7 @@ Showing a page:
 - If there is no hash, or no page has that id, the first page is shown. The URL is not rewritten.
 - The shown section gets the class `is-active`. CSS hides every other page with `.page:not(.is-active) { display: none !important; }`. The `!important` stops a page's own `display` rule from un-hiding it.
 - The matching tab link gets `aria-current="page"`, and the attribute is removed from the other links.
-- The document title (the label on the browser tab) becomes the page's title, with nothing added to it.
+- The document title (the label on the browser tab) becomes the page's title, with nothing added to it. One exception: while a Work Timer countdown runs, the Work Timer script replaces the title with the time left (see 5.1).
 
 Links use `#/<id>` rather than `#<id>` because a fragment that matches an element id makes the browser scroll to that element. With the `/`, no element matches.
 
@@ -60,9 +61,16 @@ Links use `#/<id>` rather than `#<id>` because a fragment that matches an elemen
 2. Give it a new `id` and `data-title`, and update its `<h1>`.
 3. Add any page-specific CSS in the "Page-specific styles" part of the `<style>` block, with every rule scoped under the page's id (for example `#unit-converter .result { ... }`).
 4. Add any page-specific JavaScript in a new `<script>` element after the shared script, wrapped in `(() => { ... })();`. This keeps its variables private, and an error in it can't break other pages or the tab bar.
-5. Document the page in section 5 of this file and in `README.md`.
+5. Start the page's own ids and classes with a short prefix (the Work Timer uses `wt-`), so they can't clash with another page's.
+6. Document the page in section 5 of this file and in `README.md`.
 
 The shared script needs no changes.
+
+### 3.4 Saved settings
+
+- A page may remember its settings in `localStorage`, under the key `misc-utils:<page id>`, as one JSON object.
+- Every read and write is wrapped in `try`/`catch`. Missing, unreadable or out-of-range values fall back to the page's defaults, and if storage is unavailable the page simply works with its defaults.
+- Nothing else is stored: no cookies, IndexedDB, files or accounts. Clearing the browser's site data returns every page to its defaults.
 
 ## 4. Visual style
 
@@ -92,6 +100,126 @@ The shared script needs no changes.
 
 | Tab | id | Purpose | Content |
 |---|---|---|---|
-| Page 1 | `page-1` | Not decided yet | Placeholder: `<h1>Page 1</h1>` and a `.placeholder` paragraph, "Nothing here yet." |
-| Page 2 | `page-2` | Not decided yet | Same placeholder, titled Page 2 |
+| Work Timer | `work-timer` | Work and rest countdowns, with random reminder dings during work | See 5.1 |
+| Page 2 | `page-2` | Not decided yet | Placeholder: `<h1>Page 2</h1>` and a `.placeholder` paragraph, "Nothing here yet." |
 | Page 3 | `page-3` | Not decided yet | Same placeholder, titled Page 3 |
+
+### 5.1 Work Timer
+
+A countdown for work and one for rest on a single page. While the work timer runs, a soft ding plays at random moments as a reminder to stay on task. The page's ids and classes start with `wt-`. Its styles sit under `/* ---------- Work Timer (#work-timer) ---------- */` in the page-specific styles, and its script is the first page script.
+
+#### Markup
+
+Inside `<section class="page" id="work-timer" data-title="Work Timer">`, in order:
+
+1. `<h1>Work Timer</h1>`.
+2. `button#wt-gear.wt-icon-btn.wt-gear` with `aria-label="Settings"`, `title="Settings"`, `aria-expanded="false"` and `aria-controls="wt-settings"`. It holds a 20px inline SVG gear filled with `currentColor`, drawn on a 24×24 viewBox: eight teeth with one pointing straight up, tips on a circle of radius 10.5, roots on radius 7.9, each tooth 0.4 of its 45° pitch wide at the tip and 0.62 at the root (arcs along the tip and root circles), and a round hole of radius 3.2 cut out with `fill-rule="evenodd"`.
+3. `div.wt-body`, holding:
+   - `div.wt-main`, the timer column:
+     - `div.wt-tabs` with `role="tablist"` and `aria-label="Timers"`, holding two `role="tab"` buttons, `#wt-tab-work` "Work" and `#wt-tab-rest` "Rest", both with `aria-controls="wt-panel"`.
+     - `div#wt-panel.wt-panel` with `role="tabpanel"`, holding `div#wt-time.wt-time` (`role="timer"`), `p#wt-info.wt-info`, and `div.wt-controls` with three buttons: `#wt-start.wt-btn.wt-btn-primary` "Start", `#wt-pause.wt-btn` "Pause" and `#wt-reset.wt-btn` "Reset".
+     - `button#wt-wake.wt-wake` "Keep screen on", with `aria-pressed="false"`, starting `hidden`.
+     - `p#wt-wake-note.wt-wake-note` (`role="status"`), empty unless keeping the screen on failed.
+     - `p#wt-live.wt-sr` (`role="status"`), a visually hidden live region for announcements.
+   - `div#wt-backdrop.wt-backdrop`, starting `hidden`.
+   - `aside#wt-settings.wt-settings` with `aria-labelledby="wt-settings-title"`, starting `hidden`:
+     - `div.wt-settings-head`: `h2#wt-settings-title` "Settings" and `button#wt-close.wt-icon-btn.wt-close` (`aria-label` and `title` "Hide settings") holding a 16px × made of two 2px round-capped strokes.
+     - Three `div.wt-group` elements with `role="group"`, each labelled by its `h3`:
+       - "Durations": two `label.wt-field` rows, "Work" and "Rest". Each wraps a `span.wt-num` holding a number input followed by " min". Inputs `#wt-work-min` and `#wt-rest-min` have `min="0.5" max="999" step="0.5" inputmode="decimal"`.
+       - "Random reminder": `label.wt-check` with the checkbox `#wt-remind-on` and the text "Ding at random times during work", then `label.wt-field` rows "Shortest gap" (`#wt-gap-min`) and "Longest gap" (`#wt-gap-max`), built the same way with `min="0.5" max="60" step="0.5"`.
+       - "Sounds": three `div.wt-sound` rows, "Reminder ding", "Session start" and "Session end". Each ends with a `button.wt-icon-btn.wt-play` whose `data-sound` is `reminder`, `start` or `end`, with `title="Play"`, an `aria-label` such as "Play the reminder ding", and a 14px play triangle (`M9 5.5v13l10-6.5z`, filled).
+     - `p.wt-hint`: "Settings are saved in this browser. Clearing the browser's site data brings back the defaults."
+
+#### Timers
+
+- There are two timers, Work and Rest, each with a duration from the settings (defaults 25 and 5 minutes). Each one is idle, running or paused.
+- Time shows as `MM:SS`, rounded up to the whole second, so a fresh 25-minute timer shows 25:00 and reaches 00:00 only at the very end. Minutes can go past 59 (for example 90:00).
+- Time is kept with the wall clock: a running timer stores the moment it will end (from `Date.now()`), so the display is right whenever it is redrawn, even after the page was in the background or the computer slept.
+- **Start** begins a fresh session at the full duration, with the start sound. On a paused timer it reads **Resume** and carries on from where it paused, with no sound. **Pause** freezes the timer. **Reset** stops it and puts it back to its full duration, silently.
+- Button states for the timer on show: Start is enabled unless that timer is running, Pause only while it runs, Reset only once it has started (running or paused).
+- One timer at a time: pressing Start on one timer first resets the other, silently, if it is running or paused. Switching between the Work and Rest tabs only changes which timer is on show and never stops anything.
+- When a session reaches zero, the end sound plays, that timer goes back to its full duration (idle), and the page shows the other timer, ready but not started. The info line then reads "Work session done. Start your rest when you’re ready." or "Rest is over. Start the next work session when you’re ready." until the next press of Start or Reset or a Work/Rest tab switch. The same text goes to the live region for screen readers.
+- The info line (`#wt-info`) shows the first that applies: the end-of-session message; "Paused" if the timer on show is paused; on the Work tab, "Random reminder every 2–5 min" (a single number when both gaps are equal, for example "every 6 min") or "Random reminder off"; on the Rest tab, nothing. It keeps its height when empty.
+- The tab of a running timer shows a small accent dot. The time is drawn in `--accent` while running, `--muted` while paused and `--text` otherwise.
+- A changed duration shows at once on an idle timer. A timer that has started keeps its current session length, and the new duration applies from its next reset or new session.
+- **Browser tab title:** while a timer runs, the title is the time left and the timer's name, `18:42 · Work` or `04:12 · Rest`, updated along with the display, whichever app page is on show. When no timer is running, the title goes back to the shown page's title (its `data-title`, or its id). The page script also listens for `hashchange`. Its listener runs after the shared script's, so it puts the countdown back right after a page switch.
+
+#### Random reminder
+
+- It plays only while the work timer is running, and only when the setting is on (the default).
+- Each gap between dings is a fresh random number, evenly spread between the shortest and longest gap (defaults 2 and 5 minutes). The first gap counts from the start of the session. The time to the next ding is never shown.
+- Pause remembers how long was left until the next ding, and Resume continues from there. A fresh session draws a fresh first gap.
+- No reminder plays in the last 15 seconds of a session, so it never runs into the end sound.
+- Changing any reminder setting applies at once: the dings already scheduled are dropped and, if work is running, a fresh gap is drawn from now. If work is paused, the remembered gap is dropped and Resume draws a fresh one.
+
+#### Sounds
+
+The sounds are generated with the Web Audio API, with no sound files. One `AudioContext` is created by the first click that needs sound (Start, Resume or a play button), because browsers allow audio only after a user gesture. Everything plays through a master gain of 0.9.
+
+Every note is a soft bell of four sine partials:
+
+| Partial | Frequency | Peak (× note level) | Fade (× note fade time) |
+|---|---|---|---|
+| 1 | f | 1 | 1 |
+| 2 | 2f | 0.4 | 0.6 |
+| 3 | 3f | 0.18 | 0.4 |
+| 4 | 4.16f | 0.08 | 0.25 |
+
+Each partial's gain starts at 0, rises linearly to its peak in 5 ms, then falls exponentially to 0.0001 by the end of its fade. Its oscillator stops 50 ms after that.
+
+| Sound | Notes: start, pitch, level, fade time | Plays when |
+|---|---|---|
+| Reminder | 0 s, A5 (880 Hz), 0.5, 2 s | A random reminder is due |
+| Start | 0 s, G5 (783.99 Hz), 0.42, 1.2 s; then 0.16 s, D6 (1174.66 Hz), 0.42, 1.6 s | A fresh work or rest session starts |
+| End | 0 s C6 (1046.5 Hz), 0.2 s G5 (783.99 Hz), 0.4 s E5 (659.25 Hz), 0.6 s C5 (523.25 Hz); all at level 0.45; fades 1.4, 1.4, 1.6 and 3 s | A session reaches zero |
+
+So the reminder is one ding, the start is a short rising pair, and the end is a falling run of four notes, the longest and loudest of the three. Their peaks are about −4.6, −4.2 and −3.5 dBFS, well clear of clipping.
+
+#### Keeping time in a background tab
+
+Browsers slow down timers in background tabs (Chrome to once a minute after five minutes hidden), so the page doesn't rely on them for anything that must be on time:
+
+- The end sound and the reminders are scheduled ahead on the audio clock, which keeps running in the background. When a session starts or resumes, the end sound is scheduled for the end time, and reminders are scheduled up to 5 minutes ahead. Every tick extends that window. Each scheduled sound has its own gain node: cancelling one (on Pause, Reset or a reminder setting change) disconnects that node and stops its oscillators. A finished sound disconnects its own gain node.
+- A 250 ms `setInterval` redraws the display while a timer runs. Next to it runs a chain of silent one-second `ConstantSourceNode`s (offset 0, connected to the output). Each one's `ended` event calls the same tick and starts the next one, and these events aren't slowed down in background tabs. That keeps the title countdown current and ends the session on time in a background tab. Tick is safe to call any number of times.
+- On each tick, if the wall clock and the audio clock have drifted a second or more apart since the sounds were scheduled (the audio clock stalls while a computer sleeps), everything is scheduled again from the wall-clock times, keeping the next reminder's time. Reminders missed while asleep are skipped, not played in a burst.
+- At the end of a session, if the scheduled end sound is still more than 0.5 s in the future (because the audio clock is behind), it is cancelled and, if audio is running, the end sound plays at once instead. Otherwise it is left to ring out.
+- The audio context is suspended 5 seconds after a timer stops or a preview plays, if no timer is running then. The next Start, Resume or play button wakes it again.
+
+#### Settings sidebar
+
+- The gear opens and closes the sidebar. The close button, the backdrop (narrow screens) and Escape (while the page is shown) also close it. Opening moves focus to the close button, and closing returns it to the gear. While the sidebar is open, the gear has the accent background. The sidebar starts closed on every load.
+- Wider than 720px, `div.wt-body` gets the class `is-settings-open` and becomes two columns, `minmax(0, 1fr) 260px`, with the sidebar beside the timer. At 720px or narrower, the sidebar is a panel fixed to the right edge of the window, `min(320px, 88vw)` wide and full height, scrolling if needed, with a `--surface` background, only a left border, no rounded corners and a shadow (`-8px 0 24px rgba(0, 0, 0, 0.25)`). It sits over a fixed full-window backdrop of `rgba(0, 0, 0, 0.4)`.
+- Entries are checked on `change`. A number is rounded to the nearest 0.5 and clamped to its limits (0.5–999 minutes for durations, 0.5–60 for gaps). Anything that isn't a number puts the previous value back. Raising the shortest gap above the longest raises the longest to match, and lowering the longest below the shortest lowers the shortest to match. With the reminder off, the two gap inputs are disabled and their rows turn `--muted`.
+- The play buttons play their sound at once, whatever the timers are doing.
+- Every change is saved to `localStorage` under `misc-utils:work-timer`, as JSON like `{"workMin":25,"restMin":5,"remindOn":true,"gapMinMin":2,"gapMaxMin":5}`. On load, each of the four numbers is used only if it is a finite number, rounded and clamped as above, and `remindOn` only if it is a boolean. Anything else falls back to its default. If the shortest gap then ends up above the longest, both gaps go back to their defaults.
+
+#### Keep screen on
+
+- It uses the Screen Wake Lock API, and the button appears only if `navigator.wakeLock` exists.
+- The button toggles (`aria-pressed`). On, it requests a screen wake lock. Off, it releases it. Browsers drop the lock whenever the page is hidden, so it is requested again when the page becomes visible while the button is on. If a request fails, the button turns off and `#wt-wake-note` says "This browser didn’t allow keeping the screen on."
+- It is not saved: it is off on every load.
+
+#### Styles
+
+Every rule is scoped under `#work-timer` and uses the shared color variables.
+
+- `#work-timer` is `position: relative`, and `[hidden]` inside it is forced to `display: none`. Buttons inherit the font and color. Focus shows a 2px `--accent` outline with a 2px offset.
+- `.wt-icon-btn`: a 36px circle with a 1px `--border` border, `--surface` background and the icon centered; the border turns `--accent` on hover. `.wt-gear` is placed absolutely, 20px from the card's top and right, level with the `h1`. `.wt-close` and `.wt-play` are 32px, and `.wt-play` icons are `--accent`.
+- `.wt-body` is a grid with a 20px gap. `.wt-main` is a centered flex column with a 16px gap and `container-type: inline-size`.
+- `.wt-tabs` is a segmented control: a pill with a `--bg` background, 1px `--border` border, 3px padding and 2px gap. Each tab is pill-shaped, at least 92px wide, with 6px × 20px padding and `--muted` text (`--text` on hover). The selected tab has a `--surface` background, a `--border` border, `--text` color and weight 600. The running dot is a 6px `--accent` circle, 8px from the tab's right edge and vertically centered.
+- `.wt-panel` is a centered flex column, full width, with an 8px gap. `.wt-time`: `font-size: clamp(3rem, 24cqi, 6.5rem)` (with a 4rem fallback before it), weight 600, `font-variant-numeric: tabular-nums`, letter spacing −0.02em, line height 1.1. `.wt-info`: `--muted`, 0.95rem, at least 1.5em tall, no margin.
+- `.wt-controls` is a flex row with an 8px gap, full width up to 360px, and an 8px top margin. `.wt-btn`: equal widths (`flex: 1 1 0`), 9px × 10px padding, pill-shaped, 1px `--border` border, `--surface` background, weight 600; the border turns `--accent` on hover; disabled buttons are at 45% opacity. `.wt-btn-primary` has an `--accent` background and border and `--accent-text` text.
+- `.wt-wake` is a small pill (5px × 14px padding, 0.875rem, `--muted` text, 1px `--border` border) with an 8px ring before its label (1.5px `currentColor` border). When on, its border and text are `--accent` and the ring is filled. `.wt-wake-note`: `--muted`, 0.85rem, pulled 8px closer to the button, and not shown when empty.
+- `.wt-settings`: 14px 16px 16px padding, 1px `--border` border, `--radius` corners, `--bg` background. `.wt-settings-head` is a flex row with the heading on the left and the close button on the right, vertically centered. The `h2` is 1.1rem with no margin. Each `.wt-group` has a 14px top margin; every group after the first also has a 1px `--border` rule above it and 14px top padding. Group `h3`s: 0.8rem, weight 600, uppercase, letter spacing 0.04em, `--muted`. `.wt-field` and `.wt-sound` rows are flex rows with space between, a 12px gap and 4px vertical padding. `.wt-num` holds the input and "min" in `--muted`, 6px apart. Number inputs: 4.5em wide, 5px × 8px padding, 1px `--border` border, 8px radius, `--surface` background, `--text` color, right-aligned text; disabled ones at 50% opacity. The checkbox uses `accent-color: var(--accent)`. `.wt-hint`: `--muted`, 0.85rem, 14px top margin.
+
+#### Accessibility
+
+- The Work and Rest tabs follow the tabs pattern: `aria-selected`, a roving `tabindex`, the Left and Right arrow keys switch tabs, and Home and End go to Work and Rest.
+- `role="timer"` keeps screen readers from reading out every second. The end-of-session message is announced through `#wt-live`, which is emptied first and filled 100 ms later, so a repeated message is read again.
+- When Start, Pause or Reset disables the button that had focus, focus moves on: from Start to Pause, from Pause to Start, from Reset to Start.
+
+#### Known limits
+
+- Phones usually suspend a page when the screen locks or the browser goes to the background, so dings can't play then. The time is still right on return. "Keep screen on" prevents the screen lock.
+- On an iPhone, silent mode may mute the sounds.
+- In a browser without Web Audio, the timers work silently.

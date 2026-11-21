@@ -100,8 +100,256 @@
 
     /* ============================================================
        Page-specific styles
-       Scope every rule under its page's id, e.g. #page-1 .result { ... }
+       Scope every rule under its page's id, e.g. #work-timer .wt-time { ... }
        ============================================================ */
+
+    /* ---------- Work Timer (#work-timer) ---------- */
+    #work-timer { position: relative; }
+    #work-timer [hidden] { display: none !important; }
+    #work-timer button { font: inherit; color: inherit; }
+    #work-timer button:not(:disabled) { cursor: pointer; }
+    #work-timer :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* Round icon buttons: the settings gear, the sidebar's close button and the sound play buttons. */
+    #work-timer .wt-icon-btn {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+    }
+    #work-timer .wt-icon-btn:hover { border-color: var(--accent); }
+    #work-timer .wt-gear { position: absolute; top: 20px; right: 20px; }
+    #work-timer .wt-gear[aria-expanded="true"] {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+
+    #work-timer .wt-body { display: grid; gap: 20px; align-items: start; }
+
+    /* Timer column */
+    #work-timer .wt-main {
+      container-type: inline-size;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      text-align: center;
+    }
+    #work-timer .wt-tabs {
+      display: flex;
+      gap: 2px;
+      padding: 3px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--bg);
+    }
+    #work-timer .wt-tabs button {
+      position: relative;
+      min-width: 92px;
+      padding: 6px 20px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: none;
+      color: var(--muted);
+    }
+    #work-timer .wt-tabs button:hover { color: var(--text); }
+    #work-timer .wt-tabs button[aria-selected="true"] {
+      border-color: var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 600;
+    }
+    /* Dot on the tab whose timer is counting down. */
+    #work-timer .wt-tabs button.is-running::after {
+      content: "";
+      position: absolute;
+      top: calc(50% - 3px);
+      right: 8px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    #work-timer .wt-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+    #work-timer .wt-time {
+      font-size: 4rem;
+      font-size: clamp(3rem, 24cqi, 6.5rem);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    #work-timer .wt-time.is-running { color: var(--accent); }
+    #work-timer .wt-time.is-paused { color: var(--muted); }
+    #work-timer .wt-info {
+      min-height: 1.5em;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    #work-timer .wt-controls {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      max-width: 360px;
+      margin-top: 8px;
+    }
+    #work-timer .wt-btn {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      font-weight: 600;
+    }
+    #work-timer .wt-btn:not(:disabled):hover { border-color: var(--accent); }
+    #work-timer .wt-btn-primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+    #work-timer .wt-btn:disabled { opacity: 0.45; }
+
+    /* "Keep screen on" toggle: a small pill whose dot fills in while it's on. */
+    #work-timer .wt-wake {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: none;
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+    #work-timer .wt-wake::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border: 1.5px solid currentColor;
+      border-radius: 50%;
+    }
+    #work-timer .wt-wake:hover,
+    #work-timer .wt-wake[aria-pressed="true"] { border-color: var(--accent); }
+    #work-timer .wt-wake[aria-pressed="true"] { color: var(--accent); }
+    #work-timer .wt-wake[aria-pressed="true"]::before { background: currentColor; }
+    #work-timer .wt-wake-note { margin: -8px 0 0; color: var(--muted); font-size: 0.85rem; }
+    #work-timer .wt-wake-note:empty { display: none; }
+
+    /* Visually hidden, but read by screen readers. */
+    #work-timer .wt-sr {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Settings sidebar */
+    #work-timer .wt-settings {
+      padding: 14px 16px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+    }
+    #work-timer .wt-settings-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    #work-timer .wt-settings h2 { margin: 0; font-size: 1.1rem; }
+    #work-timer .wt-close { width: 32px; height: 32px; }
+    #work-timer .wt-group { margin-top: 14px; }
+    #work-timer .wt-group + .wt-group { padding-top: 14px; border-top: 1px solid var(--border); }
+    #work-timer .wt-group h3 {
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    #work-timer .wt-field,
+    #work-timer .wt-sound {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 4px 0;
+    }
+    #work-timer .wt-num {
+      display: inline-flex;
+      flex: none;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+    }
+    #work-timer .wt-field input {
+      width: 4.5em;
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      text-align: right;
+    }
+    #work-timer .wt-field:has(input:disabled) { color: var(--muted); }
+    #work-timer .wt-field input:disabled { opacity: 0.5; }
+    #work-timer .wt-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 4px 0;
+    }
+    #work-timer .wt-check input { margin: 0.25em 0 0; accent-color: var(--accent); }
+    #work-timer .wt-play { width: 32px; height: 32px; color: var(--accent); }
+    #work-timer .wt-hint { margin: 14px 0 0; color: var(--muted); font-size: 0.85rem; }
+
+    /* Wide screens: the sidebar is a column beside the timer. */
+    @media (min-width: 721px) {
+      #work-timer .wt-body.is-settings-open { grid-template-columns: minmax(0, 1fr) 260px; }
+      #work-timer .wt-backdrop { display: none !important; }
+    }
+
+    /* Narrow screens: the sidebar opens over the timer from the right, above a dimmed backdrop. */
+    @media (max-width: 720px) {
+      #work-timer .wt-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        background: rgba(0, 0, 0, 0.4);
+      }
+      #work-timer .wt-settings {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 21;
+        width: min(320px, 88vw);
+        overflow-y: auto;
+        border-width: 0 0 0 1px;
+        border-radius: 0;
+        background: var(--surface);
+        box-shadow: -8px 0 24px rgba(0, 0, 0, 0.25);
+      }
+    }
 
   </style>
 </head>
@@ -121,9 +369,79 @@
          The tab bar is built automatically. See SPEC.md for the full conventions.
          ========================================================== -->
 
-    <section class="page" id="page-1" data-title="Page 1">
-      <h1>Page 1</h1>
-      <p class="placeholder">Nothing here yet.</p>
+    <section class="page" id="work-timer" data-title="Work Timer">
+      <h1>Work Timer</h1>
+      <button type="button" class="wt-icon-btn wt-gear" id="wt-gear" aria-expanded="false" aria-controls="wt-settings" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10.10 4.33L10.36 1.63A10.5 10.5 0 0 1 13.64 1.63L13.90 4.33A7.9 7.9 0 0 1 16.07 5.23L18.17 3.51A10.5 10.5 0 0 1 20.49 5.83L18.77 7.93A7.9 7.9 0 0 1 19.67 10.10L22.37 10.36A10.5 10.5 0 0 1 22.37 13.64L19.67 13.90A7.9 7.9 0 0 1 18.77 16.07L20.49 18.17A10.5 10.5 0 0 1 18.17 20.49L16.07 18.77A7.9 7.9 0 0 1 13.90 19.67L13.64 22.37A10.5 10.5 0 0 1 10.36 22.37L10.10 19.67A7.9 7.9 0 0 1 7.93 18.77L5.83 20.49A10.5 10.5 0 0 1 3.51 18.17L5.23 16.07A7.9 7.9 0 0 1 4.33 13.90L1.63 13.64A10.5 10.5 0 0 1 1.63 10.36L4.33 10.10A7.9 7.9 0 0 1 5.23 7.93L3.51 5.83A10.5 10.5 0 0 1 5.83 3.51L7.93 5.23A7.9 7.9 0 0 1 10.10 4.33ZM15.20 12.00A3.2 3.2 0 1 0 8.80 12.00A3.2 3.2 0 1 0 15.20 12.00Z"/></svg>
+      </button>
+
+      <div class="wt-body">
+        <div class="wt-main">
+          <div class="wt-tabs" role="tablist" aria-label="Timers">
+            <button type="button" role="tab" id="wt-tab-work" aria-controls="wt-panel" aria-selected="true">Work</button>
+            <button type="button" role="tab" id="wt-tab-rest" aria-controls="wt-panel" aria-selected="false" tabindex="-1">Rest</button>
+          </div>
+
+          <div class="wt-panel" id="wt-panel" role="tabpanel" aria-labelledby="wt-tab-work">
+            <div class="wt-time" id="wt-time" role="timer">25:00</div>
+            <p class="wt-info" id="wt-info"></p>
+            <div class="wt-controls">
+              <button type="button" class="wt-btn wt-btn-primary" id="wt-start">Start</button>
+              <button type="button" class="wt-btn" id="wt-pause" disabled>Pause</button>
+              <button type="button" class="wt-btn" id="wt-reset" disabled>Reset</button>
+            </div>
+          </div>
+
+          <button type="button" class="wt-wake" id="wt-wake" aria-pressed="false" hidden>Keep screen on</button>
+          <p class="wt-wake-note" id="wt-wake-note" role="status"></p>
+          <p class="wt-sr" id="wt-live" role="status"></p>
+        </div>
+
+        <div class="wt-backdrop" id="wt-backdrop" hidden></div>
+
+        <aside class="wt-settings" id="wt-settings" aria-labelledby="wt-settings-title" hidden>
+          <div class="wt-settings-head">
+            <h2 id="wt-settings-title">Settings</h2>
+            <button type="button" class="wt-icon-btn wt-close" id="wt-close" aria-label="Hide settings" title="Hide settings">
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+
+          <div class="wt-group" role="group" aria-labelledby="wt-durations-title">
+            <h3 id="wt-durations-title">Durations</h3>
+            <label class="wt-field">Work <span class="wt-num"><input type="number" id="wt-work-min" min="0.5" max="999" step="0.5" inputmode="decimal"> min</span></label>
+            <label class="wt-field">Rest <span class="wt-num"><input type="number" id="wt-rest-min" min="0.5" max="999" step="0.5" inputmode="decimal"> min</span></label>
+          </div>
+
+          <div class="wt-group" role="group" aria-labelledby="wt-reminder-title">
+            <h3 id="wt-reminder-title">Random reminder</h3>
+            <label class="wt-check"><input type="checkbox" id="wt-remind-on"> Ding at random times during work</label>
+            <label class="wt-field">Shortest gap <span class="wt-num"><input type="number" id="wt-gap-min" min="0.5" max="60" step="0.5" inputmode="decimal"> min</span></label>
+            <label class="wt-field">Longest gap <span class="wt-num"><input type="number" id="wt-gap-max" min="0.5" max="60" step="0.5" inputmode="decimal"> min</span></label>
+          </div>
+
+          <div class="wt-group" role="group" aria-labelledby="wt-sounds-title">
+            <h3 id="wt-sounds-title">Sounds</h3>
+            <div class="wt-sound">Reminder ding
+              <button type="button" class="wt-icon-btn wt-play" data-sound="reminder" aria-label="Play the reminder ding" title="Play">
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M9 5.5v13l10-6.5z"/></svg>
+              </button>
+            </div>
+            <div class="wt-sound">Session start
+              <button type="button" class="wt-icon-btn wt-play" data-sound="start" aria-label="Play the session start sound" title="Play">
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M9 5.5v13l10-6.5z"/></svg>
+              </button>
+            </div>
+            <div class="wt-sound">Session end
+              <button type="button" class="wt-icon-btn wt-play" data-sound="end" aria-label="Play the session end sound" title="Play">
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M9 5.5v13l10-6.5z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <p class="wt-hint">Settings are saved in this browser. Clearing the browser's site data brings back the defaults.</p>
+        </aside>
+      </div>
     </section>
 
     <section class="page" id="page-2" data-title="Page 2">
@@ -175,5 +493,580 @@
        wrapped in (() => { ... })(); so its variables stay private and
        an error in one page can't break the others or the tab bar.
        ============================================================ -->
+
+  <!-- Work Timer: work and rest countdowns, random reminder dings, settings sidebar, screen wake lock. -->
+  <script>
+    (() => {
+      const page = document.getElementById('work-timer');
+      if (!page) return;
+      const $ = (selector) => page.querySelector(selector);
+
+      const MINUTE = 60 * 1000;
+      const KINDS = ['work', 'rest'];
+      const LABELS = { work: 'Work', rest: 'Rest' };
+      const other = (kind) => (kind === 'work' ? 'rest' : 'work');
+
+      const tabs = { work: $('#wt-tab-work'), rest: $('#wt-tab-rest') };
+      const panel = $('#wt-panel');
+      const timeEl = $('#wt-time');
+      const infoEl = $('#wt-info');
+      const startBtn = $('#wt-start');
+      const pauseBtn = $('#wt-pause');
+      const resetBtn = $('#wt-reset');
+      const liveEl = $('#wt-live');
+      const gear = $('#wt-gear');
+      const sidebar = $('#wt-settings');
+      const backdrop = $('#wt-backdrop');
+      const closeBtn = $('#wt-close');
+      const body = $('.wt-body');
+      const inputs = {
+        workMin: $('#wt-work-min'),
+        restMin: $('#wt-rest-min'),
+        gapMinMin: $('#wt-gap-min'),
+        gapMaxMin: $('#wt-gap-max'),
+      };
+      const remindBox = $('#wt-remind-on');
+      const wakeBtn = $('#wt-wake');
+      const wakeNote = $('#wt-wake-note');
+
+      // ---------- Settings, remembered in localStorage ----------
+
+      const STORAGE_KEY = 'misc-utils:work-timer';
+      const DEFAULTS = { workMin: 25, restMin: 5, remindOn: true, gapMinMin: 2, gapMaxMin: 5 };
+      const LIMITS = { workMin: [0.5, 999], restMin: [0.5, 999], gapMinMin: [0.5, 60], gapMaxMin: [0.5, 60] };
+
+      // Rounds to the nearest half minute and clamps to the limits. Returns null if n isn't a number.
+      const clean = (n, [lo, hi]) =>
+        typeof n === 'number' && Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n * 2) / 2)) : null;
+
+      function loadSettings() {
+        const s = { ...DEFAULTS };
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          if (saved && typeof saved === 'object') {
+            for (const key in LIMITS) {
+              const n = clean(saved[key], LIMITS[key]);
+              if (n !== null) s[key] = n;
+            }
+            if (typeof saved.remindOn === 'boolean') s.remindOn = saved.remindOn;
+          }
+        } catch (e) { /* storage unavailable or unreadable: use the defaults */ }
+        if (s.gapMinMin > s.gapMaxMin) {
+          s.gapMinMin = DEFAULTS.gapMinMin;
+          s.gapMaxMin = DEFAULTS.gapMaxMin;
+        }
+        return s;
+      }
+
+      function saveSettings() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); } catch (e) { /* not saved, which is fine */ }
+      }
+
+      const settings = loadSettings();
+      const durationMs = (kind) => (kind === 'work' ? settings.workMin : settings.restMin) * MINUTE;
+
+      // ---------- Sounds, generated with the Web Audio API ----------
+
+      // Every note is a soft bell: four sine partials with a 5 ms attack and an exponential fade.
+      // The higher partials are quieter and fade sooner.
+      const PARTIALS = [
+        { ratio: 1, level: 1, fade: 1 },
+        { ratio: 2, level: 0.4, fade: 0.6 },
+        { ratio: 3, level: 0.18, fade: 0.4 },
+        { ratio: 4.16, level: 0.08, fade: 0.25 },
+      ];
+      // Each note: [start (s), frequency (Hz), peak level, fade time (s)].
+      const SOUNDS = {
+        reminder: [[0, 880, 0.5, 2]],                                     // one ding: A5
+        start: [[0, 783.99, 0.42, 1.2], [0.16, 1174.66, 0.42, 1.6]],      // rising: G5, D6
+        end: [[0, 1046.5, 0.45, 1.4], [0.2, 783.99, 0.45, 1.4],           // falling: C6, G5, E5, C5
+              [0.4, 659.25, 0.45, 1.6], [0.6, 523.25, 0.45, 3]],
+      };
+
+      let ctx = null;     // the AudioContext, created by the first click that needs sound
+      let master = null;
+      let suspendTimer = 0;
+
+      // Returns the audio context, creating or waking it. Browsers allow sound only after a user
+      // gesture, so the first call comes from a click (Start, Resume or a play button).
+      function audio() {
+        clearTimeout(suspendTimer);
+        if (!ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return null;
+          ctx = new AudioCtx();
+          master = ctx.createGain();
+          master.gain.value = 0.9;
+          master.connect(ctx.destination);
+        }
+        if (ctx.state !== 'running') ctx.resume().catch(() => {});
+        return ctx;
+      }
+
+      // Lets the audio device idle once no timer is running and the last sound has faded.
+      function suspendSoon() {
+        clearTimeout(suspendTimer);
+        suspendTimer = setTimeout(() => {
+          if (ctx && !runningKind()) ctx.suspend().catch(() => {});
+        }, 5000);
+      }
+
+      // Schedules a sound at `when` on the audio clock. Returns a handle: { when, cancel() }.
+      function playSound(name, when) {
+        const bus = ctx.createGain();
+        bus.connect(master);
+        const oscillators = [];
+        for (const [at, freq, level, fade] of SOUNDS[name]) {
+          const t0 = when + at;
+          for (const p of PARTIALS) {
+            const t1 = t0 + fade * p.fade;
+            const osc = ctx.createOscillator();
+            const env = ctx.createGain();
+            osc.frequency.value = freq * p.ratio;
+            env.gain.setValueAtTime(0, t0);
+            env.gain.linearRampToValueAtTime(level * p.level, t0 + 0.005);
+            env.gain.exponentialRampToValueAtTime(0.0001, t1);
+            osc.connect(env);
+            env.connect(bus);
+            osc.start(t0);
+            osc.stop(t1 + 0.05);
+            oscillators.push(osc);
+          }
+        }
+        // The last note's fundamental stops last; once it has, the sound's nodes can go.
+        oscillators[oscillators.length - PARTIALS.length].onended = () => bus.disconnect();
+        return {
+          when,
+          cancel() {
+            oscillators.forEach((osc) => { try { osc.stop(); } catch (e) { /* already stopped */ } });
+            bus.disconnect();
+          },
+        };
+      }
+
+      const playNow = (name) => playSound(name, ctx.currentTime + 0.03);
+      // The audio-clock time for a wall-clock time (ms since 1970).
+      const audioTime = (wallMs) => ctx.currentTime + Math.max(0.03, (wallMs - Date.now()) / 1000);
+      // How far the wall clock is ahead of the audio clock, in seconds. It jumps if the audio clock
+      // stalls while the wall clock keeps going, as when a computer sleeps.
+      const clockOffset = () => Date.now() / 1000 - ctx.currentTime;
+
+      // ---------- Timers ----------
+
+      const timers = {
+        work: { remaining: durationMs('work'), started: false, running: false, endAt: 0 },
+        rest: { remaining: durationMs('rest'), started: false, running: false, endAt: 0 },
+      };
+      let view = 'work';  // the timer tab on show
+      let notice = '';    // shown after a session ends, until the next click
+
+      const runningKind = () => KINDS.find((kind) => timers[kind].running) || null;
+      const remainingMs = (kind) => {
+        const t = timers[kind];
+        return t.running ? Math.max(0, t.endAt - Date.now()) : t.remaining;
+      };
+
+      // ---------- Session sounds, scheduled ahead on the audio clock ----------
+      // Background tabs can run timers late, but sounds scheduled on the audio clock play on time.
+
+      const REMINDER_AHEAD = 5 * MINUTE;   // how far ahead reminders are scheduled
+      const REMINDER_END_GAP = 15 * 1000;  // no reminder in a session's last 15 seconds
+
+      let endSound = null;      // handle of the scheduled end sound
+      let reminders = [];       // scheduled reminders, oldest first: { at (wall-clock ms), sound (handle) }
+      let nextReminderAt = 0;   // wall-clock time of the next reminder not scheduled yet
+      let pausedGap = null;     // on pause, the time that was left until the next reminder
+      let syncedOffset = 0;     // clockOffset() when the session sounds were scheduled
+
+      const randomGap = () => {
+        const lo = settings.gapMinMin * MINUTE;
+        const hi = settings.gapMaxMin * MINUTE;
+        return lo + Math.random() * (hi - lo);
+      };
+
+      // Keeps reminders scheduled up to REMINDER_AHEAD into the future. Runs on every tick.
+      function planReminders(now) {
+        const t = timers.work;
+        if (!ctx || !t.running || !settings.remindOn) return;
+        reminders = reminders.filter((r) => r.at > now - 10000);
+        while (nextReminderAt < now) nextReminderAt += randomGap();  // skip any missed while asleep
+        const until = Math.min(now + REMINDER_AHEAD, t.endAt - REMINDER_END_GAP);
+        while (nextReminderAt <= until) {
+          reminders.push({ at: nextReminderAt, sound: playSound('reminder', audioTime(nextReminderAt)) });
+          nextReminderAt += randomGap();
+        }
+      }
+
+      function cancelReminders() {
+        reminders.forEach((r) => r.sound.cancel());
+        reminders = [];
+      }
+
+      function nextReminder(now) {
+        const upcoming = reminders.find((r) => r.at > now);
+        return upcoming ? upcoming.at : nextReminderAt;
+      }
+
+      function scheduleSession(kind) {
+        if (!ctx) return;
+        syncedOffset = clockOffset();
+        endSound = playSound('end', audioTime(timers[kind].endAt));
+        if (kind === 'work') planReminders(Date.now());
+      }
+
+      function cancelSession() {
+        if (endSound) endSound.cancel();
+        endSound = null;
+        cancelReminders();
+      }
+
+      // If the audio clock stalled while the wall clock kept going, schedule everything again.
+      function resyncSounds(kind) {
+        if (!ctx || ctx.state !== 'running' || Math.abs(clockOffset() - syncedOffset) < 1) return;
+        const next = nextReminder(Date.now());
+        cancelSession();
+        nextReminderAt = next;
+        scheduleSession(kind);
+      }
+
+      // ---------- Start, pause, reset, finish ----------
+
+      function start(kind) {
+        const t = timers[kind];
+        if (t.running) return;
+        audio();
+        if (timers[other(kind)].started) resetTimer(other(kind));
+        const now = Date.now();
+        const fresh = !t.started;
+        if (fresh) {
+          t.started = true;
+          t.remaining = durationMs(kind);
+          if (ctx) playNow('start');
+        }
+        if (kind === 'work') nextReminderAt = now + (fresh || pausedGap === null ? randomGap() : pausedGap);
+        pausedGap = null;
+        t.running = true;
+        t.endAt = now + t.remaining;
+        notice = '';
+        scheduleSession(kind);
+        startTicking();
+        render();
+      }
+
+      function pause(kind) {
+        const t = timers[kind];
+        if (!t.running) return;
+        const now = Date.now();
+        if (now >= t.endAt) { finish(kind); return; }
+        t.remaining = t.endAt - now;
+        t.running = false;
+        if (kind === 'work') pausedGap = settings.remindOn ? Math.max(0, nextReminder(now) - now) : null;
+        cancelSession();
+        stopTicking();
+        render();
+        suspendSoon();
+      }
+
+      // Stops a timer and puts it back to its full time, silently.
+      function resetTimer(kind) {
+        const t = timers[kind];
+        if (t.running) {
+          cancelSession();
+          stopTicking();
+        }
+        t.running = false;
+        t.started = false;
+        t.remaining = durationMs(kind);
+        if (kind === 'work') pausedGap = null;
+      }
+
+      function reset(kind) {
+        resetTimer(kind);
+        notice = '';
+        render();
+        suspendSoon();
+      }
+
+      // Runs when the running timer reaches zero.
+      function finish(kind) {
+        // The end sound is normally already playing from its schedule. If the audio clock fell
+        // behind (it stalls while a computer sleeps), play it now instead.
+        if (endSound && ctx && endSound.when > ctx.currentTime + 0.5) {
+          endSound.cancel();
+          endSound = null;
+        }
+        if (!endSound && ctx && ctx.state === 'running') playNow('end');
+        endSound = null;  // let it ring: resetTimer() below must not cancel it
+        resetTimer(kind);
+        view = other(kind);
+        notice = kind === 'work'
+          ? 'Work session done. Start your rest when you’re ready.'
+          : 'Rest is over. Start the next work session when you’re ready.';
+        // Empty the live region first, so the same message is announced again if it repeats.
+        const message = notice;
+        liveEl.textContent = '';
+        setTimeout(() => { liveEl.textContent = message; }, 100);
+        render();
+        suspendSoon();
+      }
+
+      // ---------- Ticking ----------
+      // A 250 ms interval keeps the display current. Background tabs slow intervals down (Chrome
+      // to once a minute), so a chain of silent one-second sounds also calls tick() from their
+      // "ended" events, which aren't slowed. tick() is safe to call at any time.
+
+      let intervalId = 0;
+      let audioTicking = false;
+
+      function startTicking() {
+        if (!intervalId) intervalId = setInterval(tick, 250);
+        if (!audioTicking && ctx && ctx.createConstantSource) {
+          audioTicking = true;
+          audioTick();
+        }
+      }
+
+      function audioTick() {
+        if (!runningKind()) {
+          audioTicking = false;
+          return;
+        }
+        const src = ctx.createConstantSource();
+        src.offset.value = 0;
+        src.connect(ctx.destination);
+        src.onended = () => {
+          src.disconnect();
+          tick();
+          audioTick();
+        };
+        src.start();
+        src.stop(ctx.currentTime + 1);
+      }
+
+      function stopTicking() {
+        clearInterval(intervalId);
+        intervalId = 0;  // the silent chain stops by itself at its next step
+      }
+
+      function tick() {
+        const kind = runningKind();
+        if (!kind) return;
+        if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {});
+        resyncSounds(kind);
+        const now = Date.now();
+        if (now >= timers[kind].endAt) {
+          finish(kind);
+          return;
+        }
+        if (kind === 'work') planReminders(now);
+        renderTime();
+        renderTitle();
+      }
+
+      // ---------- Display ----------
+
+      const formatTime = (ms) => {
+        const total = Math.ceil(ms / 1000);
+        return String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
+      };
+
+      function reminderText() {
+        if (!settings.remindOn) return 'Random reminder off';
+        const { gapMinMin: lo, gapMaxMin: hi } = settings;
+        return `Random reminder every ${lo === hi ? lo : `${lo}–${hi}`} min`;
+      }
+
+      function renderTime() {
+        const text = formatTime(remainingMs(view));
+        if (timeEl.textContent !== text) timeEl.textContent = text;
+      }
+
+      // While a timer runs, the browser tab shows the time left instead of the page name.
+      let titleIsCountdown = false;
+      function renderTitle() {
+        const kind = runningKind();
+        if (kind) {
+          const text = `${formatTime(remainingMs(kind))} · ${LABELS[kind]}`;
+          if (document.title !== text) document.title = text;
+          titleIsCountdown = true;
+        } else if (titleIsCountdown) {
+          titleIsCountdown = false;
+          const shown = document.querySelector('main > section.page.is-active');
+          if (shown) document.title = shown.dataset.title || shown.id;
+        }
+      }
+
+      function render() {
+        for (const kind of KINDS) {
+          const selected = kind === view;
+          tabs[kind].setAttribute('aria-selected', String(selected));
+          tabs[kind].tabIndex = selected ? 0 : -1;
+          tabs[kind].classList.toggle('is-running', timers[kind].running);
+        }
+        panel.setAttribute('aria-labelledby', tabs[view].id);
+        const t = timers[view];
+        const paused = t.started && !t.running;
+        timeEl.classList.toggle('is-running', t.running);
+        timeEl.classList.toggle('is-paused', paused);
+        renderTime();
+        startBtn.textContent = paused ? 'Resume' : 'Start';
+        startBtn.disabled = t.running;
+        pauseBtn.disabled = !t.running;
+        resetBtn.disabled = !t.started;
+        infoEl.textContent = notice || (paused ? 'Paused' : view === 'work' ? reminderText() : '');
+        renderTitle();
+      }
+
+      // ---------- Timer controls ----------
+
+      // If the clicked button disables itself, move focus on so keyboard users aren't stranded.
+      function onPress(button, action, focusNext) {
+        button.addEventListener('click', () => {
+          const hadFocus = document.activeElement === button;
+          action();
+          if (hadFocus && button.disabled) focusNext.focus();
+        });
+      }
+      onPress(startBtn, () => start(view), pauseBtn);
+      onPress(pauseBtn, () => pause(view), startBtn);
+      onPress(resetBtn, () => reset(view), startBtn);
+
+      function showTimer(kind) {
+        if (kind === view) return;
+        view = kind;
+        notice = '';
+        render();
+      }
+      for (const kind of KINDS) {
+        tabs[kind].addEventListener('click', () => showTimer(kind));
+        tabs[kind].addEventListener('keydown', (e) => {
+          const next = { ArrowLeft: other(kind), ArrowRight: other(kind), Home: 'work', End: 'rest' }[e.key];
+          if (!next) return;
+          e.preventDefault();
+          showTimer(next);
+          tabs[next].focus();
+        });
+      }
+
+      // ---------- Settings sidebar ----------
+
+      function setSidebar(open) {
+        sidebar.hidden = !open;
+        backdrop.hidden = !open;
+        body.classList.toggle('is-settings-open', open);
+        gear.setAttribute('aria-expanded', String(open));
+        (open ? closeBtn : gear).focus();
+      }
+      gear.addEventListener('click', () => setSidebar(sidebar.hidden));
+      closeBtn.addEventListener('click', () => setSidebar(false));
+      backdrop.addEventListener('click', () => setSidebar(false));
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !sidebar.hidden && page.classList.contains('is-active')) setSidebar(false);
+      });
+
+      function fillSettings() {
+        for (const key in inputs) inputs[key].value = settings[key];
+        remindBox.checked = settings.remindOn;
+        inputs.gapMinMin.disabled = inputs.gapMaxMin.disabled = !settings.remindOn;
+      }
+
+      function applySettings(key) {
+        if (key === 'workMin' || key === 'restMin') {
+          // A new duration shows at once on an idle timer. A session in progress keeps its length.
+          const kind = key === 'workMin' ? 'work' : 'rest';
+          if (!timers[kind].started) timers[kind].remaining = durationMs(kind);
+        } else {
+          // Reminder changes apply at once: drop the scheduled reminders and draw a fresh gap.
+          pausedGap = null;
+          cancelReminders();
+          if (timers.work.running) {
+            nextReminderAt = Date.now() + randomGap();
+            planReminders(Date.now());
+          }
+        }
+        render();
+      }
+
+      for (const key in inputs) {
+        inputs[key].addEventListener('change', () => {
+          const n = clean(inputs[key].valueAsNumber, LIMITS[key]);
+          if (n !== null) {
+            settings[key] = n;
+            // Keep shortest ≤ longest by moving the other value along.
+            if (key === 'gapMinMin') settings.gapMaxMin = Math.max(settings.gapMaxMin, n);
+            if (key === 'gapMaxMin') settings.gapMinMin = Math.min(settings.gapMinMin, n);
+            saveSettings();
+            applySettings(key);
+          }
+          fillSettings();  // shows the cleaned value, or the old one if the entry wasn't a number
+        });
+      }
+      remindBox.addEventListener('change', () => {
+        settings.remindOn = remindBox.checked;
+        saveSettings();
+        applySettings('remindOn');
+        fillSettings();
+      });
+
+      page.querySelectorAll('[data-sound]').forEach((button) => {
+        button.addEventListener('click', () => {
+          if (!audio()) return;
+          playNow(button.dataset.sound);
+          suspendSoon();
+        });
+      });
+
+      // ---------- Keep screen on (Screen Wake Lock API) ----------
+
+      let wantAwake = false;
+      let wakeLock = null;
+
+      async function lockScreen() {
+        try {
+          const lock = await navigator.wakeLock.request('screen');
+          if (!wantAwake) {  // switched off while the request was pending
+            lock.release().catch(() => {});
+            return;
+          }
+          wakeLock = lock;
+          lock.addEventListener('release', () => { if (wakeLock === lock) wakeLock = null; });
+          wakeNote.textContent = '';
+        } catch (e) {
+          wantAwake = false;
+          wakeBtn.setAttribute('aria-pressed', 'false');
+          wakeNote.textContent = 'This browser didn’t allow keeping the screen on.';
+        }
+      }
+
+      if ('wakeLock' in navigator) {
+        wakeBtn.hidden = false;
+        wakeBtn.addEventListener('click', () => {
+          wantAwake = !wantAwake;
+          wakeBtn.setAttribute('aria-pressed', String(wantAwake));
+          wakeNote.textContent = '';
+          if (wantAwake) lockScreen();
+          else if (wakeLock) {
+            wakeLock.release().catch(() => {});
+            wakeLock = null;
+          }
+        });
+      }
+
+      // Browsers drop the screen lock while the page is hidden: take it again on return,
+      // and bring the display up to date.
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible') return;
+        if (wantAwake && !wakeLock) lockScreen();
+        tick();
+      });
+
+      // The shared script sets the page name as the title on every page change; this listener runs
+      // after it and puts the countdown back while a timer runs.
+      window.addEventListener('hashchange', renderTitle);
+
+      fillSettings();
+      render();
+    })();
+  </script>
 </body>
 </html>
