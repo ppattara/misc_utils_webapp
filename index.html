@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Misc Utils</title>
+  <style>
+    /* ============================================================
+       Shared styles
+       ============================================================ */
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --text: #1d2330;
+      --muted: #5f6b7a;
+      --border: #dde1e7;
+      --accent: #2f6fde;
+      --accent-text: #ffffff;
+      --radius: 10px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #14171c;
+        --surface: #1d2128;
+        --text: #e6e9ee;
+        --muted: #9aa4b2;
+        --border: #2e343d;
+        --accent: #5b8ef0;
+        --accent-text: #0d1117;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    .app-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .app-title {
+      margin: 0;
+      padding: 12px 0 8px;
+      font-size: 1.25rem;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-bottom: 12px;
+    }
+
+    .tabs a {
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .tabs a:hover { border-color: var(--accent); }
+
+    .tabs a[aria-current="page"] {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-text);
+    }
+
+    main.container {
+      padding-top: 24px;
+      padding-bottom: 48px;
+    }
+
+    .page {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .page:not(.is-active) { display: none !important; }
+
+    .page > h2 { margin-top: 0; }
+
+    .placeholder { color: var(--muted); }
+
+    /* ============================================================
+       Page-specific styles
+       Scope every rule under its page's id, e.g. #page-1 .result { ... }
+       ============================================================ */
+
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="container">
+      <h1 class="app-title">Misc Utils</h1>
+      <nav class="tabs" id="tabs" aria-label="Pages"></nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- ==========================================================
+         Pages: each <section class="page"> below becomes one tab, in this order.
+         To add a page, copy a section and give it:
+           - a unique id (lowercase letters, digits, dashes); its link is index.html#/<id>
+           - a data-title (the tab label)
+         The tab bar is built automatically. See SPEC.md for the full conventions.
+         ========================================================== -->
+
+    <section class="page" id="page-1" data-title="Page 1">
+      <h2>Page 1</h2>
+      <p class="placeholder">Nothing here yet.</p>
+    </section>
+
+    <section class="page" id="page-2" data-title="Page 2">
+      <h2>Page 2</h2>
+      <p class="placeholder">Nothing here yet.</p>
+    </section>
+
+    <section class="page" id="page-3" data-title="Page 3">
+      <h2>Page 3</h2>
+      <p class="placeholder">Nothing here yet.</p>
+    </section>
+  </main>
+
+  <!-- Shared: builds the tab bar and shows the page named in the URL. -->
+  <script>
+    (() => {
+      const pages = [...document.querySelectorAll('main > section.page')];
+      if (pages.length === 0) return;
+
+      const nav = document.getElementById('tabs');
+      const appTitle = document.title;
+      const titleOf = (page) => page.dataset.title || page.id;
+
+      const links = pages.map((page) => {
+        const link = document.createElement('a');
+        link.href = '#/' + page.id;
+        link.textContent = titleOf(page);
+        nav.appendChild(link);
+        return link;
+      });
+
+      function showPage() {
+        const id = location.hash.replace(/^#\/?/, '');
+        const active = Math.max(0, pages.findIndex((page) => page.id === id));
+        pages.forEach((page, i) => page.classList.toggle('is-active', i === active));
+        links.forEach((link, i) => {
+          if (i === active) link.setAttribute('aria-current', 'page');
+          else link.removeAttribute('aria-current');
+        });
+        document.title = titleOf(pages[active]) + ' · ' + appTitle;
+      }
+
+      window.addEventListener('hashchange', showPage);
+      showPage();
+    })();
+  </script>
+
+  <!-- ============================================================
+       Page scripts: give each page its own <script> element below,
+       wrapped in (() => { ... })(); so its variables stay private and
+       an error in one page can't break the others or the tab bar.
+       ============================================================ -->
+</body>
+</html>
