@@ -55,7 +55,7 @@ A change isn't finished until the code and all three files agree. When reporting
   - During a break, the ring counts the break down, the name under the time reads "Break", the info line "Take a short break" and the tab title `00:08 · Break`. If the Rest tab is on show when a break starts, the page switches to Work.
   - Pausing during a break ends it, and Resume draws a fresh gap. Reset, starting Rest and changing a break setting end it silently.
   - Screen readers hear "Short break" and "Back to work".
-  - The break length goes from 5 to 300 seconds, in whole seconds. The saved-settings key `remindOn` keeps its old name, so saved settings carry over.
+  - The break length went from 5 to 300 seconds, in whole seconds (now 5 to 15, see Typed-in settings). The saved-settings key `remindOn` keeps its old name, so saved settings carry over.
   - The break's green is brighter and a little yellower than Rest's. In light mode the card fills with a bright green and the ring and time turn deep green. In dark mode the card is a deep green and the ring and time a very light green.
   - Apart from the green dot, the tab's icon is blank (transparent), because browsers don't reliably bring back their default icon when a page removes its own.
 
@@ -71,6 +71,14 @@ A change isn't finished until the code and all three files agree. When reporting
   - The recordings play at their own level, unchanged.
 
   Details in `SPEC.md` 5.1 (Sounds).
+- **Typed-in settings** (owner, 2026-11-22): the Work Timer's five number settings are typed in by hand, with no up/down arrows, and take whole numbers only. Ranges, with defaults: work 10–120 minutes (25), rest 3–30 minutes (5), break length 5–15 seconds (10), shortest gap 1–5 minutes (2) and longest gap 2–10 minutes (5). The shortest and longest gap can't be equal: when a typed one would meet the other, the other moves 1 minute away. Details chosen by Claude:
+  - The fields are text inputs with `inputmode="numeric"`, not number inputs, so they have no arrows, and the mouse wheel and arrow keys don't change them either. Phones show a number keypad.
+  - An entry is checked when it's committed (Enter or leaving the field). A decimal is rounded to the nearest whole number, a number out of range becomes the nearest limit, and anything else (an empty field too) puts the previous value back. An entry that ends up at the value already set changes nothing, so retyping a gap doesn't redraw the planned breaks.
+  - A gap typed past the other one, not just onto it, also moves the other to 1 minute from the typed value.
+  - Saved settings from before are rounded and clamped into the new ranges. If the gaps then aren't at least a minute apart, both go back to 2 and 5.
+  - The fields went from 4.5em to 3.5em wide, since they no longer have arrows.
+
+  Details in `SPEC.md` 5.1 (Settings sidebar).
 
 ## Status
 - v1: blank shell with three placeholder pages (Page 1, Page 2, Page 3) and the shared tab navigation.
@@ -81,4 +89,5 @@ A change isn't finished until the code and all three files agree. When reporting
 - v6 (2026-11-22): each timer color comes in three shades. The ring's track is a lighter shade of the timer's color, and the card behind the timer (and the floating window) is a very soft shade of it that follows the timer on show.
 - v7 (2026-11-22): the random reminder became random short breaks: a ding, a break (10 s by default, settable), then the same ding. During a break the timer turns a bright green of its own and counts the break down, and the browser tab shows a green dot. The work clock keeps running through breaks.
 - v8 (2026-11-22): the Work Timer plays the owner's recordings at the start and end of work, of rest and of each break, embedded in `index.html` as base64. The old dings are a setting, and the sidebar previews all six sounds.
+- v9 (2026-11-22): the Work Timer's settings are typed in by hand as whole numbers, with no up/down arrows, in narrower ranges (work 10–120 min, rest 3–30 min, break length 5–15 s, gaps 1–5 and 2–10 min), and the shortest gap always stays below the longest.
 - Next: the owner will describe the utilities for Pages 2 and 3.

@@ -371,8 +371,9 @@
       gap: 6px;
       color: var(--muted);
     }
+    /* Typed-in whole numbers: text inputs, so there are no up/down arrows. */
     #work-timer .wt-field input {
-      width: 4.5em;
+      width: 3.5em;
       padding: 5px 8px;
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -624,16 +625,16 @@
 
           <div class="wt-group" role="group" aria-labelledby="wt-durations-title">
             <h3 id="wt-durations-title">Durations</h3>
-            <label class="wt-field">Work <span class="wt-num"><input type="number" id="wt-work-min" min="0.5" max="999" step="0.5" inputmode="decimal"> min</span></label>
-            <label class="wt-field">Rest <span class="wt-num"><input type="number" id="wt-rest-min" min="0.5" max="999" step="0.5" inputmode="decimal"> min</span></label>
+            <label class="wt-field">Work <span class="wt-num"><input type="text" id="wt-work-min" inputmode="numeric" autocomplete="off"> min</span></label>
+            <label class="wt-field">Rest <span class="wt-num"><input type="text" id="wt-rest-min" inputmode="numeric" autocomplete="off"> min</span></label>
           </div>
 
           <div class="wt-group" role="group" aria-labelledby="wt-breaks-title">
             <h3 id="wt-breaks-title">Random breaks</h3>
             <label class="wt-check"><input type="checkbox" id="wt-breaks-on"> Take short breaks at random times during work</label>
-            <label class="wt-field">Break length <span class="wt-num"><input type="number" id="wt-break-sec" min="5" max="300" step="1" inputmode="numeric"> sec</span></label>
-            <label class="wt-field">Shortest gap <span class="wt-num"><input type="number" id="wt-gap-min" min="0.5" max="60" step="0.5" inputmode="decimal"> min</span></label>
-            <label class="wt-field">Longest gap <span class="wt-num"><input type="number" id="wt-gap-max" min="0.5" max="60" step="0.5" inputmode="decimal"> min</span></label>
+            <label class="wt-field">Break length <span class="wt-num"><input type="text" id="wt-break-sec" inputmode="numeric" autocomplete="off"> sec</span></label>
+            <label class="wt-field">Shortest gap <span class="wt-num"><input type="text" id="wt-gap-min" inputmode="numeric" autocomplete="off"> min</span></label>
+            <label class="wt-field">Longest gap <span class="wt-num"><input type="text" id="wt-gap-max" inputmode="numeric" autocomplete="off"> min</span></label>
           </div>
 
           <div class="wt-group" role="group" aria-labelledby="wt-sounds-title">
@@ -770,18 +771,19 @@
         workMin: 25, restMin: 5, remindOn: true, gapMinMin: 2, gapMaxMin: 5, breakSec: 10, sounds: 'recorded',
       };
       const SOUND_CHOICES = ['recorded', 'dings'];
-      // [lowest, highest, step]: minutes go in half-minute steps, the break length in whole seconds.
+      // [lowest, highest]: every setting is a whole number, of minutes, or of seconds for the break
+      // length. The shortest gap also stays below the longest (see the inputs' change handler).
       const LIMITS = {
-        workMin: [0.5, 999, 0.5],
-        restMin: [0.5, 999, 0.5],
-        gapMinMin: [0.5, 60, 0.5],
-        gapMaxMin: [0.5, 60, 0.5],
-        breakSec: [5, 300, 1],
+        workMin: [10, 120],
+        restMin: [3, 30],
+        gapMinMin: [1, 5],
+        gapMaxMin: [2, 10],
+        breakSec: [5, 15],
       };
 
-      // Rounds to the nearest step and clamps to the limits. Returns null if n isn't a number.
-      const clean = (n, [lo, hi, step]) =>
-        typeof n === 'number' && Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n / step) * step)) : null;
+      // Rounds to a whole number and clamps to the limits. Returns null if n isn't a number.
+      const clean = (n, [lo, hi]) =>
+        typeof n === 'number' && Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n))) : null;
 
       function loadSettings() {
         const s = { ...DEFAULTS };
@@ -796,7 +798,7 @@
             if (SOUND_CHOICES.includes(saved.sounds)) s.sounds = saved.sounds;
           }
         } catch (e) { /* storage unavailable or unreadable: use the defaults */ }
-        if (s.gapMinMin > s.gapMaxMin) {
+        if (s.gapMinMin >= s.gapMaxMin) {
           s.gapMinMin = DEFAULTS.gapMinMin;
           s.gapMaxMin = DEFAULTS.gapMaxMin;
         }
@@ -1255,8 +1257,7 @@
 
       function breakText() {
         if (!settings.remindOn) return 'Random breaks off';
-        const { gapMinMin: lo, gapMaxMin: hi } = settings;
-        return `${settings.breakSec} s break every ${lo === hi ? lo : `${lo}–${hi}`} min`;
+        return `${settings.breakSec} s break every ${settings.gapMinMin}–${settings.gapMaxMin} min`;
       }
 
       // During a break, the Work timer's place shows the break instead.
@@ -1419,14 +1420,20 @@
         render();
       }
 
+      // The settings are typed in, so an entry is read from the text: an empty field or anything that
+      // isn't a number gives NaN, which clean() turns down.
+      const typed = (input) => (input.value.trim() === '' ? NaN : Number(input.value));
+
       for (const key in inputs) {
         inputs[key].addEventListener('change', () => {
-          const n = clean(inputs[key].valueAsNumber, LIMITS[key]);
-          if (n !== null) {
+          const n = clean(typed(inputs[key]), LIMITS[key]);
+          if (n !== null && n !== settings[key]) {
             settings[key] = n;
-            // Keep shortest ≤ longest by moving the other value along.
-            if (key === 'gapMinMin') settings.gapMaxMin = Math.max(settings.gapMaxMin, n);
-            if (key === 'gapMaxMin') settings.gapMinMin = Math.min(settings.gapMinMin, n);
+            // The shortest gap stays below the longest: an entry that would meet or pass the other
+            // moves the other to 1 minute away. The limits keep it in range (shortest at most 5,
+            // longest at least 2).
+            if (key === 'gapMinMin' && settings.gapMaxMin <= n) settings.gapMaxMin = n + 1;
+            if (key === 'gapMaxMin' && settings.gapMinMin >= n) settings.gapMinMin = n - 1;
             saveSettings();
             applySettings(key);
           }
