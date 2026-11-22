@@ -5,8 +5,8 @@ This document describes the app in enough detail to rebuild it from scratch, or 
 ## 1. Overview
 
 - A personal collection of everyday utilities in one web app, with one utility per page. Pages are switched with tabs.
-- The whole app is a single static file, `index.html`, with all HTML, CSS and JavaScript inline.
-- There is no backend, database, user login or build step, and no external dependencies (no frameworks, CDNs or web fonts). The app works offline, opened directly from disk (`file://`) or served from any static host.
+- The whole app is a single static file, `index.html`, with all HTML, CSS and JavaScript inline. The Work Timer's sound recordings are embedded in it too, as base64 (see 5.1, Sounds).
+- There is no backend, database, user login or build step, and no external dependencies (no frameworks, CDNs, web fonts or files loaded at run time). The app works offline, opened directly from disk (`file://`) or served from any static host.
 - Nothing is sent anywhere. A page may remember its own settings in the browser's `localStorage` (see 3.4). Nothing else is stored.
 - Target browsers: current Chrome, Safari, Firefox and Edge, on desktop and mobile. Plain modern JavaScript (ES2015+) is fine.
 
@@ -19,6 +19,7 @@ In order:
 3. `<main class="container">` containing the pages, one `<section class="page">` each.
 4. The shared navigation `<script>`.
 5. Page scripts, one `<script>` element per page that needs one.
+6. Embedded data, under a comment headed `Embedded data`: the Work Timer's recordings, one `<script type="text/plain" class="wt-recording">` element each (see 5.1, Sounds). Each is one very long line of base64, about 220 KB in all, so they come last and the code above reads without scrolling past them.
 
 ## 3. Page system
 
@@ -62,7 +63,8 @@ Links use `#/<id>` rather than `#<id>` because a fragment that matches an elemen
 3. Add any page-specific CSS in the "Page-specific styles" part of the `<style>` block, with every rule scoped under the page's id (for example `#unit-converter .result { ... }`).
 4. Add any page-specific JavaScript in a new `<script>` element after the shared script, wrapped in `(() => { ... })();`. This keeps its variables private, and an error in it can't break other pages or the tab bar.
 5. Start the page's own ids and classes with a short prefix (the Work Timer uses `wt-`), so they can't clash with another page's.
-6. Document the page in section 5 of this file and in `README.md`.
+6. Put any large embedded data, such as sounds or images, at the end of `<body>` after the page scripts, in elements the browser neither runs nor shows, such as `<script type="text/plain">`. The Work Timer's recordings are an example (5.1, Sounds).
+7. Document the page in section 5 of this file and in `README.md`.
 
 The shared script needs no changes.
 
@@ -107,7 +109,7 @@ The shared script needs no changes.
 
 ### 5.1 Work Timer
 
-A countdown for work and one for rest on a single page, each with its own color: blue for work and green for rest. The card behind the timer takes a very soft shade of the color of the timer on show. The time sits in the middle of a ring whose arc runs down as the session goes. While the work timer runs, short breaks come at random moments: a ding starts each one and the same ding ends it, and in between the card turns a bright green of its own and counts the break down, so the break is noticed even with the sound off. On a computer, the timer can also pop out into a small floating window that stays on top of other windows. The page's ids and classes start with `wt-`. Its styles sit under `/* ---------- Work Timer (#work-timer) ---------- */` in the page-specific styles, and its script is the first page script.
+A countdown for work and one for rest on a single page, each with its own color: blue for work and green for rest. The card behind the timer takes a very soft shade of the color of the timer on show. The time sits in the middle of a ring whose arc runs down as the session goes. While the work timer runs, short breaks come at random moments: a sound starts each one and another ends it, and in between the card turns a bright green of its own and counts the break down, so the break is noticed even with the sound off. Each start and end, of a session or a break, has its own recorded sound, embedded in the file, with generated dings as an option. On a computer, the timer can also pop out into a small floating window that stays on top of other windows. The page's ids and classes start with `wt-`. Its styles sit under `/* ---------- Work Timer (#work-timer) ---------- */` in the page-specific styles, and its script is the first page script.
 
 #### Markup
 
@@ -133,7 +135,7 @@ Inside `<section class="page" id="work-timer" data-title="Work Timer">`, in orde
      - Three `div.wt-group` elements with `role="group"`, each labelled by its `h3`:
        - "Durations": two `label.wt-field` rows, "Work" and "Rest". Each wraps a `span.wt-num` holding a number input followed by " min". Inputs `#wt-work-min` and `#wt-rest-min` have `min="0.5" max="999" step="0.5" inputmode="decimal"`.
        - "Random breaks": `label.wt-check` with the checkbox `#wt-breaks-on` and the text "Take short breaks at random times during work"; a `label.wt-field` row "Break length" whose `span.wt-num` holds the number input `#wt-break-sec` (`min="5" max="300" step="1" inputmode="numeric"`) followed by " sec"; then `label.wt-field` rows "Shortest gap" (`#wt-gap-min`) and "Longest gap" (`#wt-gap-max`), built like the durations with `min="0.5" max="60" step="0.5"`.
-       - "Sounds": three `div.wt-sound` rows, "Break ding", "Session start" and "Session end". Each ends with a `button.wt-icon-btn.wt-play` whose `data-sound` is `ding`, `start` or `end`, with `title="Play"`, an `aria-label` such as "Play the break ding", and a 14px play triangle (`M9 5.5v13l10-6.5z`, filled).
+       - "Sounds": two `label.wt-check` rows with radio buttons named `wt-sounds`, "Recorded sounds" (value `recorded`) and "Dings" (value `dings`). Then three `div.wt-sound` rows, "Work", "Rest" and "Break". Each ends with a `span.wt-plays` holding two `button.wt-play`, "Start" and "End". Their `data-sound` is the moment they play (`work_begin` and `work_end`, `rest_begin` and `rest_end`, `break_begin` and `break_end`), and their `aria-label` says it, for example "Play the work start sound". Each label follows a 10px play triangle: the path `M9 5.5v13l10-6.5z`, filled, on a `7 5 14 14` viewBox that centers it.
      - `p.wt-hint`: "Settings are saved in this browser. Clearing the browser's site data brings back the defaults."
 
 #### Timers
@@ -141,10 +143,10 @@ Inside `<section class="page" id="work-timer" data-title="Work Timer">`, in orde
 - There are two timers, Work and Rest, each with a duration from the settings (defaults 25 and 5 minutes). Each one is idle, running or paused.
 - Time shows as `MM:SS`, rounded up to the whole second, so a fresh 25-minute timer shows 25:00 and reaches 00:00 only at the very end. Minutes can go past 59 (for example 90:00).
 - Time is kept with the wall clock: a running timer stores the moment it will end (from `Date.now()`), so the display is right whenever it is redrawn, even after the page was in the background or the computer slept.
-- **Start** begins a fresh session at the full duration, with the start sound. On a paused timer it reads **Resume** and carries on from where it paused, with no sound. **Pause** freezes the timer. **Reset** stops it and puts it back to its full duration, silently.
+- **Start** begins a fresh session at the full duration, with the timer's start sound (`work_begin` or `rest_begin`, see Sounds). On a paused timer it reads **Resume** and carries on from where it paused, with no sound. **Pause** freezes the timer. **Reset** stops it and puts it back to its full duration, silently.
 - Button states for the timer on show: Start is enabled unless that timer is running, Pause only while it runs, Reset only once it has started (running or paused).
 - One timer at a time: pressing Start on one timer first resets the other, silently, if it is running or paused. Switching between the Work and Rest tabs only changes which timer is on show and never stops anything.
-- When a session reaches zero, the end sound plays, that timer goes back to its full duration (idle), and the page shows the other timer, ready but not started. The info line then reads "Work session done. Start your rest when you’re ready." or "Rest is over. Start the next work session when you’re ready." until the next press of Start or Reset or a Work/Rest tab switch. The same text goes to the live region for screen readers.
+- When a session reaches zero, its end sound plays (`work_end` or `rest_end`), that timer goes back to its full duration (idle), and the page shows the other timer, ready but not started. The info line then reads "Work session done. Start your rest when you’re ready." or "Rest is over. Start the next work session when you’re ready." until the next press of Start or Reset or a Work/Rest tab switch. The same text goes to the live region for screen readers.
 - The info line (`#wt-info`) shows the first that applies: the end-of-session message; "Paused" if the timer on show is paused; "Take a short break" during a break (with the Work timer on show); on the Work tab, "10 s break every 2–5 min" (the break length in seconds, then the gaps, with a single number when both gaps are equal, for example "every 6 min") or "Random breaks off"; on the Rest tab, nothing. It keeps its height when empty.
 - The tab of a running timer shows a small dot in that timer's color. The time is drawn in the color of the timer on show while running, `--muted` while paused and `--text` otherwise (see Timer colors).
 - A changed duration shows at once on an idle timer. A timer that has started keeps its current session length, and the new duration applies from its next reset or new session. To do this, each timer stores the length of its current session (`total`). It is set to the duration when a fresh session starts, when the timer is reset or finishes, and when its duration changes while it is idle.
@@ -199,16 +201,16 @@ Break colors:
 A short break during work, meant for stopping for a moment: standing up, stretching, looking away.
 
 - Breaks happen only while the work timer is running, and only when the setting is on (the default).
-- **A break:** the break ding plays at its start, and the same ding again at its end, the break length apart (default 10 seconds, settable from 5 to 300 in whole seconds). In between, the page shows the break (see Ring, Timer colors and Tab icon).
+- **A break:** the `break_begin` sound plays at its start and `break_end` at its end, the break length apart (default 10 seconds, settable from 5 to 300 in whole seconds). In between, the page shows the break (see Ring, Timer colors and Tab icon).
 - **The work clock keeps running** through a break, so a session still ends at its set time (25 minutes by default).
 - **Gaps:** each gap is the work time between two breaks, from the end of one to the start of the next, so breaks never overlap, whatever the lengths. Each gap is a fresh random number, evenly spread between the shortest and longest gap (defaults 2 and 5 minutes). The first gap counts from the start of the session. The time to the next break is never shown.
-- **Near the end:** a break starts only if it can end at least 15 seconds before the session does, so its second ding never runs into the end sound.
+- **Near the end:** a break starts only if it can end at least 15 seconds before the session does, so its end sound never runs into the session's end sound.
 - **Pause:** pausing during work remembers the work time left until the next break, and Resume continues from there. Pausing during a break ends the break silently (the pause is a break in itself), and Resume draws a fresh gap. A fresh session draws a fresh first gap.
-- **Ending early:** Reset, starting the Rest timer, or the session ending also ends a break in progress silently. A break's dings that haven't started are cancelled, and a ding already ringing fades out.
+- **Ending early:** Reset, starting the Rest timer, or the session ending also ends a break in progress silently. A break's sounds that haven't started are cancelled, and one already playing plays out.
 - **Changing any break setting** (on/off, length, gaps) applies at once. The planned breaks are dropped (one in progress ends silently), and if work is running, a fresh gap is drawn from now. If work is paused, the remembered gap is dropped and Resume draws a fresh one.
 - **When a break starts**, the page shows the Work timer if the Rest tab was on show. Switching to the Rest tab during a break shows the Rest timer as usual, while the browser tab's title and icon still show the break. Switching back to Work shows the break again.
 - **Screen readers** hear "Short break" when a break starts and "Back to work" when it ends by itself, through `#wt-live`. A break ended by Pause, Reset or a settings change isn't announced.
-- **How it works:** breaks are planned ahead in wall-clock time, separately from their sounds, so they show on screen even in a browser without Web Audio. Each planned break keeps its start (`at`), its end (`end`, the start plus the break length) and the handles of its two dings. The script keeps the next break not planned yet (`nextBreakAt`), and the break in progress as last shown (`shownBreak`). On every tick while work runs, it plans breaks up to 5 minutes ahead (by start time), then finds the break whose start ≤ now < end. If that differs from `shownBreak`, a break has started or ended: it updates `shownBreak`, switches to the Work timer when one starts, makes the announcement and re-renders. Pause, Reset, finishing and a break setting change clear `shownBreak`.
+- **How it works:** breaks are planned ahead in wall-clock time, separately from their sounds, so they show on screen even in a browser without Web Audio. Each planned break keeps its start (`at`), its end (`end`, the start plus the break length) and the handles of its two sounds. The script keeps the next break not planned yet (`nextBreakAt`), and the break in progress as last shown (`shownBreak`). On every tick while work runs, it plans breaks up to 5 minutes ahead (by start time), then finds the break whose start ≤ now < end. If that differs from `shownBreak`, a break has started or ended: it updates `shownBreak`, switches to the Work timer when one starts, makes the announcement and re-renders. Pause, Reset, finishing and a break setting change clear `shownBreak`.
 
 #### Tab icon
 
@@ -218,7 +220,31 @@ A short break during work, meant for stopping for a moment: standing up, stretch
 
 #### Sounds
 
-The sounds are generated with the Web Audio API, with no sound files. One `AudioContext` is created by the first click that needs sound (Start, Resume or a play button), because browsers allow audio only after a user gesture. Everything plays through a master gain of 0.9.
+Six moments have a sound, each named after its file in `timer_sound/`:
+
+| Moment | Plays when | Recording | Ding |
+|---|---|---|---|
+| `work_begin` | A fresh work session starts (Start, not Resume) | `work_begin.m4a`, 4.0 s | Start |
+| `work_end` | A work session reaches zero | `work_end.m4a`, 2.0 s | End |
+| `rest_begin` | A fresh rest session starts | `rest_begin.m4a`, 2.0 s | Start |
+| `rest_end` | A rest session reaches zero | `rest_end.m4a`, 4.0 s | End |
+| `break_begin` | A break starts | `break_begin.m4a`, 1.9 s | Break ding |
+| `break_end` | A break ends by itself | `break_end.m4a`, 1.8 s | Break ding |
+
+- **Choice:** the "Sounds" setting picks what plays: **Recorded sounds** (`recorded`, the default), the owner's recordings, or **Dings** (`dings`), three sounds generated with the Web Audio API, which were the app's only sounds before the recordings. A new choice applies at once: the sounds already scheduled (the end sound, and the planned breaks' sounds that haven't started) are scheduled again with it, and one already playing plays out.
+- **Previews:** each play button in the sidebar plays its moment's sound with the current choice, at once, whatever the timers are doing.
+- **Playback:** everything plays through the Web Audio API. One `AudioContext` is created by the first click that needs sound (Start, Resume or a play button), because browsers allow audio only after a user gesture. Everything plays through a master gain of 0.9. Each sound gets its own gain node (its bus) into the master, and disconnects it once all of its sources have ended. The script keeps the set of sounds scheduled or playing, so that the audio context isn't suspended while one still plays (see Keeping time in a background tab).
+
+Recordings:
+
+- `work_begin.m4a` and `rest_end.m4a` are the same file, and so are `work_end.m4a` and `rest_begin.m4a`. All are AAC in an `.m4a` container, 48 kHz stereo.
+- **Embedding:** they are embedded in `index.html`, so that it stays one self-contained file. The app never reads `timer_sound/`. Each recording is a `<script type="text/plain" class="wt-recording">` element at the end of `<body>` (see 2), whose text is the file's bytes in base64, on one line. Its `data-files` attribute names the files it stands for, without `.m4a` and separated by spaces, and these are the moments it plays at. Identical files share one element, so there are four: `work_begin rest_end`, `work_end rest_begin`, `break_begin` and `break_end`. The `text/plain` type keeps the browser from running them.
+- **Decoding:** creating the `AudioContext` also starts decoding every recording, once for the page's lifetime: `atob` turns an element's text into bytes, and `decodeAudioData` turns those into an `AudioBuffer`, kept for each moment its `data-files` names. If the page is still loading then (the first click came early), decoding waits for `DOMContentLoaded`. A recorded sound asked for while decoding is under way waits for it, then starts at its time, or 30 ms later if its time has passed. So the very first sound after loading can come a fraction of a second late (about 0.15 s in Chrome on a Mac).
+- **Level:** a recording plays through an `AudioBufferSourceNode` at its own level, with only the master gain. After it, the recordings peak between about −4.5 and −11 dBFS and sound a little quieter than the dings. `break_end` is the quietest.
+- **Fallback:** a moment whose recording can't be decoded, or that no `data-files` names, plays its ding instead.
+- **Changing a recording:** replace its file in `timer_sound/`, then put the new file's base64 (for example from `base64 -i timer_sound/break_end.m4a`) in its element, as one line. If the element stands for two files and only one changed, give the changed one its own element and take its name out of the old element's `data-files`. AAC (`.m4a`) and MP3 are safe formats: every target browser decodes them.
+
+Dings:
 
 Every note is a soft bell of four sine partials:
 
@@ -231,11 +257,11 @@ Every note is a soft bell of four sine partials:
 
 Each partial's gain starts at 0, rises linearly to its peak in 5 ms, then falls exponentially to 0.0001 by the end of its fade. Its oscillator stops 50 ms after that.
 
-| Sound | Notes: start, pitch, level, fade time | Plays when |
+| Ding | Notes: start, pitch, level, fade time | Moments |
 |---|---|---|
-| Break ding (`ding`) | 0 s, A5 (880 Hz), 0.5, 2 s | A break starts, and again when it ends |
-| Start | 0 s, G5 (783.99 Hz), 0.42, 1.2 s; then 0.16 s, D6 (1174.66 Hz), 0.42, 1.6 s | A fresh work or rest session starts |
-| End | 0 s C6 (1046.5 Hz), 0.2 s G5 (783.99 Hz), 0.4 s E5 (659.25 Hz), 0.6 s C5 (523.25 Hz); all at level 0.45; fades 1.4, 1.4, 1.6 and 3 s | A session reaches zero |
+| Break ding (`ding`) | 0 s, A5 (880 Hz), 0.5, 2 s | `break_begin`, `break_end` |
+| Start (`start`) | 0 s, G5 (783.99 Hz), 0.42, 1.2 s; then 0.16 s, D6 (1174.66 Hz), 0.42, 1.6 s | `work_begin`, `rest_begin` |
+| End (`end`) | 0 s C6 (1046.5 Hz), 0.2 s G5 (783.99 Hz), 0.4 s E5 (659.25 Hz), 0.6 s C5 (523.25 Hz); all at level 0.45; fades 1.4, 1.4, 1.6 and 3 s | `work_end`, `rest_end` |
 
 So the break ding is one ding, the start is a short rising pair, and the end is a falling run of four notes, the longest and loudest of the three. Their peaks are about −4.6, −4.2 and −3.5 dBFS, well clear of clipping.
 
@@ -243,21 +269,21 @@ So the break ding is one ding, the start is a short rising pair, and the end is 
 
 Browsers slow down timers in background tabs (Chrome to once a minute after five minutes hidden), so the page doesn't rely on them for anything that must be on time:
 
-- The end sound and the break dings are scheduled ahead on the audio clock, which keeps running in the background. When a session starts or resumes, the end sound is scheduled for the end time, and breaks are planned up to 5 minutes ahead, each with its two dings scheduled at its start and end. Every tick extends that window. Each scheduled sound has its own gain node: cancelling one (on Pause, Reset or a break setting change) disconnects that node and stops its oscillators. A break's dings are cancelled only if they haven't started yet, so a ding already ringing fades out. A finished sound disconnects its own gain node.
+- The end sound and the break sounds are scheduled ahead on the audio clock, which keeps running in the background: a recording through its `AudioBufferSourceNode`'s `start(time)`, a ding through its oscillators'. When a session starts or resumes, the end sound is scheduled for the end time, and breaks are planned up to 5 minutes ahead, each with its two sounds scheduled at its start and end. Every tick extends that window. Each scheduled sound has its own gain node: cancelling one (on Pause, Reset, a break setting change, or a new sound choice, which schedules it again) stops its sources and disconnects that node. A break's sounds are cancelled only if they haven't started yet, so one already playing plays out. A finished sound disconnects its own gain node.
 - A 250 ms `setInterval` redraws the display while a timer runs. Next to it runs a chain of silent one-second `ConstantSourceNode`s (offset 0, connected to the output). Each one's `ended` event calls the same tick and starts the next one, and these events aren't slowed down in background tabs. That keeps the title countdown current and ends the session on time in a background tab. Tick is safe to call any number of times.
 - A break's look, title and tab icon switch on the first tick after it starts or ends: within 250 ms while the page or the floating window is on screen, and within about a second in a background tab (through the silent chain).
 - While the floating window is open, a second 250 ms interval runs on the floating window itself (that window's own `setInterval`) whenever a timer runs. The floating window stays on screen, so browsers don't slow its timers even while the app's tab is hidden or covered, and the floating display stays current to the second. Stopping the timer clears it, and it goes away with the window.
-- On each tick, if the wall clock and the audio clock have drifted a second or more apart since the sounds were scheduled (the audio clock stalls while a computer sleeps), the end sound and the dings of the planned breaks are scheduled again from their wall-clock times. Dings whose time has passed are dropped. Breaks missed while asleep are skipped, not played in a burst.
+- On each tick, if the wall clock and the audio clock have drifted a second or more apart since the sounds were scheduled (the audio clock stalls while a computer sleeps), the end sound and the sounds of the planned breaks are scheduled again from their wall-clock times. Sounds whose time has passed are dropped. Breaks missed while asleep are skipped, not played in a burst.
 - At the end of a session, if the scheduled end sound is still more than 0.5 s in the future (because the audio clock is behind), it is cancelled and, if audio is running, the end sound plays at once instead. Otherwise it is left to ring out.
-- The audio context is suspended 5 seconds after a timer stops or a preview plays, if no timer is running then. The next Start, Resume or play button wakes it again.
+- The audio context is suspended 5 seconds after a timer stops or a preview plays, if no timer is running then and no sound is still playing. While one is (a long recording, say), it checks again every 5 seconds until the last one has ended. The next Start, Resume or play button wakes it again.
 
 #### Settings sidebar
 
 - The gear opens and closes the sidebar. The close button, the backdrop (narrow screens) and Escape (while the page is shown) also close it. Opening moves focus to the close button, and closing returns it to the gear. While the sidebar is open, the gear has the accent background. The sidebar starts closed on every load.
 - Wider than 720px, `div.wt-body` gets the class `is-settings-open` and becomes two columns, `minmax(0, 1fr) 260px`, with the sidebar beside the timer. At 720px or narrower, the sidebar is a panel fixed to the right edge of the window, `min(320px, 88vw)` wide and full height, scrolling if needed, with a `--surface` background, only a left border, no rounded corners and a shadow (`-8px 0 24px rgba(0, 0, 0, 0.25)`). It sits over a fixed full-window backdrop of `rgba(0, 0, 0, 0.4)`.
 - Entries are checked on `change`. A number is rounded to its step and clamped to its limits: half minutes from 0.5 to 999 for durations, whole seconds from 5 to 300 for the break length, and half minutes from 0.5 to 60 for gaps. Anything that isn't a number puts the previous value back. Raising the shortest gap above the longest raises the longest to match, and lowering the longest below the shortest lowers the shortest to match. With the breaks off, the break length and gap inputs are disabled and their rows turn `--muted`.
-- The play buttons play their sound at once, whatever the timers are doing.
-- Every change is saved to `localStorage` under `misc-utils:work-timer`, as JSON like `{"workMin":25,"restMin":5,"remindOn":true,"gapMinMin":2,"gapMaxMin":5,"breakSec":10}`. `remindOn` is the breaks switch. Its name dates from when the breaks were single reminder dings, and it is kept so that saved settings carry over. On load, each of the five numbers is used only if it is a finite number, rounded and clamped as above, and `remindOn` only if it is a boolean. Anything else falls back to its default. If the shortest gap then ends up above the longest, both gaps go back to their defaults.
+- Choosing Recorded sounds or Dings applies at once, even to the sounds already scheduled (see Sounds). The play buttons play their moment's sound with the current choice, at once, whatever the timers are doing.
+- Every change is saved to `localStorage` under `misc-utils:work-timer`, as JSON like `{"workMin":25,"restMin":5,"remindOn":true,"gapMinMin":2,"gapMaxMin":5,"breakSec":10,"sounds":"recorded"}`. `remindOn` is the breaks switch. Its name dates from when the breaks were single reminder dings, and it is kept so that saved settings carry over. `sounds` is the sound choice. On load, each of the five numbers is used only if it is a finite number, rounded and clamped as above, `remindOn` only if it is a boolean, and `sounds` only if it is `"recorded"` or `"dings"`. Anything else falls back to its default, so settings saved before the sound choice existed get Recorded sounds. If the shortest gap then ends up above the longest, both gaps go back to their defaults.
 
 #### Keep screen on
 
@@ -282,7 +308,7 @@ On a computer, the timer can move into a small window that stays on top of other
 Every rule is scoped under `#work-timer` and uses the shared color variables and the timer colors above. The rules for a break's look are under Timer colors (Break colors).
 
 - `#work-timer` is `position: relative`, with the card's soft shade, `--wt-color-soft`, as its background, and `[hidden]` inside it is forced to `display: none`. Buttons inherit the font and color. Focus shows a 2px `--accent` outline with a 2px offset.
-- `.wt-icon-btn`: a 36px circle with a 1px `--border` border, `--surface` background and the icon centered; the border turns `--accent` on hover. `.wt-gear` is placed absolutely, 20px from the card's top and right, level with the `h1`, and `.wt-float` sits 20px from the top and 64px from the right, just left of the gear. While pressed, `.wt-float` has an `--accent` background and border and an `--accent-text` icon, like the gear while the sidebar is open. `.wt-close` and `.wt-play` are 32px, and `.wt-play` icons are `--accent`.
+- `.wt-icon-btn`: a 36px circle with a 1px `--border` border, `--surface` background and the icon centered; the border turns `--accent` on hover. `.wt-gear` is placed absolutely, 20px from the card's top and right, level with the `h1`, and `.wt-float` sits 20px from the top and 64px from the right, just left of the gear. While pressed, `.wt-float` has an `--accent` background and border and an `--accent-text` icon, like the gear while the sidebar is open. `.wt-close` is 32px.
 - `.wt-body` is a grid with a 20px gap. `.wt-main` is a centered flex column with a 16px gap and `container-type: inline-size`.
 - `.wt-tabs` is a segmented control: a pill with a `--bg` background, 1px `--border` border, 3px padding and 2px gap. Each tab is pill-shaped, at least 92px wide, with 6px × 20px padding and `--muted` text (`--text` on hover). The selected tab has a `--surface` background, a `--border` border, `--text` color and weight 600. The running dot is a 6px `--wt-color` circle, 8px from the tab's right edge and vertically centered.
 - `.wt-panel` is a centered flex column, full width, with an 8px gap. `.wt-info`: `--muted`, 0.95rem, at least 1.5em tall, no margin.
@@ -290,7 +316,7 @@ Every rule is scoped under `#work-timer` and uses the shared color variables and
 - `.wt-ring-text` is a centered flex column. `.wt-time`: `font-size: 22cqmin` (22% of the ring's smaller side), weight 600, `font-variant-numeric: tabular-nums`, letter spacing −0.02em, line height 1.1. `.wt-ring-label`: `--muted`, `font-size: max(11px, 7cqmin)`, line height 1.3. On the page the ring is at most 300px wide, so the time is up to 66px and the name 21px.
 - `.wt-controls` is a flex row with an 8px gap, full width up to 360px, and an 8px top margin. `.wt-btn`: equal widths (`flex: 1 1 0`), 9px × 10px padding, pill-shaped, 1px `--border` border, `--surface` background, weight 600; the border turns `--wt-color` on hover; disabled buttons are at 45% opacity. `.wt-btn-primary` has a `--wt-color` background and border and `--accent-text` text.
 - `.wt-wake` is a small pill (5px × 14px padding, 0.875rem, `--muted` text, 1px `--border` border) with an 8px ring before its label (1.5px `currentColor` border). When on, its border and text are `--accent` and the ring is filled. `.wt-wake-note`: `--muted`, 0.85rem, pulled 8px closer to the button, and not shown when empty.
-- `.wt-settings`: 14px 16px 16px padding, 1px `--border` border, `--radius` corners, `--bg` background. `.wt-settings-head` is a flex row with the heading on the left and the close button on the right, vertically centered. The `h2` is 1.1rem with no margin. Each `.wt-group` has a 14px top margin; every group after the first also has a 1px `--border` rule above it and 14px top padding. Group `h3`s: 0.8rem, weight 600, uppercase, letter spacing 0.04em, `--muted`. `.wt-field` and `.wt-sound` rows are flex rows with space between, a 12px gap and 4px vertical padding. `.wt-num` holds the input and its unit ("min", or "sec" for the break length) in `--muted`, 6px apart. Number inputs: 4.5em wide, 5px × 8px padding, 1px `--border` border, 8px radius, `--surface` background, `--text` color, right-aligned text; disabled ones at 50% opacity. The checkbox uses `accent-color: var(--accent)`. `.wt-hint`: `--muted`, 0.85rem, 14px top margin.
+- `.wt-settings`: 14px 16px 16px padding, 1px `--border` border, `--radius` corners, `--bg` background. `.wt-settings-head` is a flex row with the heading on the left and the close button on the right, vertically centered. The `h2` is 1.1rem with no margin. Each `.wt-group` has a 14px top margin; every group after the first also has a 1px `--border` rule above it and 14px top padding. Group `h3`s: 0.8rem, weight 600, uppercase, letter spacing 0.04em, `--muted`. `.wt-field` and `.wt-sound` rows are flex rows with space between, a 12px gap and 4px vertical padding. `.wt-num` holds the input and its unit ("min", or "sec" for the break length) in `--muted`, 6px apart. Number inputs: 4.5em wide, 5px × 8px padding, 1px `--border` border, 8px radius, `--surface` background, `--text` color, right-aligned text; disabled ones at 50% opacity. The checkbox and the radio buttons (`.wt-check input`) use `accent-color: var(--accent)`. `.wt-plays` is a flex row with a 6px gap that doesn't shrink. Each `.wt-play` is a small pill: an inline flex row, vertically centered, with a 5px gap, 2px 10px 2px 9px padding, a 1px `--border` border, `--surface` background and 0.85rem text. Its triangle is `--accent`, and its border turns `--accent` on hover. `.wt-hint`: `--muted`, 0.85rem, 14px top margin.
 - `.wt-away`: a centered flex column with a 12px gap, 32px padding above and below, and centered `--muted` text; its `p` has no margin. `.wt-back` is a small pill: 5px × 14px padding, 1px `--border` border, no background, `--text` color and 0.875rem text, with the border turning `--accent` on hover.
 - **Floating window:** `#work-timer.is-floating` is fixed to fill the window (`inset: 0`), with `overflow: hidden`, the same soft background as the page's card and `container: wt-float / size`, so the container queries below, and the `cqw`/`cqh` units that size the ring's box, measure the whole window. Its `.wt-main` stops being a container (`container-type: normal`), takes the full height with 8px padding and a 10px gap, and centers its content vertically. At every size:
   - The Keep screen on button and note are hidden, and so is every disabled timer button, so only buttons that do something show: Start alone when idle, Pause and Reset while running, Resume and Reset when paused.
@@ -317,8 +343,9 @@ Every rule is scoped under `#work-timer` and uses the shared color variables and
 
 #### Known limits
 
-- Phones usually suspend a page when the screen locks or the browser goes to the background, so dings can't play then. The time is still right on return. "Keep screen on" prevents the screen lock.
+- Phones usually suspend a page when the screen locks or the browser goes to the background, so sounds can't play then. The time is still right on return. "Keep screen on" prevents the screen lock.
 - On an iPhone, silent mode may mute the sounds.
 - In a browser without Web Audio, the timers work silently, and breaks still show on screen.
+- The recordings are AAC, which current Chrome, Edge, Safari and Firefox decode (Firefox through the operating system's decoders, so on Linux it needs the system's FFmpeg). A browser that can't decode a recording plays that moment's ding instead.
 - Some browsers, Safari in particular, may not change a page's tab icon after it has loaded, so the green dot may not show there. The tab title still changes.
 - The floating window needs the Document Picture-in-Picture API: desktop Chrome and Edge 116 or later, and Firefox 151 or later. Safari and phone browsers don't have it, so its button doesn't appear there. The browser decides where the window opens and sets its own smallest and largest sizes.
