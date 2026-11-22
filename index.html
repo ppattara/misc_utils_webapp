@@ -185,16 +185,34 @@
       gap: 8px;
       width: 100%;
     }
+    /* The ring: a grey circle with a blue arc for the share of the session left. The time and the
+       timer's name sit in the middle, sized from the ring (a size container), so they scale with it. */
+    #work-timer .wt-ring {
+      container-type: size;
+      display: grid;
+      grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+      place-items: center;
+      width: min(300px, 100cqi);
+      height: min(300px, 100cqi);
+    }
+    #work-timer .wt-ring > * { grid-area: 1 / 1; }
+    #work-timer .wt-ring-svg { width: 100%; height: 100%; overflow: visible; }
+    #work-timer .wt-ring-track,
+    #work-timer .wt-ring-arc { fill: none; stroke-width: 6; }
+    #work-timer .wt-ring-track { stroke: var(--border); }
+    #work-timer .wt-ring-arc { stroke: var(--accent); }
+    #work-timer .wt-ring-text { display: flex; flex-direction: column; align-items: center; }
     #work-timer .wt-time {
-      font-size: 4rem;
-      font-size: clamp(3rem, 24cqi, 6.5rem);
+      font-size: 22cqmin;
       font-weight: 600;
       font-variant-numeric: tabular-nums;
       letter-spacing: -0.02em;
       line-height: 1.1;
     }
-    #work-timer .wt-time.is-running { color: var(--accent); }
-    #work-timer .wt-time.is-paused { color: var(--muted); }
+    #work-timer .wt-ring-label { color: var(--muted); font-size: max(11px, 7cqmin); line-height: 1.3; }
+    #work-timer .wt-ring.is-running .wt-time { color: var(--accent); }
+    #work-timer .wt-ring.is-paused .wt-time { color: var(--muted); }
+    #work-timer .wt-ring.is-paused .wt-ring-arc { stroke: var(--muted); }
     #work-timer .wt-info {
       min-height: 1.5em;
       margin: 0;
@@ -374,10 +392,9 @@
       font-size: 0.875rem;
     }
     #work-timer .wt-back:hover { border-color: var(--accent); }
-    #work-timer .wt-float-label { display: none; }
 
     /* In the floating window, the timer column sits in a div#work-timer.is-floating that fills the
-       window. Only the buttons that do something show, and parts drop out as the window shrinks. */
+       window. Only the buttons that do something show, and the layout changes with the window's size. */
     #work-timer.is-floating {
       container: wt-float / size;
       position: fixed;
@@ -395,8 +412,17 @@
     #work-timer.is-floating .wt-wake,
     #work-timer.is-floating .wt-wake-note,
     #work-timer.is-floating .wt-btn:disabled { display: none; }
-    #work-timer.is-floating .wt-panel { gap: 6px; }
-    #work-timer.is-floating .wt-time { font-size: min(30cqw, 30cqh); line-height: 1; }
+    /* The panel takes the height the tabs leave and centers its content. The ring's box takes the
+       height the info line and buttons leave, but no more than its width, so a tall window doesn't
+       push the buttons away from the ring. The circle is drawn as large as the box allows, centered. */
+    #work-timer.is-floating .wt-panel { flex: 1 1 0; min-height: 0; justify-content: center; gap: 6px; }
+    #work-timer.is-floating .wt-ring {
+      flex: 1 1 0;
+      width: 100%;
+      height: auto;
+      min-height: 0;
+      max-height: calc(100cqw - 16px);
+    }
     #work-timer.is-floating .wt-info {
       max-width: 100%;
       overflow: hidden;
@@ -406,32 +432,47 @@
     }
     #work-timer.is-floating .wt-controls { width: auto; margin-top: 0; }
     #work-timer.is-floating .wt-btn { flex: none; padding: 5px 14px; font-size: 0.875rem; }
-    #work-timer.is-floating .wt-float-label {
-      position: absolute;
-      top: 6px;
-      left: 10px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.2;
-    }
-    /* Shorter than 220px or narrower than 230px: a small label replaces the Work/Rest tabs,
-       and the info line goes. */
-    @container wt-float (height < 220px) or (width < 230px) {
+    /* Shorter than 360px or narrower than 230px: the Work/Rest tabs and the info line go, leaving more
+       room for the ring. The name inside the ring still says which timer is on show. */
+    @container wt-float (height < 360px) or (width < 230px) {
       #work-timer.is-floating .wt-tabs,
       #work-timer.is-floating .wt-info { display: none; }
-      #work-timer.is-floating .wt-float-label { display: block; }
-      #work-timer.is-floating .wt-time { font-size: min(30cqw, 42cqh); }
       #work-timer.is-floating .wt-btn { padding: 3px 12px; font-size: 13px; }
     }
-    /* 80px tall or less: the time and buttons on one row, without the label. */
-    @container wt-float (height <= 80px) {
-      #work-timer.is-floating .wt-float-label { display: none; }
+    /* ...and more than 1.4 times as wide as tall: the buttons stack beside the ring, not below it. */
+    @container wt-float ((height < 360px) or (width < 230px)) and (aspect-ratio > 7 / 5) {
+      #work-timer.is-floating .wt-panel { flex-direction: row; justify-content: center; gap: 12px; }
+      #work-timer.is-floating .wt-ring {
+        flex: none;
+        width: min(100cqh - 16px, 100cqw - 112px);
+        height: min(100cqh - 16px, 100cqw - 112px);
+      }
+      #work-timer.is-floating .wt-controls { flex-direction: column; }
+    }
+    /* 100px tall or less: too small to fit the time inside the ring. A small ring sits beside the
+       time instead, and the buttons join them on one line. */
+    @container wt-float (height <= 100px) {
       #work-timer.is-floating .wt-panel { flex-direction: row; justify-content: center; gap: 10px; }
-      #work-timer.is-floating .wt-time { font-size: min(20cqw, 66cqh); }
+      #work-timer.is-floating .wt-ring {
+        container-type: normal;
+        display: flex;
+        align-items: center;
+        gap: 0.25em;
+        flex: none;
+        width: auto;
+        height: auto;
+        font-size: min(13cqw, 60cqh);
+      }
+      #work-timer.is-floating .wt-ring-svg { width: 0.8em; height: 0.8em; }
+      #work-timer.is-floating .wt-ring-track,
+      #work-timer.is-floating .wt-ring-arc { stroke-width: 10; }
+      #work-timer.is-floating .wt-time { font-size: 1em; line-height: 1; }
+      #work-timer.is-floating .wt-ring-label { display: none; }
+      #work-timer.is-floating .wt-controls { flex-direction: row; }
       #work-timer.is-floating .wt-btn { padding: 2px 8px; font-size: 12px; }
     }
-    /* ...and 260px wide or less: Reset goes too. */
-    @container wt-float (height <= 80px) and (width <= 260px) {
+    /* ...and 280px wide or less: Reset goes too. */
+    @container wt-float (height <= 100px) and (width <= 280px) {
       #work-timer.is-floating #wt-reset { display: none; }
     }
 
@@ -464,14 +505,22 @@
 
       <div class="wt-body">
         <div class="wt-main">
-          <span class="wt-float-label" id="wt-float-label"></span>
           <div class="wt-tabs" role="tablist" aria-label="Timers">
             <button type="button" role="tab" id="wt-tab-work" aria-controls="wt-panel" aria-selected="true">Work</button>
             <button type="button" role="tab" id="wt-tab-rest" aria-controls="wt-panel" aria-selected="false" tabindex="-1">Rest</button>
           </div>
 
           <div class="wt-panel" id="wt-panel" role="tabpanel" aria-labelledby="wt-tab-work">
-            <div class="wt-time" id="wt-time" role="timer">25:00</div>
+            <div class="wt-ring" id="wt-ring">
+              <svg class="wt-ring-svg" viewBox="0 0 100 100" aria-hidden="true">
+                <circle class="wt-ring-track" cx="50" cy="50" r="45"/>
+                <path class="wt-ring-arc" id="wt-ring-arc" d="M50 5a45 45 0 1 1 0 90a45 45 0 1 1 0-90z"/>
+              </svg>
+              <div class="wt-ring-text">
+                <div class="wt-time" id="wt-time" role="timer">25:00</div>
+                <div class="wt-ring-label" id="wt-ring-label">Work</div>
+              </div>
+            </div>
             <p class="wt-info" id="wt-info"></p>
             <div class="wt-controls">
               <button type="button" class="wt-btn wt-btn-primary" id="wt-start">Start</button>
@@ -602,6 +651,9 @@
 
       const tabs = { work: $('#wt-tab-work'), rest: $('#wt-tab-rest') };
       const panel = $('#wt-panel');
+      const ringEl = $('#wt-ring');
+      const arcEl = $('#wt-ring-arc');
+      const ringLabel = $('#wt-ring-label');
       const timeEl = $('#wt-time');
       const infoEl = $('#wt-info');
       const startBtn = $('#wt-start');
@@ -624,7 +676,6 @@
       const wakeNote = $('#wt-wake-note');
       const main = $('.wt-main');
       const floatBtn = $('#wt-float');
-      const floatLabel = $('#wt-float-label');
       const away = $('#wt-away');
       const backBtn = $('#wt-back');
 
@@ -752,9 +803,10 @@
 
       // ---------- Timers ----------
 
+      // total: the length of the current session (a changed duration applies from the next one).
       const timers = {
-        work: { remaining: durationMs('work'), started: false, running: false, endAt: 0 },
-        rest: { remaining: durationMs('rest'), started: false, running: false, endAt: 0 },
+        work: { total: durationMs('work'), remaining: durationMs('work'), started: false, running: false, endAt: 0 },
+        rest: { total: durationMs('rest'), remaining: durationMs('rest'), started: false, running: false, endAt: 0 },
       };
       let view = 'work';  // the timer tab on show
       let notice = '';    // shown after a session ends, until the next click
@@ -839,7 +891,7 @@
         const fresh = !t.started;
         if (fresh) {
           t.started = true;
-          t.remaining = durationMs(kind);
+          t.total = t.remaining = durationMs(kind);
           if (ctx) playNow('start');
         }
         if (kind === 'work') nextReminderAt = now + (fresh || pausedGap === null ? randomGap() : pausedGap);
@@ -875,7 +927,7 @@
         }
         t.running = false;
         t.started = false;
-        t.remaining = durationMs(kind);
+        t.total = t.remaining = durationMs(kind);
         if (kind === 'work') pausedGap = null;
       }
 
@@ -982,9 +1034,17 @@
         return `Random reminder every ${lo === hi ? lo : `${lo}–${hi}`} min`;
       }
 
+      // The ring's arc starts at the top and runs clockwise, as long as the share of the session left:
+      // full while idle, shrinking back toward the top as the time runs down.
+      const RING_LENGTH = 2 * Math.PI * 45;  // the ring's circumference (radius 45 in its viewBox)
+
       function renderTime() {
-        const text = formatTime(remainingMs(view));
+        const ms = remainingMs(view);
+        const text = formatTime(ms);
         if (timeEl.textContent !== text) timeEl.textContent = text;
+        const share = Math.min(1, ms / timers[view].total);
+        const dash = share >= 1 ? 'none' : `${(share * RING_LENGTH).toFixed(2)} ${RING_LENGTH.toFixed(2)}`;
+        if (arcEl.getAttribute('stroke-dasharray') !== dash) arcEl.setAttribute('stroke-dasharray', dash);
       }
 
       // While a timer runs, the browser tab shows the time left instead of the page name.
@@ -1010,11 +1070,11 @@
           tabs[kind].classList.toggle('is-running', timers[kind].running);
         }
         panel.setAttribute('aria-labelledby', tabs[view].id);
-        floatLabel.textContent = LABELS[view];
+        ringLabel.textContent = LABELS[view];
         const t = timers[view];
         const paused = t.started && !t.running;
-        timeEl.classList.toggle('is-running', t.running);
-        timeEl.classList.toggle('is-paused', paused);
+        ringEl.classList.toggle('is-running', t.running);
+        ringEl.classList.toggle('is-paused', paused);
         renderTime();
         startBtn.textContent = paused ? 'Resume' : 'Start';
         startBtn.disabled = t.running;
@@ -1082,7 +1142,7 @@
         if (key === 'workMin' || key === 'restMin') {
           // A new duration shows at once on an idle timer. A session in progress keeps its length.
           const kind = key === 'workMin' ? 'work' : 'rest';
-          if (!timers[kind].started) timers[kind].remaining = durationMs(kind);
+          if (!timers[kind].started) timers[kind].total = timers[kind].remaining = durationMs(kind);
         } else {
           // Reminder changes apply at once: drop the scheduled reminders and draw a fresh gap.
           pausedGap = null;
