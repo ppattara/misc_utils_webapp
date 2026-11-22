@@ -88,6 +88,7 @@ The shared script needs no changes.
 | `--accent` | `#2f6fde` | `#5b8ef0` | Active tab, hover borders |
 | `--accent-text` | `#ffffff` | `#0d1117` | Text on accent backgrounds |
 
+- A page may add its own color variables on its section, scoped like the rest of its styles, with dark values in its own `prefers-color-scheme: dark` media query. The Work Timer's timer colors are an example (5.1).
 - `--radius: 10px` for card corners. `box-sizing: border-box` on all elements. `body` has no margin.
 - `.container`: max width 960px, centered, 16px padding left and right. Used by the header's inner wrapper and by `<main>`.
 - Header: `--surface` background with a 1px `--border` bottom border. It holds only the tab bar, a wrapping flex row with 8px gaps and 12px padding above and below.
@@ -106,7 +107,7 @@ The shared script needs no changes.
 
 ### 5.1 Work Timer
 
-A countdown for work and one for rest on a single page. The time sits in the middle of a ring whose blue arc runs down as the session goes. While the work timer runs, a soft ding plays at random moments as a reminder to stay on task. On a computer, the timer can also pop out into a small floating window that stays on top of other windows. The page's ids and classes start with `wt-`. Its styles sit under `/* ---------- Work Timer (#work-timer) ---------- */` in the page-specific styles, and its script is the first page script.
+A countdown for work and one for rest on a single page, each with its own color: blue for work and green for rest. The time sits in the middle of a ring whose arc runs down as the session goes. While the work timer runs, a soft ding plays at random moments as a reminder to stay on task. On a computer, the timer can also pop out into a small floating window that stays on top of other windows. The page's ids and classes start with `wt-`. Its styles sit under `/* ---------- Work Timer (#work-timer) ---------- */` in the page-specific styles, and its script is the first page script.
 
 #### Markup
 
@@ -145,18 +146,34 @@ Inside `<section class="page" id="work-timer" data-title="Work Timer">`, in orde
 - One timer at a time: pressing Start on one timer first resets the other, silently, if it is running or paused. Switching between the Work and Rest tabs only changes which timer is on show and never stops anything.
 - When a session reaches zero, the end sound plays, that timer goes back to its full duration (idle), and the page shows the other timer, ready but not started. The info line then reads "Work session done. Start your rest when you’re ready." or "Rest is over. Start the next work session when you’re ready." until the next press of Start or Reset or a Work/Rest tab switch. The same text goes to the live region for screen readers.
 - The info line (`#wt-info`) shows the first that applies: the end-of-session message; "Paused" if the timer on show is paused; on the Work tab, "Random reminder every 2–5 min" (a single number when both gaps are equal, for example "every 6 min") or "Random reminder off"; on the Rest tab, nothing. It keeps its height when empty.
-- The tab of a running timer shows a small accent dot. The time is drawn in `--accent` while running, `--muted` while paused and `--text` otherwise.
+- The tab of a running timer shows a small dot in that timer's color. The time is drawn in the color of the timer on show while running, `--muted` while paused and `--text` otherwise (see Timer colors).
 - A changed duration shows at once on an idle timer. A timer that has started keeps its current session length, and the new duration applies from its next reset or new session. To do this, each timer stores the length of its current session (`total`). It is set to the duration when a fresh session starts, when the timer is reset or finishes, and when its duration changes while it is idle.
 - **Browser tab title:** while a timer runs, the title is the time left and the timer's name, `18:42 · Work` or `04:12 · Rest`, updated along with the display, whichever app page is on show. When no timer is running, the title goes back to the shown page's title (its `data-title`, or its id). The page script also listens for `hashchange`. Its listener runs after the shared script's, so it puts the countdown back right after a page switch.
 
 #### Ring
 
-- The time sits in the middle of a ring, with the name of the timer on show ("Work" or "Rest") under it in smaller `--muted` text. The ring is a grey circle (the track) with a blue arc on top that shows how much of the session is left.
+- The time sits in the middle of a ring, with the name of the timer on show ("Work" or "Rest") under it in smaller `--muted` text. The ring is a circle in a much paler shade of the timer's color (the track), with an arc in the solid color on top that shows how much of the session is left.
 - The arc starts at the top (12 o'clock) and runs clockwise. Its length is the share of the session left: time left ÷ session length (`total`). So the ring is full while a timer is idle, and as the time runs down, the arc's end moves back counter-clockwise toward the top, with nothing left at zero. When a session ends, the page shows the other timer with a full ring.
 - It always shows the timer on show, and is redrawn along with the time: on every tick and every render. Because it uses the session length, a duration changed mid-session doesn't make it jump.
 - The arc is drawn with the path's `stroke-dasharray`: `none` when the share is 1, otherwise `<share × C> <C>` with 2 decimals, where C = 2π × 45 ≈ 282.74 (the circumference). A share of 0 draws nothing, since the stroke ends are flat (butt). The attribute is written only when it changes.
-- Colors: the track is `--border`. The arc is `--accent`, or `--muted` while the timer on show is paused, matching the time. The script sets the classes `is-running` and `is-paused` on `#wt-ring` for the timer on show, and the colors of both the time and the arc follow from them.
+- Colors: the track is `--wt-color-pale` and the arc `--wt-color`, the colors of the timer on show (see Timer colors). While that timer is paused, the whole ring turns grey, matching the time: the track is `--border` and the arc `--muted`. The script sets the classes `is-running` and `is-paused` on `#wt-ring` for the timer on show, and the colors of the time and the ring follow from them.
 - In the floating window the ring adapts to the window's size, and in a very short window it becomes a small ring beside the time (see Styles).
+
+#### Timer colors
+
+Each timer has its own color, so the two look distinct: a soft blue for Work and a soft green for Rest, never pure `#0000ff` or `#00ff00`. Each color also has a much paler shade, used for the ring's track. They are custom properties on `#work-timer`, overridden inside a `prefers-color-scheme: dark` media query like the shared colors:
+
+| Variable | Light | Dark | Used for |
+|---|---|---|---|
+| `--wt-work` | `#2f6fde` | `#5b8ef0` | Work timer (the same blue as `--accent`) |
+| `--wt-work-pale` | `#dae5f9` | `#2c3c5a` | Work timer's ring track |
+| `--wt-rest` | `#318454` | `#53ae77` | Rest timer |
+| `--wt-rest-pale` | `#dae9e0` | `#2b443c` | Rest timer's ring track |
+
+- The green has about the same lightness as the blue (OKLCH lightness 0.55 against 0.56 in light, 0.68 against 0.66 in dark) but less chroma (0.11 to 0.12), which keeps it calm. Each pale shade is its solid color mixed into `--surface`, 18% in light and 25% in dark, so in the dark theme the track is a dim version of the color.
+- Contrast: the Start button's `--accent-text` label is at least 4.6:1 on every timer color, and every timer color is at least 4.6:1 against `--surface`.
+- `--wt-color` and `--wt-color-pale` hold the colors of the timer an element belongs to. `#work-timer` sets them to the Work colors, and `#wt-tab-rest` and `#wt-panel.is-rest` set them to the Rest colors. Every render toggles the class `is-rest` on `#wt-panel`, so it's there while the Rest timer is on show.
+- They color the ring's arc and track, the time while running, the running dot on each tab (each in its own timer's color, whichever is on show), the background and border of the Start/Resume button (`.wt-btn-primary`), and the hover border of the timer buttons. The rest of the page keeps `--accent`: the gear and floating window buttons, the settings sidebar with its play buttons, Keep screen on, and the focus outline.
 
 #### Random reminder
 
@@ -228,16 +245,16 @@ On a computer, the timer can move into a small window that stays on top of other
 
 #### Styles
 
-Every rule is scoped under `#work-timer` and uses the shared color variables.
+Every rule is scoped under `#work-timer` and uses the shared color variables and the timer colors above.
 
 - `#work-timer` is `position: relative`, and `[hidden]` inside it is forced to `display: none`. Buttons inherit the font and color. Focus shows a 2px `--accent` outline with a 2px offset.
 - `.wt-icon-btn`: a 36px circle with a 1px `--border` border, `--surface` background and the icon centered; the border turns `--accent` on hover. `.wt-gear` is placed absolutely, 20px from the card's top and right, level with the `h1`, and `.wt-float` sits 20px from the top and 64px from the right, just left of the gear. While pressed, `.wt-float` has an `--accent` background and border and an `--accent-text` icon, like the gear while the sidebar is open. `.wt-close` and `.wt-play` are 32px, and `.wt-play` icons are `--accent`.
 - `.wt-body` is a grid with a 20px gap. `.wt-main` is a centered flex column with a 16px gap and `container-type: inline-size`.
-- `.wt-tabs` is a segmented control: a pill with a `--bg` background, 1px `--border` border, 3px padding and 2px gap. Each tab is pill-shaped, at least 92px wide, with 6px × 20px padding and `--muted` text (`--text` on hover). The selected tab has a `--surface` background, a `--border` border, `--text` color and weight 600. The running dot is a 6px `--accent` circle, 8px from the tab's right edge and vertically centered.
+- `.wt-tabs` is a segmented control: a pill with a `--bg` background, 1px `--border` border, 3px padding and 2px gap. Each tab is pill-shaped, at least 92px wide, with 6px × 20px padding and `--muted` text (`--text` on hover). The selected tab has a `--surface` background, a `--border` border, `--text` color and weight 600. The running dot is a 6px `--wt-color` circle, 8px from the tab's right edge and vertically centered.
 - `.wt-panel` is a centered flex column, full width, with an 8px gap. `.wt-info`: `--muted`, 0.95rem, at least 1.5em tall, no margin.
 - `.wt-ring` is a size container (`container-type: size`) and a square, `min(300px, 100cqi)` on each side (`cqi` here is the width of `.wt-main`). It is a one-cell grid with `grid-template: minmax(0, 1fr) / minmax(0, 1fr)`, so the cell is always the ring's own size and its content can't stretch it. Both children sit in that cell (`grid-area: 1 / 1`), centered. The SVG fills the cell (100% × 100%, `overflow: visible`), and its viewBox makes the circle as large as fits, centered. Track and arc have no fill and a stroke width of 6 viewBox units, so the ring's outer edge is at 96% of its box and the stroke is about 6% of its size.
 - `.wt-ring-text` is a centered flex column. `.wt-time`: `font-size: 22cqmin` (22% of the ring's smaller side), weight 600, `font-variant-numeric: tabular-nums`, letter spacing −0.02em, line height 1.1. `.wt-ring-label`: `--muted`, `font-size: max(11px, 7cqmin)`, line height 1.3. On the page the ring is at most 300px wide, so the time is up to 66px and the name 21px.
-- `.wt-controls` is a flex row with an 8px gap, full width up to 360px, and an 8px top margin. `.wt-btn`: equal widths (`flex: 1 1 0`), 9px × 10px padding, pill-shaped, 1px `--border` border, `--surface` background, weight 600; the border turns `--accent` on hover; disabled buttons are at 45% opacity. `.wt-btn-primary` has an `--accent` background and border and `--accent-text` text.
+- `.wt-controls` is a flex row with an 8px gap, full width up to 360px, and an 8px top margin. `.wt-btn`: equal widths (`flex: 1 1 0`), 9px × 10px padding, pill-shaped, 1px `--border` border, `--surface` background, weight 600; the border turns `--wt-color` on hover; disabled buttons are at 45% opacity. `.wt-btn-primary` has a `--wt-color` background and border and `--accent-text` text.
 - `.wt-wake` is a small pill (5px × 14px padding, 0.875rem, `--muted` text, 1px `--border` border) with an 8px ring before its label (1.5px `currentColor` border). When on, its border and text are `--accent` and the ring is filled. `.wt-wake-note`: `--muted`, 0.85rem, pulled 8px closer to the button, and not shown when empty.
 - `.wt-settings`: 14px 16px 16px padding, 1px `--border` border, `--radius` corners, `--bg` background. `.wt-settings-head` is a flex row with the heading on the left and the close button on the right, vertically centered. The `h2` is 1.1rem with no margin. Each `.wt-group` has a 14px top margin; every group after the first also has a 1px `--border` rule above it and 14px top padding. Group `h3`s: 0.8rem, weight 600, uppercase, letter spacing 0.04em, `--muted`. `.wt-field` and `.wt-sound` rows are flex rows with space between, a 12px gap and 4px vertical padding. `.wt-num` holds the input and "min" in `--muted`, 6px apart. Number inputs: 4.5em wide, 5px × 8px padding, 1px `--border` border, 8px radius, `--surface` background, `--text` color, right-aligned text; disabled ones at 50% opacity. The checkbox uses `accent-color: var(--accent)`. `.wt-hint`: `--muted`, 0.85rem, 14px top margin.
 - `.wt-away`: a centered flex column with a 12px gap, 32px padding above and below, and centered `--muted` text; its `p` has no margin. `.wt-back` is a small pill: 5px × 14px padding, 1px `--border` border, no background, `--text` color and 0.875rem text, with the border turning `--accent` on hover.
@@ -261,7 +278,7 @@ Every rule is scoped under `#work-timer` and uses the shared color variables.
 - `role="timer"` keeps screen readers from reading out every second. The end-of-session message is announced through `#wt-live`, which is emptied first and filled 100 ms later, so a repeated message is read again.
 - When Start, Pause or Reset disables the button that had focus, focus moves on: from Start to Pause, from Pause to Start, from Reset to Start. Focus is checked in the button's own document, since the button may be in the floating window.
 - The ring's SVG is hidden from screen readers (`aria-hidden="true"`). The time and the name under it are plain text.
-- In the smaller floating window layouts, where the Work/Rest tabs are hidden, the name inside the ring (`#wt-ring-label`) says which timer is on show. Only the one-line strip (100px tall or less) has no name.
+- In the smaller floating window layouts, where the Work/Rest tabs are hidden, the name inside the ring (`#wt-ring-label`) says which timer is on show. Only the one-line strip (100px tall or less) has no name. There, only the timer's color tells them apart.
 
 #### Known limits
 
