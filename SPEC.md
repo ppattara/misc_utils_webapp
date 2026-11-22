@@ -106,21 +106,24 @@ The shared script needs no changes.
 
 ### 5.1 Work Timer
 
-A countdown for work and one for rest on a single page. While the work timer runs, a soft ding plays at random moments as a reminder to stay on task. The page's ids and classes start with `wt-`. Its styles sit under `/* ---------- Work Timer (#work-timer) ---------- */` in the page-specific styles, and its script is the first page script.
+A countdown for work and one for rest on a single page. While the work timer runs, a soft ding plays at random moments as a reminder to stay on task. On a computer, the timer can also pop out into a small floating window that stays on top of other windows. The page's ids and classes start with `wt-`. Its styles sit under `/* ---------- Work Timer (#work-timer) ---------- */` in the page-specific styles, and its script is the first page script.
 
 #### Markup
 
 Inside `<section class="page" id="work-timer" data-title="Work Timer">`, in order:
 
 1. `<h1>Work Timer</h1>`.
-2. `button#wt-gear.wt-icon-btn.wt-gear` with `aria-label="Settings"`, `title="Settings"`, `aria-expanded="false"` and `aria-controls="wt-settings"`. It holds a 20px inline SVG gear filled with `currentColor`, drawn on a 24×24 viewBox: eight teeth with one pointing straight up, tips on a circle of radius 10.5, roots on radius 7.9, each tooth 0.4 of its 45° pitch wide at the tip and 0.62 at the root (arcs along the tip and root circles), and a round hole of radius 3.2 cut out with `fill-rule="evenodd"`.
-3. `div.wt-body`, holding:
+2. `button#wt-float.wt-icon-btn.wt-float` with `aria-pressed="false"`, `aria-label="Floating window"` and `title="Floating window"`, starting `hidden`. It holds a 20px inline SVG on a 24×24 viewBox: a window outline (`rect` at x 3, y 5, 18 × 14, corner radius 2, no fill, 2px `currentColor` stroke) with a small filled window in its lower right (`rect` at x 12, y 11, 6 × 5, corner radius 1, `currentColor` fill).
+3. `button#wt-gear.wt-icon-btn.wt-gear` with `aria-label="Settings"`, `title="Settings"`, `aria-expanded="false"` and `aria-controls="wt-settings"`. It holds a 20px inline SVG gear filled with `currentColor`, drawn on a 24×24 viewBox: eight teeth with one pointing straight up, tips on a circle of radius 10.5, roots on radius 7.9, each tooth 0.4 of its 45° pitch wide at the tip and 0.62 at the root (arcs along the tip and root circles), and a round hole of radius 3.2 cut out with `fill-rule="evenodd"`.
+4. `div.wt-body`, holding:
    - `div.wt-main`, the timer column:
+     - `span#wt-float-label.wt-float-label`, which the script fills with the name of the timer on show ("Work" or "Rest"). It is shown only in a small floating window.
      - `div.wt-tabs` with `role="tablist"` and `aria-label="Timers"`, holding two `role="tab"` buttons, `#wt-tab-work` "Work" and `#wt-tab-rest` "Rest", both with `aria-controls="wt-panel"`.
      - `div#wt-panel.wt-panel` with `role="tabpanel"`, holding `div#wt-time.wt-time` (`role="timer"`), `p#wt-info.wt-info`, and `div.wt-controls` with three buttons: `#wt-start.wt-btn.wt-btn-primary` "Start", `#wt-pause.wt-btn` "Pause" and `#wt-reset.wt-btn` "Reset".
      - `button#wt-wake.wt-wake` "Keep screen on", with `aria-pressed="false"`, starting `hidden`.
      - `p#wt-wake-note.wt-wake-note` (`role="status"`), empty unless keeping the screen on failed.
      - `p#wt-live.wt-sr` (`role="status"`), a visually hidden live region for announcements.
+   - `div#wt-away.wt-away`, starting `hidden`, shown in the timer's place while the timer is in the floating window: `<p>The timer is in a floating window.</p>` and `button#wt-back.wt-back` "Bring it back".
    - `div#wt-backdrop.wt-backdrop`, starting `hidden`.
    - `aside#wt-settings.wt-settings` with `aria-labelledby="wt-settings-title"`, starting `hidden`:
      - `div.wt-settings-head`: `h2#wt-settings-title` "Settings" and `button#wt-close.wt-icon-btn.wt-close` (`aria-label` and `title` "Hide settings") holding a 16px × made of two 2px round-capped strokes.
@@ -181,6 +184,7 @@ Browsers slow down timers in background tabs (Chrome to once a minute after five
 
 - The end sound and the reminders are scheduled ahead on the audio clock, which keeps running in the background. When a session starts or resumes, the end sound is scheduled for the end time, and reminders are scheduled up to 5 minutes ahead. Every tick extends that window. Each scheduled sound has its own gain node: cancelling one (on Pause, Reset or a reminder setting change) disconnects that node and stops its oscillators. A finished sound disconnects its own gain node.
 - A 250 ms `setInterval` redraws the display while a timer runs. Next to it runs a chain of silent one-second `ConstantSourceNode`s (offset 0, connected to the output). Each one's `ended` event calls the same tick and starts the next one, and these events aren't slowed down in background tabs. That keeps the title countdown current and ends the session on time in a background tab. Tick is safe to call any number of times.
+- While the floating window is open, a second 250 ms interval runs on the floating window itself (that window's own `setInterval`) whenever a timer runs. The floating window stays on screen, so browsers don't slow its timers even while the app's tab is hidden or covered, and the floating display stays current to the second. Stopping the timer clears it, and it goes away with the window.
 - On each tick, if the wall clock and the audio clock have drifted a second or more apart since the sounds were scheduled (the audio clock stalls while a computer sleeps), everything is scheduled again from the wall-clock times, keeping the next reminder's time. Reminders missed while asleep are skipped, not played in a burst.
 - At the end of a session, if the scheduled end sound is still more than 0.5 s in the future (because the audio clock is behind), it is cancelled and, if audio is running, the end sound plays at once instead. Otherwise it is left to ring out.
 - The audio context is suspended 5 seconds after a timer stops or a preview plays, if no timer is running then. The next Start, Resume or play button wakes it again.
@@ -199,27 +203,52 @@ Browsers slow down timers in background tabs (Chrome to once a minute after five
 - The button toggles (`aria-pressed`). On, it requests a screen wake lock. Off, it releases it. Browsers drop the lock whenever the page is hidden, so it is requested again when the page becomes visible while the button is on. If a request fails, the button turns off and `#wt-wake-note` says "This browser didn’t allow keeping the screen on."
 - It is not saved: it is off on every load.
 
+#### Floating window
+
+On a computer, the timer can move into a small window that stays on top of other windows, so it can sit in a corner of the screen. Ordinary browser windows can't be made narrower than about 400–500 px, and a page can't change that, which is why this uses the Document Picture-in-Picture API.
+
+- The button `#wt-float` appears only if `documentPictureInPicture` exists in `window`. It is a toggle: `aria-pressed="true"` while the floating window is open.
+- **Opening:** the button calls `documentPictureInPicture.requestWindow({ width: 240, height: 120 })` from its click, since browsers allow this only after a user gesture. The button is disabled while the request is pending, and if the browser refuses, nothing changes. The browser decides where the window opens and may adjust its size. The user can move and resize it.
+- The new window starts empty. The script copies every `<style>` element into its `<head>`, sets its title to the page's `data-title` ("Work Timer"), and adds a `div` with the page's id (`work-timer`) and the class `is-floating` to its body, so the page's scoped rules apply there too. It then moves `div.wt-main` into that `div`. The moved elements keep their event listeners and the page script keeps running them, so it is the same timer, not a copy: the sounds, the settings, the tab-title countdown and the live region carry on as before. On the page, `#wt-away` is shown in the timer's place.
+- **Closing:** pressing the button again, pressing "Bring it back", and closing the floating window itself all end in the floating window's `pagehide` event. Its handler moves `div.wt-main` back in front of `#wt-away`, hides `#wt-away` and sets `aria-pressed="false"`. If focus was in `#wt-away`, it moves to the floating window button. The browser also closes the floating window when the app's tab closes or reloads.
+- While the timer floats, the rest of the app works as usual: the settings sidebar still opens on the page, and other app pages can be shown.
+- How the floating window looks at different sizes is under Styles. The Keep screen on button moves with the timer but is hidden in the floating window.
+- It is not saved: the timer is back on the page on every load.
+
 #### Styles
 
 Every rule is scoped under `#work-timer` and uses the shared color variables.
 
 - `#work-timer` is `position: relative`, and `[hidden]` inside it is forced to `display: none`. Buttons inherit the font and color. Focus shows a 2px `--accent` outline with a 2px offset.
-- `.wt-icon-btn`: a 36px circle with a 1px `--border` border, `--surface` background and the icon centered; the border turns `--accent` on hover. `.wt-gear` is placed absolutely, 20px from the card's top and right, level with the `h1`. `.wt-close` and `.wt-play` are 32px, and `.wt-play` icons are `--accent`.
+- `.wt-icon-btn`: a 36px circle with a 1px `--border` border, `--surface` background and the icon centered; the border turns `--accent` on hover. `.wt-gear` is placed absolutely, 20px from the card's top and right, level with the `h1`, and `.wt-float` sits 20px from the top and 64px from the right, just left of the gear. While pressed, `.wt-float` has an `--accent` background and border and an `--accent-text` icon, like the gear while the sidebar is open. `.wt-close` and `.wt-play` are 32px, and `.wt-play` icons are `--accent`.
 - `.wt-body` is a grid with a 20px gap. `.wt-main` is a centered flex column with a 16px gap and `container-type: inline-size`.
 - `.wt-tabs` is a segmented control: a pill with a `--bg` background, 1px `--border` border, 3px padding and 2px gap. Each tab is pill-shaped, at least 92px wide, with 6px × 20px padding and `--muted` text (`--text` on hover). The selected tab has a `--surface` background, a `--border` border, `--text` color and weight 600. The running dot is a 6px `--accent` circle, 8px from the tab's right edge and vertically centered.
 - `.wt-panel` is a centered flex column, full width, with an 8px gap. `.wt-time`: `font-size: clamp(3rem, 24cqi, 6.5rem)` (with a 4rem fallback before it), weight 600, `font-variant-numeric: tabular-nums`, letter spacing −0.02em, line height 1.1. `.wt-info`: `--muted`, 0.95rem, at least 1.5em tall, no margin.
 - `.wt-controls` is a flex row with an 8px gap, full width up to 360px, and an 8px top margin. `.wt-btn`: equal widths (`flex: 1 1 0`), 9px × 10px padding, pill-shaped, 1px `--border` border, `--surface` background, weight 600; the border turns `--accent` on hover; disabled buttons are at 45% opacity. `.wt-btn-primary` has an `--accent` background and border and `--accent-text` text.
 - `.wt-wake` is a small pill (5px × 14px padding, 0.875rem, `--muted` text, 1px `--border` border) with an 8px ring before its label (1.5px `currentColor` border). When on, its border and text are `--accent` and the ring is filled. `.wt-wake-note`: `--muted`, 0.85rem, pulled 8px closer to the button, and not shown when empty.
 - `.wt-settings`: 14px 16px 16px padding, 1px `--border` border, `--radius` corners, `--bg` background. `.wt-settings-head` is a flex row with the heading on the left and the close button on the right, vertically centered. The `h2` is 1.1rem with no margin. Each `.wt-group` has a 14px top margin; every group after the first also has a 1px `--border` rule above it and 14px top padding. Group `h3`s: 0.8rem, weight 600, uppercase, letter spacing 0.04em, `--muted`. `.wt-field` and `.wt-sound` rows are flex rows with space between, a 12px gap and 4px vertical padding. `.wt-num` holds the input and "min" in `--muted`, 6px apart. Number inputs: 4.5em wide, 5px × 8px padding, 1px `--border` border, 8px radius, `--surface` background, `--text` color, right-aligned text; disabled ones at 50% opacity. The checkbox uses `accent-color: var(--accent)`. `.wt-hint`: `--muted`, 0.85rem, 14px top margin.
+- `.wt-away`: a centered flex column with a 12px gap, 32px padding above and below, and centered `--muted` text; its `p` has no margin. `.wt-back` is a small pill: 5px × 14px padding, 1px `--border` border, no background, `--text` color and 0.875rem text, with the border turning `--accent` on hover.
+- `.wt-float-label` is hidden (`display: none`) except in a small floating window.
+- **Floating window:** `#work-timer.is-floating` is fixed to fill the window (`inset: 0`), with `overflow: hidden`, a `--surface` background and `container: wt-float / size`, so the container queries and `cq` units below measure the whole window. Its `.wt-main` stops being a container (`container-type: normal`), takes the full height with 8px padding and a 10px gap, and centers its content vertically. At every size:
+  - The Keep screen on button and note are hidden, and so is every disabled timer button, so only buttons that do something show: Start alone when idle, Pause and Reset while running, Resume and Reset when paused.
+  - `.wt-panel` has a 6px gap. The time is `min(30cqw, 30cqh)` with line height 1. The info line is 0.8rem on a single line (`white-space: nowrap`, at most the panel's width), cut off with an ellipsis when too long.
+  - `.wt-controls` shrinks to its buttons, with no top margin. Each `.wt-btn` is as wide as its label (`flex: none`), with 5px × 14px padding and 0.875rem text.
+
+  Then, by window size (container queries on `wt-float`):
+  - Shorter than 220px or narrower than 230px: the Work/Rest tabs and the info line are hidden, and `.wt-float-label` appears instead, absolutely positioned 6px from the top and 10px from the left, in 12px `--muted` text with line height 1.2. The time is `min(30cqw, 42cqh)`, and the buttons have 3px × 12px padding and 13px text.
+  - 80px tall or less: the label is hidden too, and `.wt-panel` becomes a centered row with a 10px gap, so the time and buttons sit side by side. The time is `min(20cqw, 66cqh)`, and the buttons have 2px × 8px padding and 12px text.
+  - 80px tall or less and 260px wide or less: Reset is hidden as well.
 
 #### Accessibility
 
 - The Work and Rest tabs follow the tabs pattern: `aria-selected`, a roving `tabindex`, the Left and Right arrow keys switch tabs, and Home and End go to Work and Rest.
 - `role="timer"` keeps screen readers from reading out every second. The end-of-session message is announced through `#wt-live`, which is emptied first and filled 100 ms later, so a repeated message is read again.
-- When Start, Pause or Reset disables the button that had focus, focus moves on: from Start to Pause, from Pause to Start, from Reset to Start.
+- When Start, Pause or Reset disables the button that had focus, focus moves on: from Start to Pause, from Pause to Start, from Reset to Start. Focus is checked in the button's own document, since the button may be in the floating window.
+- In a small floating window, where the Work/Rest tabs are hidden, `#wt-float-label` names the timer on show.
 
 #### Known limits
 
 - Phones usually suspend a page when the screen locks or the browser goes to the background, so dings can't play then. The time is still right on return. "Keep screen on" prevents the screen lock.
 - On an iPhone, silent mode may mute the sounds.
 - In a browser without Web Audio, the timers work silently.
+- The floating window needs the Document Picture-in-Picture API: desktop Chrome and Edge 116 or later, and Firefox 151 or later. Safari and phone browsers don't have it, so its button doesn't appear there. The browser decides where the window opens and sets its own smallest and largest sizes.

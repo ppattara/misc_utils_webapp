@@ -110,7 +110,8 @@
     #work-timer button:not(:disabled) { cursor: pointer; }
     #work-timer :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-    /* Round icon buttons: the settings gear, the sidebar's close button and the sound play buttons. */
+    /* Round icon buttons: the floating window button, the settings gear, the sidebar's close button
+       and the sound play buttons. */
     #work-timer .wt-icon-btn {
       display: grid;
       place-items: center;
@@ -123,7 +124,9 @@
     }
     #work-timer .wt-icon-btn:hover { border-color: var(--accent); }
     #work-timer .wt-gear { position: absolute; top: 20px; right: 20px; }
-    #work-timer .wt-gear[aria-expanded="true"] {
+    #work-timer .wt-float { position: absolute; top: 20px; right: 64px; }
+    #work-timer .wt-gear[aria-expanded="true"],
+    #work-timer .wt-float[aria-pressed="true"] {
       border-color: var(--accent);
       background: var(--accent);
       color: var(--accent-text);
@@ -351,6 +354,87 @@
       }
     }
 
+    /* Floating window. While the timer is in it, .wt-away takes its place on the page. */
+    #work-timer .wt-away {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 32px 0;
+      color: var(--muted);
+      text-align: center;
+    }
+    #work-timer .wt-away p { margin: 0; }
+    #work-timer .wt-back {
+      padding: 5px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: none;
+      color: var(--text);
+      font-size: 0.875rem;
+    }
+    #work-timer .wt-back:hover { border-color: var(--accent); }
+    #work-timer .wt-float-label { display: none; }
+
+    /* In the floating window, the timer column sits in a div#work-timer.is-floating that fills the
+       window. Only the buttons that do something show, and parts drop out as the window shrinks. */
+    #work-timer.is-floating {
+      container: wt-float / size;
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: var(--surface);
+    }
+    #work-timer.is-floating .wt-main {
+      container-type: normal;
+      justify-content: center;
+      gap: 10px;
+      height: 100%;
+      padding: 8px;
+    }
+    #work-timer.is-floating .wt-wake,
+    #work-timer.is-floating .wt-wake-note,
+    #work-timer.is-floating .wt-btn:disabled { display: none; }
+    #work-timer.is-floating .wt-panel { gap: 6px; }
+    #work-timer.is-floating .wt-time { font-size: min(30cqw, 30cqh); line-height: 1; }
+    #work-timer.is-floating .wt-info {
+      max-width: 100%;
+      overflow: hidden;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    #work-timer.is-floating .wt-controls { width: auto; margin-top: 0; }
+    #work-timer.is-floating .wt-btn { flex: none; padding: 5px 14px; font-size: 0.875rem; }
+    #work-timer.is-floating .wt-float-label {
+      position: absolute;
+      top: 6px;
+      left: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+    /* Shorter than 220px or narrower than 230px: a small label replaces the Work/Rest tabs,
+       and the info line goes. */
+    @container wt-float (height < 220px) or (width < 230px) {
+      #work-timer.is-floating .wt-tabs,
+      #work-timer.is-floating .wt-info { display: none; }
+      #work-timer.is-floating .wt-float-label { display: block; }
+      #work-timer.is-floating .wt-time { font-size: min(30cqw, 42cqh); }
+      #work-timer.is-floating .wt-btn { padding: 3px 12px; font-size: 13px; }
+    }
+    /* 80px tall or less: the time and buttons on one row, without the label. */
+    @container wt-float (height <= 80px) {
+      #work-timer.is-floating .wt-float-label { display: none; }
+      #work-timer.is-floating .wt-panel { flex-direction: row; justify-content: center; gap: 10px; }
+      #work-timer.is-floating .wt-time { font-size: min(20cqw, 66cqh); }
+      #work-timer.is-floating .wt-btn { padding: 2px 8px; font-size: 12px; }
+    }
+    /* ...and 260px wide or less: Reset goes too. */
+    @container wt-float (height <= 80px) and (width <= 260px) {
+      #work-timer.is-floating #wt-reset { display: none; }
+    }
+
   </style>
 </head>
 <body>
@@ -371,12 +455,16 @@
 
     <section class="page" id="work-timer" data-title="Work Timer">
       <h1>Work Timer</h1>
+      <button type="button" class="wt-icon-btn wt-float" id="wt-float" aria-pressed="false" aria-label="Floating window" title="Floating window" hidden>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="12" y="11" width="6" height="5" rx="1" fill="currentColor"/></svg>
+      </button>
       <button type="button" class="wt-icon-btn wt-gear" id="wt-gear" aria-expanded="false" aria-controls="wt-settings" aria-label="Settings" title="Settings">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M10.10 4.33L10.36 1.63A10.5 10.5 0 0 1 13.64 1.63L13.90 4.33A7.9 7.9 0 0 1 16.07 5.23L18.17 3.51A10.5 10.5 0 0 1 20.49 5.83L18.77 7.93A7.9 7.9 0 0 1 19.67 10.10L22.37 10.36A10.5 10.5 0 0 1 22.37 13.64L19.67 13.90A7.9 7.9 0 0 1 18.77 16.07L20.49 18.17A10.5 10.5 0 0 1 18.17 20.49L16.07 18.77A7.9 7.9 0 0 1 13.90 19.67L13.64 22.37A10.5 10.5 0 0 1 10.36 22.37L10.10 19.67A7.9 7.9 0 0 1 7.93 18.77L5.83 20.49A10.5 10.5 0 0 1 3.51 18.17L5.23 16.07A7.9 7.9 0 0 1 4.33 13.90L1.63 13.64A10.5 10.5 0 0 1 1.63 10.36L4.33 10.10A7.9 7.9 0 0 1 5.23 7.93L3.51 5.83A10.5 10.5 0 0 1 5.83 3.51L7.93 5.23A7.9 7.9 0 0 1 10.10 4.33ZM15.20 12.00A3.2 3.2 0 1 0 8.80 12.00A3.2 3.2 0 1 0 15.20 12.00Z"/></svg>
       </button>
 
       <div class="wt-body">
         <div class="wt-main">
+          <span class="wt-float-label" id="wt-float-label"></span>
           <div class="wt-tabs" role="tablist" aria-label="Timers">
             <button type="button" role="tab" id="wt-tab-work" aria-controls="wt-panel" aria-selected="true">Work</button>
             <button type="button" role="tab" id="wt-tab-rest" aria-controls="wt-panel" aria-selected="false" tabindex="-1">Rest</button>
@@ -395,6 +483,11 @@
           <button type="button" class="wt-wake" id="wt-wake" aria-pressed="false" hidden>Keep screen on</button>
           <p class="wt-wake-note" id="wt-wake-note" role="status"></p>
           <p class="wt-sr" id="wt-live" role="status"></p>
+        </div>
+
+        <div class="wt-away" id="wt-away" hidden>
+          <p>The timer is in a floating window.</p>
+          <button type="button" class="wt-back" id="wt-back">Bring it back</button>
         </div>
 
         <div class="wt-backdrop" id="wt-backdrop" hidden></div>
@@ -494,7 +587,8 @@
        an error in one page can't break the others or the tab bar.
        ============================================================ -->
 
-  <!-- Work Timer: work and rest countdowns, random reminder dings, settings sidebar, screen wake lock. -->
+  <!-- Work Timer: work and rest countdowns, random reminder dings, settings sidebar, screen wake lock,
+       floating window. -->
   <script>
     (() => {
       const page = document.getElementById('work-timer');
@@ -528,6 +622,11 @@
       const remindBox = $('#wt-remind-on');
       const wakeBtn = $('#wt-wake');
       const wakeNote = $('#wt-wake-note');
+      const main = $('.wt-main');
+      const floatBtn = $('#wt-float');
+      const floatLabel = $('#wt-float-label');
+      const away = $('#wt-away');
+      const backBtn = $('#wt-back');
 
       // ---------- Settings, remembered in localStorage ----------
 
@@ -813,13 +912,18 @@
       // ---------- Ticking ----------
       // A 250 ms interval keeps the display current. Background tabs slow intervals down (Chrome
       // to once a minute), so a chain of silent one-second sounds also calls tick() from their
-      // "ended" events, which aren't slowed. tick() is safe to call at any time.
+      // "ended" events, which aren't slowed. While the floating window is open, a second 250 ms
+      // interval runs on that window: it stays on screen, so its timers aren't slowed even while
+      // this tab is hidden. tick() is safe to call at any time.
 
       let intervalId = 0;
+      let floatWin = null;      // the floating window, while it's open
+      let floatIntervalId = 0;  // the interval on the floating window
       let audioTicking = false;
 
       function startTicking() {
         if (!intervalId) intervalId = setInterval(tick, 250);
+        if (floatWin && !floatIntervalId) floatIntervalId = floatWin.setInterval(tick, 250);
         if (!audioTicking && ctx && ctx.createConstantSource) {
           audioTicking = true;
           audioTick();
@@ -846,6 +950,8 @@
       function stopTicking() {
         clearInterval(intervalId);
         intervalId = 0;  // the silent chain stops by itself at its next step
+        if (floatWin) floatWin.clearInterval(floatIntervalId);
+        floatIntervalId = 0;
       }
 
       function tick() {
@@ -904,6 +1010,7 @@
           tabs[kind].classList.toggle('is-running', timers[kind].running);
         }
         panel.setAttribute('aria-labelledby', tabs[view].id);
+        floatLabel.textContent = LABELS[view];
         const t = timers[view];
         const paused = t.started && !t.running;
         timeEl.classList.toggle('is-running', t.running);
@@ -920,9 +1027,10 @@
       // ---------- Timer controls ----------
 
       // If the clicked button disables itself, move focus on so keyboard users aren't stranded.
+      // The button may be in the floating window, so focus is checked in its own document.
       function onPress(button, action, focusNext) {
         button.addEventListener('click', () => {
-          const hadFocus = document.activeElement === button;
+          const hadFocus = button.ownerDocument.activeElement === button;
           action();
           if (hadFocus && button.disabled) focusNext.focus();
         });
@@ -1059,6 +1167,52 @@
         if (wantAwake && !wakeLock) lockScreen();
         tick();
       });
+
+      // ---------- Floating window (Document Picture-in-Picture API) ----------
+      // The timer column moves into a small window that stays on top of other windows, and moves
+      // back when that window closes. It keeps working there, because this script still runs it.
+
+      async function openFloat() {
+        floatBtn.disabled = true;
+        try {
+          floatWin = await documentPictureInPicture.requestWindow({ width: 240, height: 120 });
+        } catch (e) {
+          return;  // the browser refused: the timer stays on the page
+        } finally {
+          floatBtn.disabled = false;
+        }
+        // The new window starts empty. Copy the styles in, and wrap the timer in a div#work-timer
+        // so the page's scoped rules apply there too.
+        const doc = floatWin.document;
+        document.querySelectorAll('style').forEach((style) => doc.head.append(style.cloneNode(true)));
+        doc.title = page.dataset.title;
+        const shell = doc.createElement('div');
+        shell.id = page.id;
+        shell.className = 'is-floating';
+        shell.append(main);
+        doc.body.append(shell);
+        away.hidden = false;
+        floatBtn.setAttribute('aria-pressed', 'true');
+        floatWin.addEventListener('pagehide', bringBack);
+        if (runningKind()) startTicking();
+      }
+
+      // Runs when the floating window closes, however it was closed.
+      function bringBack() {
+        floatWin = null;
+        floatIntervalId = 0;  // the window's timers closed with it
+        const hadFocus = away.contains(document.activeElement);
+        away.before(main);
+        away.hidden = true;
+        floatBtn.setAttribute('aria-pressed', 'false');
+        if (hadFocus) floatBtn.focus();
+      }
+
+      if ('documentPictureInPicture' in window) {
+        floatBtn.hidden = false;
+        floatBtn.addEventListener('click', () => (floatWin ? floatWin.close() : openFloat()));
+        backBtn.addEventListener('click', () => { if (floatWin) floatWin.close(); });
+      }
 
       // The shared script sets the page name as the title on every page change; this listener runs
       // after it and puts the countdown back while a timer runs.
