@@ -104,28 +104,41 @@
        ============================================================ */
 
     /* ---------- Work Timer (#work-timer) ---------- */
-    /* Each timer has its own color, blue for Work and green for Rest, and a much paler shade of it
-       for the ring's track. --wt-color and --wt-color-pale are the colors of the timer an element
-       belongs to: Work by default, Rest on the Rest tab and on the panel while Rest is on show. */
+    /* Each timer has its own color, blue for Work and green for Rest, in three shades: the solid
+       color, a lighter shade (pale) for the ring's track, and a very soft shade (soft) for the card
+       behind the timer. --wt-color, --wt-color-pale and --wt-color-soft are the shades of the timer on
+       show: Work by default, Rest while the card (the page, or the floating window) has the class
+       is-rest. Each Work/Rest tab keeps its own timer's color, for its running dot. */
     #work-timer {
       position: relative;
       --wt-work: #2f6fde;
-      --wt-work-pale: #dae5f9;
+      --wt-work-pale: #c1d4f5;
+      --wt-work-soft: #eef3fc;
       --wt-rest: #318454;
-      --wt-rest-pale: #dae9e0;
+      --wt-rest-pale: #c1dacc;
+      --wt-rest-soft: #ecf6ef;
       --wt-color: var(--wt-work);
       --wt-color-pale: var(--wt-work-pale);
+      --wt-color-soft: var(--wt-work-soft);
+      background: var(--wt-color-soft);
     }
     @media (prefers-color-scheme: dark) {
       #work-timer {
         --wt-work: #5b8ef0;
-        --wt-work-pale: #2c3c5a;
+        --wt-work-pale: #2e4266;
+        --wt-work-soft: #222a38;
         --wt-rest: #53ae77;
-        --wt-rest-pale: #2b443c;
+        --wt-rest-pale: #2f4a38;
+        --wt-rest-soft: #1f2e24;
       }
     }
-    #work-timer #wt-tab-rest,
-    #work-timer .wt-panel.is-rest { --wt-color: var(--wt-rest); --wt-color-pale: var(--wt-rest-pale); }
+    #work-timer.is-rest {
+      --wt-color: var(--wt-rest);
+      --wt-color-pale: var(--wt-rest-pale);
+      --wt-color-soft: var(--wt-rest-soft);
+    }
+    #work-timer #wt-tab-work { --wt-color: var(--wt-work); }
+    #work-timer #wt-tab-rest { --wt-color: var(--wt-rest); }
     #work-timer [hidden] { display: none !important; }
     #work-timer button { font: inherit; color: inherit; }
     #work-timer button:not(:disabled) { cursor: pointer; }
@@ -423,7 +436,6 @@
       position: fixed;
       inset: 0;
       overflow: hidden;
-      background: var(--surface);
     }
     #work-timer.is-floating .wt-main {
       container-type: normal;
@@ -993,6 +1005,7 @@
 
       let intervalId = 0;
       let floatWin = null;      // the floating window, while it's open
+      let floatShell = null;    // the div#work-timer that holds the timer in the floating window
       let floatIntervalId = 0;  // the interval on the floating window
       let audioTicking = false;
 
@@ -1093,7 +1106,10 @@
           tabs[kind].classList.toggle('is-running', timers[kind].running);
         }
         panel.setAttribute('aria-labelledby', tabs[view].id);
-        panel.classList.toggle('is-rest', view === 'rest');  // the Rest timer's colors (CSS)
+        // The card behind the timer (the page, and the floating window while it's open) and
+        // everything on it take the colors of the timer on show (CSS: Work's, or Rest's with is-rest).
+        page.classList.toggle('is-rest', view === 'rest');
+        if (floatShell) floatShell.classList.toggle('is-rest', view === 'rest');
         ringLabel.textContent = LABELS[view];
         const t = timers[view];
         const paused = t.started && !t.running;
@@ -1270,20 +1286,22 @@
         const doc = floatWin.document;
         document.querySelectorAll('style').forEach((style) => doc.head.append(style.cloneNode(true)));
         doc.title = page.dataset.title;
-        const shell = doc.createElement('div');
-        shell.id = page.id;
-        shell.className = 'is-floating';
-        shell.append(main);
-        doc.body.append(shell);
+        floatShell = doc.createElement('div');
+        floatShell.id = page.id;
+        floatShell.className = 'is-floating';
+        floatShell.append(main);
+        doc.body.append(floatShell);
         away.hidden = false;
         floatBtn.setAttribute('aria-pressed', 'true');
         floatWin.addEventListener('pagehide', bringBack);
+        render();  // gives the floating window the colors of the timer on show
         if (runningKind()) startTicking();
       }
 
       // Runs when the floating window closes, however it was closed.
       function bringBack() {
         floatWin = null;
+        floatShell = null;
         floatIntervalId = 0;  // the window's timers closed with it
         const hadFocus = away.contains(document.activeElement);
         away.before(main);
