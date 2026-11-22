@@ -108,7 +108,10 @@
        color, a lighter shade (pale) for the ring's track, and a very soft shade (soft) for the card
        behind the timer. --wt-color, --wt-color-pale and --wt-color-soft are the shades of the timer on
        show: Work by default, Rest while the card (the page, or the floating window) has the class
-       is-rest. Each Work/Rest tab keeps its own timer's color, for its running dot. */
+       is-rest. Each Work/Rest tab keeps its own timer's color, for its running dot.
+       A short break during work has its own, brighter green. While the card has the class is-break,
+       it fills with that green (fill), and the ring's arc and the time take a deep green (ink) over a
+       pale track. In dark mode the fill is a deep green, the ink a very light one and the track dim. */
     #work-timer {
       position: relative;
       --wt-work: #2f6fde;
@@ -117,6 +120,9 @@
       --wt-rest: #318454;
       --wt-rest-pale: #c1dacc;
       --wt-rest-soft: #ecf6ef;
+      --wt-break-fill: #87d576;
+      --wt-break-track: #d5f2cf;
+      --wt-break-ink: #26511c;
       --wt-color: var(--wt-work);
       --wt-color-pale: var(--wt-work-pale);
       --wt-color-soft: var(--wt-work-soft);
@@ -130,12 +136,20 @@
         --wt-rest: #53ae77;
         --wt-rest-pale: #2f4a38;
         --wt-rest-soft: #1f2e24;
+        --wt-break-fill: #316a23;
+        --wt-break-track: #22441a;
+        --wt-break-ink: #d3f2cd;
       }
     }
     #work-timer.is-rest {
       --wt-color: var(--wt-rest);
       --wt-color-pale: var(--wt-rest-pale);
       --wt-color-soft: var(--wt-rest-soft);
+    }
+    #work-timer.is-break {
+      --wt-color: var(--wt-break-ink);
+      --wt-color-pale: var(--wt-break-track);
+      --wt-color-soft: var(--wt-break-fill);
     }
     #work-timer #wt-tab-work { --wt-color: var(--wt-work); }
     #work-timer #wt-tab-rest { --wt-color: var(--wt-rest); }
@@ -429,6 +443,17 @@
     }
     #work-timer .wt-back:hover { border-color: var(--accent); }
 
+    /* During a break, the card's grey text, the Keep screen on toggle and the focus outline take the
+       break's ink, so they stand out on the green. */
+    #work-timer.is-break .wt-ring-label,
+    #work-timer.is-break .wt-info,
+    #work-timer.is-break .wt-wake,
+    #work-timer.is-break .wt-wake-note,
+    #work-timer.is-break .wt-away { color: var(--wt-break-ink); }
+    #work-timer.is-break .wt-wake:hover,
+    #work-timer.is-break .wt-wake[aria-pressed="true"] { border-color: var(--wt-break-ink); }
+    #work-timer.is-break :focus-visible { outline-color: var(--wt-break-ink); }
+
     /* In the floating window, the timer column sits in a div#work-timer.is-floating that fills the
        window. Only the buttons that do something show, and the layout changes with the window's size. */
     #work-timer.is-floating {
@@ -590,17 +615,18 @@
             <label class="wt-field">Rest <span class="wt-num"><input type="number" id="wt-rest-min" min="0.5" max="999" step="0.5" inputmode="decimal"> min</span></label>
           </div>
 
-          <div class="wt-group" role="group" aria-labelledby="wt-reminder-title">
-            <h3 id="wt-reminder-title">Random reminder</h3>
-            <label class="wt-check"><input type="checkbox" id="wt-remind-on"> Ding at random times during work</label>
+          <div class="wt-group" role="group" aria-labelledby="wt-breaks-title">
+            <h3 id="wt-breaks-title">Random breaks</h3>
+            <label class="wt-check"><input type="checkbox" id="wt-breaks-on"> Take short breaks at random times during work</label>
+            <label class="wt-field">Break length <span class="wt-num"><input type="number" id="wt-break-sec" min="5" max="300" step="1" inputmode="numeric"> sec</span></label>
             <label class="wt-field">Shortest gap <span class="wt-num"><input type="number" id="wt-gap-min" min="0.5" max="60" step="0.5" inputmode="decimal"> min</span></label>
             <label class="wt-field">Longest gap <span class="wt-num"><input type="number" id="wt-gap-max" min="0.5" max="60" step="0.5" inputmode="decimal"> min</span></label>
           </div>
 
           <div class="wt-group" role="group" aria-labelledby="wt-sounds-title">
             <h3 id="wt-sounds-title">Sounds</h3>
-            <div class="wt-sound">Reminder ding
-              <button type="button" class="wt-icon-btn wt-play" data-sound="reminder" aria-label="Play the reminder ding" title="Play">
+            <div class="wt-sound">Break ding
+              <button type="button" class="wt-icon-btn wt-play" data-sound="ding" aria-label="Play the break ding" title="Play">
                 <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M9 5.5v13l10-6.5z"/></svg>
               </button>
             </div>
@@ -671,7 +697,7 @@
        an error in one page can't break the others or the tab bar.
        ============================================================ -->
 
-  <!-- Work Timer: work and rest countdowns, random reminder dings, settings sidebar, screen wake lock,
+  <!-- Work Timer: work and rest countdowns, random short breaks, settings sidebar, screen wake lock,
        floating window. -->
   <script>
     (() => {
@@ -703,10 +729,11 @@
       const inputs = {
         workMin: $('#wt-work-min'),
         restMin: $('#wt-rest-min'),
+        breakSec: $('#wt-break-sec'),
         gapMinMin: $('#wt-gap-min'),
         gapMaxMin: $('#wt-gap-max'),
       };
-      const remindBox = $('#wt-remind-on');
+      const breaksBox = $('#wt-breaks-on');
       const wakeBtn = $('#wt-wake');
       const wakeNote = $('#wt-wake-note');
       const main = $('.wt-main');
@@ -717,12 +744,21 @@
       // ---------- Settings, remembered in localStorage ----------
 
       const STORAGE_KEY = 'misc-utils:work-timer';
-      const DEFAULTS = { workMin: 25, restMin: 5, remindOn: true, gapMinMin: 2, gapMaxMin: 5 };
-      const LIMITS = { workMin: [0.5, 999], restMin: [0.5, 999], gapMinMin: [0.5, 60], gapMaxMin: [0.5, 60] };
+      // remindOn switches the random breaks on and off. The name dates from when they were single
+      // reminder dings, and is kept so that saved settings carry over.
+      const DEFAULTS = { workMin: 25, restMin: 5, remindOn: true, gapMinMin: 2, gapMaxMin: 5, breakSec: 10 };
+      // [lowest, highest, step]: minutes go in half-minute steps, the break length in whole seconds.
+      const LIMITS = {
+        workMin: [0.5, 999, 0.5],
+        restMin: [0.5, 999, 0.5],
+        gapMinMin: [0.5, 60, 0.5],
+        gapMaxMin: [0.5, 60, 0.5],
+        breakSec: [5, 300, 1],
+      };
 
-      // Rounds to the nearest half minute and clamps to the limits. Returns null if n isn't a number.
-      const clean = (n, [lo, hi]) =>
-        typeof n === 'number' && Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n * 2) / 2)) : null;
+      // Rounds to the nearest step and clamps to the limits. Returns null if n isn't a number.
+      const clean = (n, [lo, hi, step]) =>
+        typeof n === 'number' && Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n / step) * step)) : null;
 
       function loadSettings() {
         const s = { ...DEFAULTS };
@@ -749,6 +785,7 @@
 
       const settings = loadSettings();
       const durationMs = (kind) => (kind === 'work' ? settings.workMin : settings.restMin) * MINUTE;
+      const breakMs = () => settings.breakSec * 1000;
 
       // ---------- Sounds, generated with the Web Audio API ----------
 
@@ -762,7 +799,7 @@
       ];
       // Each note: [start (s), frequency (Hz), peak level, fade time (s)].
       const SOUNDS = {
-        reminder: [[0, 880, 0.5, 2]],                                     // one ding: A5
+        ding: [[0, 880, 0.5, 2]],                                         // the break ding: A5
         start: [[0, 783.99, 0.42, 1.2], [0.16, 1174.66, 0.42, 1.6]],      // rising: G5, D6
         end: [[0, 1046.5, 0.45, 1.4], [0.2, 783.99, 0.45, 1.4],           // falling: C6, G5, E5, C5
               [0.4, 659.25, 0.45, 1.6], [0.6, 523.25, 0.45, 3]],
@@ -852,16 +889,20 @@
         return t.running ? Math.max(0, t.endAt - Date.now()) : t.remaining;
       };
 
-      // ---------- Session sounds, scheduled ahead on the audio clock ----------
-      // Background tabs can run timers late, but sounds scheduled on the audio clock play on time.
+      // ---------- Random breaks, and sounds scheduled ahead on the audio clock ----------
+      // While work runs, short breaks come at random times: a ding starts each one and the same ding
+      // ends it. The work clock keeps running through them. Breaks are planned ahead in wall-clock
+      // time, so they show on screen even without sound. Background tabs can run timers late, but
+      // sounds scheduled on the audio clock play on time, so the dings and the end sound go there.
 
-      const REMINDER_AHEAD = 5 * MINUTE;   // how far ahead reminders are scheduled
-      const REMINDER_END_GAP = 15 * 1000;  // no reminder in a session's last 15 seconds
+      const BREAK_AHEAD = 5 * MINUTE;    // how far ahead breaks are planned
+      const BREAK_END_GAP = 15 * 1000;   // a break ends at least 15 seconds before its session does
 
       let endSound = null;      // handle of the scheduled end sound
-      let reminders = [];       // scheduled reminders, oldest first: { at (wall-clock ms), sound (handle) }
-      let nextReminderAt = 0;   // wall-clock time of the next reminder not scheduled yet
-      let pausedGap = null;     // on pause, the time that was left until the next reminder
+      let breaks = [];          // planned breaks, oldest first: { at, end (wall-clock ms), dings (handles) }
+      let nextBreakAt = 0;      // wall-clock start of the next break not planned yet
+      let pausedGap = null;     // on pause, the work time that was left until the next break
+      let shownBreak = null;    // the break in progress, as last shown by tick(); null between breaks
       let syncedOffset = 0;     // clockOffset() when the session sounds were scheduled
 
       const randomGap = () => {
@@ -870,49 +911,74 @@
         return lo + Math.random() * (hi - lo);
       };
 
-      // Keeps reminders scheduled up to REMINDER_AHEAD into the future. Runs on every tick.
-      function planReminders(now) {
+      // Schedules the dings of break b, at its start and its end, that are still ahead of `now`.
+      const dingsFor = (b, now) =>
+        ctx ? [b.at, b.end].filter((t) => t > now).map((t) => playSound('ding', audioTime(t))) : [];
+
+      // Cancels the dings of break b that haven't started yet. One that is ringing fades out by itself.
+      function cancelDings(b) {
+        b.dings.forEach((sound) => { if (sound.when > ctx.currentTime) sound.cancel(); });
+        b.dings = [];
+      }
+
+      // Keeps breaks planned up to BREAK_AHEAD into the future. Runs on every tick.
+      function planBreaks(now) {
         const t = timers.work;
-        if (!ctx || !t.running || !settings.remindOn) return;
-        reminders = reminders.filter((r) => r.at > now - 10000);
-        while (nextReminderAt < now) nextReminderAt += randomGap();  // skip any missed while asleep
-        const until = Math.min(now + REMINDER_AHEAD, t.endAt - REMINDER_END_GAP);
-        while (nextReminderAt <= until) {
-          reminders.push({ at: nextReminderAt, sound: playSound('reminder', audioTime(nextReminderAt)) });
-          nextReminderAt += randomGap();
+        if (!t.running || !settings.remindOn) return;
+        breaks = breaks.filter((b) => b.end > now - 10000);
+        const length = breakMs();
+        while (nextBreakAt < now) nextBreakAt += length + randomGap();  // skip any missed while asleep
+        // A break starts only if it can end BREAK_END_GAP before the session does.
+        const until = Math.min(now + BREAK_AHEAD, t.endAt - BREAK_END_GAP - length);
+        while (nextBreakAt <= until) {
+          const b = { at: nextBreakAt, end: nextBreakAt + length, dings: [] };
+          b.dings = dingsFor(b, now);
+          breaks.push(b);
+          nextBreakAt = b.end + randomGap();  // a gap is the work time between two breaks
         }
       }
 
-      function cancelReminders() {
-        reminders.forEach((r) => r.sound.cancel());
-        reminders = [];
+      // Drops every planned break. A break in progress ends silently.
+      function cancelBreaks() {
+        breaks.forEach(cancelDings);
+        breaks = [];
+        shownBreak = null;
       }
 
-      function nextReminder(now) {
-        const upcoming = reminders.find((r) => r.at > now);
-        return upcoming ? upcoming.at : nextReminderAt;
+      const currentBreak = (now) => breaks.find((b) => b.at <= now && now < b.end) || null;
+
+      // When the next break starts: the first planned one still ahead, or else the next one not planned yet.
+      function nextBreakStart(now) {
+        const upcoming = breaks.find((b) => b.at > now);
+        return upcoming ? upcoming.at : nextBreakAt;
       }
 
       function scheduleSession(kind) {
-        if (!ctx) return;
-        syncedOffset = clockOffset();
-        endSound = playSound('end', audioTime(timers[kind].endAt));
-        if (kind === 'work') planReminders(Date.now());
+        if (ctx) {
+          syncedOffset = clockOffset();
+          endSound = playSound('end', audioTime(timers[kind].endAt));
+        }
+        if (kind === 'work') planBreaks(Date.now());
       }
 
       function cancelSession() {
         if (endSound) endSound.cancel();
         endSound = null;
-        cancelReminders();
+        cancelBreaks();
       }
 
-      // If the audio clock stalled while the wall clock kept going, schedule everything again.
+      // If the audio clock stalled while the wall clock kept going (as when a computer sleeps),
+      // schedule the sounds again from their wall-clock times. Dings whose time has passed are dropped.
       function resyncSounds(kind) {
         if (!ctx || ctx.state !== 'running' || Math.abs(clockOffset() - syncedOffset) < 1) return;
-        const next = nextReminder(Date.now());
-        cancelSession();
-        nextReminderAt = next;
-        scheduleSession(kind);
+        const now = Date.now();
+        syncedOffset = clockOffset();
+        if (endSound) endSound.cancel();
+        endSound = playSound('end', audioTime(timers[kind].endAt));
+        breaks.forEach((b) => {
+          cancelDings(b);
+          b.dings = dingsFor(b, now);
+        });
       }
 
       // ---------- Start, pause, reset, finish ----------
@@ -929,7 +995,7 @@
           t.total = t.remaining = durationMs(kind);
           if (ctx) playNow('start');
         }
-        if (kind === 'work') nextReminderAt = now + (fresh || pausedGap === null ? randomGap() : pausedGap);
+        if (kind === 'work') nextBreakAt = now + (fresh || pausedGap === null ? randomGap() : pausedGap);
         pausedGap = null;
         t.running = true;
         t.endAt = now + t.remaining;
@@ -946,7 +1012,11 @@
         if (now >= t.endAt) { finish(kind); return; }
         t.remaining = t.endAt - now;
         t.running = false;
-        if (kind === 'work') pausedGap = settings.remindOn ? Math.max(0, nextReminder(now) - now) : null;
+        // Resume carries on with the work time that was left before the next break. Pausing during a
+        // break ends that break instead (the pause is a break in itself), and Resume draws a fresh gap.
+        if (kind === 'work') {
+          pausedGap = settings.remindOn && !currentBreak(now) ? Math.max(0, nextBreakStart(now) - now) : null;
+        }
         cancelSession();
         stopTicking();
         render();
@@ -988,12 +1058,16 @@
         notice = kind === 'work'
           ? 'Work session done. Start your rest when you’re ready.'
           : 'Rest is over. Start the next work session when you’re ready.';
-        // Empty the live region first, so the same message is announced again if it repeats.
-        const message = notice;
-        liveEl.textContent = '';
-        setTimeout(() => { liveEl.textContent = message; }, 100);
+        announce(notice);
         render();
         suspendSoon();
+      }
+
+      // Reads a message out to screen readers. The live region is emptied first, so that the same
+      // message is announced again if it repeats.
+      function announce(message) {
+        liveEl.textContent = '';
+        setTimeout(() => { liveEl.textContent = message; }, 100);
       }
 
       // ---------- Ticking ----------
@@ -1052,7 +1126,18 @@
           finish(kind);
           return;
         }
-        if (kind === 'work') planReminders(now);
+        if (kind === 'work') {
+          planBreaks(now);
+          const b = currentBreak(now);
+          if (b !== shownBreak) {
+            // A break starts or ends. When one starts, the Work timer comes on show if it wasn't.
+            if (b) view = 'work';
+            shownBreak = b;
+            announce(b ? 'Short break' : 'Back to work');
+            render();
+            return;
+          }
+        }
         renderTime();
         renderTitle();
       }
@@ -1064,31 +1149,40 @@
         return String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
       };
 
-      function reminderText() {
-        if (!settings.remindOn) return 'Random reminder off';
+      function breakText() {
+        if (!settings.remindOn) return 'Random breaks off';
         const { gapMinMin: lo, gapMaxMin: hi } = settings;
-        return `Random reminder every ${lo === hi ? lo : `${lo}–${hi}`} min`;
+        return `${settings.breakSec} s break every ${lo === hi ? lo : `${lo}–${hi}`} min`;
       }
 
+      // During a break, the Work timer's place shows the break instead.
+      const breakOnShow = () => (view === 'work' ? shownBreak : null);
+      const breakLeftMs = (b) => Math.max(0, b.end - Date.now());
+
       // The ring's arc starts at the top and runs clockwise, as long as the share of the session left:
-      // full while idle, shrinking back toward the top as the time runs down.
+      // full while idle, shrinking back toward the top as the time runs down. During a break, the time
+      // and the ring show the break: its time left, out of its length.
       const RING_LENGTH = 2 * Math.PI * 45;  // the ring's circumference (radius 45 in its viewBox)
 
       function renderTime() {
-        const ms = remainingMs(view);
+        const b = breakOnShow();
+        const ms = b ? breakLeftMs(b) : remainingMs(view);
         const text = formatTime(ms);
         if (timeEl.textContent !== text) timeEl.textContent = text;
-        const share = Math.min(1, ms / timers[view].total);
+        const share = Math.min(1, ms / (b ? b.end - b.at : timers[view].total));
         const dash = share >= 1 ? 'none' : `${(share * RING_LENGTH).toFixed(2)} ${RING_LENGTH.toFixed(2)}`;
         if (arcEl.getAttribute('stroke-dasharray') !== dash) arcEl.setAttribute('stroke-dasharray', dash);
       }
 
-      // While a timer runs, the browser tab shows the time left instead of the page name.
+      // While a timer runs, the browser tab shows the time left instead of the page name, or during a
+      // break, the time left in the break.
       let titleIsCountdown = false;
       function renderTitle() {
         const kind = runningKind();
         if (kind) {
-          const text = `${formatTime(remainingMs(kind))} · ${LABELS[kind]}`;
+          const text = shownBreak
+            ? `${formatTime(breakLeftMs(shownBreak))} · Break`
+            : `${formatTime(remainingMs(kind))} · ${LABELS[kind]}`;
           if (document.title !== text) document.title = text;
           titleIsCountdown = true;
         } else if (titleIsCountdown) {
@@ -1096,6 +1190,22 @@
           const shown = document.querySelector('main > section.page.is-active');
           if (shown) document.title = shown.dataset.title || shown.id;
         }
+      }
+
+      // The browser tab's icon: a green dot during a break, and otherwise a blank (transparent) icon.
+      // A blank icon rather than none, because browsers don't reliably bring back their default icon
+      // when a page removes its own, so a removed dot could stay on show.
+      const svgIcon = (shape) => 'data:image/svg+xml,' +
+        encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">${shape}</svg>`);
+      const ICON_BLANK = svgIcon('');
+      const ICON_BREAK = svgIcon('<circle cx="8" cy="8" r="7" fill="#479d32"/>');
+      const tabIcon = document.createElement('link');
+      tabIcon.rel = 'icon';
+      document.head.append(tabIcon);
+
+      function renderIcon() {
+        const href = shownBreak ? ICON_BREAK : ICON_BLANK;
+        if (tabIcon.getAttribute('href') !== href) tabIcon.setAttribute('href', href);
       }
 
       function render() {
@@ -1107,10 +1217,16 @@
         }
         panel.setAttribute('aria-labelledby', tabs[view].id);
         // The card behind the timer (the page, and the floating window while it's open) and
-        // everything on it take the colors of the timer on show (CSS: Work's, or Rest's with is-rest).
+        // everything on it take the colors of the timer on show (CSS: Work's, or Rest's with is-rest),
+        // or the break's own green during a break (is-break).
+        const onBreak = breakOnShow() !== null;
         page.classList.toggle('is-rest', view === 'rest');
-        if (floatShell) floatShell.classList.toggle('is-rest', view === 'rest');
-        ringLabel.textContent = LABELS[view];
+        page.classList.toggle('is-break', onBreak);
+        if (floatShell) {
+          floatShell.classList.toggle('is-rest', view === 'rest');
+          floatShell.classList.toggle('is-break', onBreak);
+        }
+        ringLabel.textContent = onBreak ? 'Break' : LABELS[view];
         const t = timers[view];
         const paused = t.started && !t.running;
         ringEl.classList.toggle('is-running', t.running);
@@ -1120,8 +1236,10 @@
         startBtn.disabled = t.running;
         pauseBtn.disabled = !t.running;
         resetBtn.disabled = !t.started;
-        infoEl.textContent = notice || (paused ? 'Paused' : view === 'work' ? reminderText() : '');
+        infoEl.textContent = notice ||
+          (paused ? 'Paused' : onBreak ? 'Take a short break' : view === 'work' ? breakText() : '');
         renderTitle();
+        renderIcon();
       }
 
       // ---------- Timer controls ----------
@@ -1174,8 +1292,8 @@
 
       function fillSettings() {
         for (const key in inputs) inputs[key].value = settings[key];
-        remindBox.checked = settings.remindOn;
-        inputs.gapMinMin.disabled = inputs.gapMaxMin.disabled = !settings.remindOn;
+        breaksBox.checked = settings.remindOn;
+        inputs.breakSec.disabled = inputs.gapMinMin.disabled = inputs.gapMaxMin.disabled = !settings.remindOn;
       }
 
       function applySettings(key) {
@@ -1184,12 +1302,13 @@
           const kind = key === 'workMin' ? 'work' : 'rest';
           if (!timers[kind].started) timers[kind].total = timers[kind].remaining = durationMs(kind);
         } else {
-          // Reminder changes apply at once: drop the scheduled reminders and draw a fresh gap.
+          // Break changes apply at once: drop the planned breaks (a break in progress ends silently)
+          // and draw a fresh gap.
           pausedGap = null;
-          cancelReminders();
+          cancelBreaks();
           if (timers.work.running) {
-            nextReminderAt = Date.now() + randomGap();
-            planReminders(Date.now());
+            nextBreakAt = Date.now() + randomGap();
+            planBreaks(Date.now());
           }
         }
         render();
@@ -1209,8 +1328,8 @@
           fillSettings();  // shows the cleaned value, or the old one if the entry wasn't a number
         });
       }
-      remindBox.addEventListener('change', () => {
-        settings.remindOn = remindBox.checked;
+      breaksBox.addEventListener('change', () => {
+        settings.remindOn = breaksBox.checked;
         saveSettings();
         applySettings('remindOn');
         fillSettings();

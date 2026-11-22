@@ -7,6 +7,7 @@ A web app that collects miscellaneous utilities for everyday use. It is a static
 - `CLAUDE.md`: ground rules and working notes for Claude (this file).
 - `SPEC.md`: the full description of the app, detailed enough to rebuild it (or something very close) from that file alone.
 - `README.md`: the project summary, which doubles as the user manual.
+- `timer_sound/`: sound recordings the owner added for a coming Work Timer feature. The app doesn't use them yet. Leave them alone until the owner describes that feature.
 
 ## Ground rules (always follow)
 
@@ -48,6 +49,16 @@ A change isn't finished until the code and all three files agree. When reporting
   - The buttons, the Work/Rest switch and the settings sidebar keep their own backgrounds.
 
   Values and contrast are in `SPEC.md` 5.1, Timer colors.
+- **Random breaks** (owner, 2026-11-22): the random reminder's single ding became a short break: a ding, then a break of 10 seconds by default (settable), then the same ding. It's a moment to stop working, maybe stand up and stretch. So that someone with the sound off still notices, the timer turns green during a break, in a green of its own, distinct from Rest's. The work clock keeps running through breaks, and a session still ends at its set time. During a break the browser tab's icon becomes a green dot. Details chosen by Claude, in a design the owner approved:
+  - A gap is the work time between breaks, from the end of one to the start of the next, so breaks can't overlap. A break starts only if it can end at least 15 s before the session does.
+  - During a break, the ring counts the break down, the name under the time reads "Break", the info line "Take a short break" and the tab title `00:08 · Break`. If the Rest tab is on show when a break starts, the page switches to Work.
+  - Pausing during a break ends it, and Resume draws a fresh gap. Reset, starting Rest and changing a break setting end it silently.
+  - Screen readers hear "Short break" and "Back to work".
+  - The break length goes from 5 to 300 seconds, in whole seconds. The saved-settings key `remindOn` keeps its old name, so saved settings carry over.
+  - The break's green is brighter and a little yellower than Rest's. In light mode the card fills with a bright green and the ring and time turn deep green. In dark mode the card is a deep green and the ring and time a very light green.
+  - Apart from the green dot, the tab's icon is blank (transparent), because browsers don't reliably bring back their default icon when a page removes its own.
+
+  Values and contrast are in `SPEC.md` 5.1 (Random breaks, Timer colors, Tab icon).
 
 ## Status
 - v1: blank shell with three placeholder pages (Page 1, Page 2, Page 3) and the shared tab navigation.
@@ -56,4 +67,5 @@ A change isn't finished until the code and all three files agree. When reporting
 - v4 (2026-11-22): the Work Timer's time sits in the middle of a ring that runs down as the session goes, with the timer's name under it, on the page and in the floating window. The floating window's layouts were reworked around the ring.
 - v5 (2026-11-22): the Work and Rest timers have their own colors, blue and green. The ring is a solid arc over a much paler track of the same color, and the Start button, the running time and the running dot take the timer's color.
 - v6 (2026-11-22): each timer color comes in three shades. The ring's track is a lighter shade of the timer's color, and the card behind the timer (and the floating window) is a very soft shade of it that follows the timer on show.
-- Next: the owner will describe the utilities for Pages 2 and 3.
+- v7 (2026-11-22): the random reminder became random short breaks: a ding, a break (10 s by default, settable), then the same ding. During a break the timer turns a bright green of its own and counts the break down, and the browser tab shows a green dot. The work clock keeps running through breaks.
+- Next: the owner will describe the utilities for Pages 2 and 3, and a next Work Timer feature that will use the recordings in `timer_sound/`.
