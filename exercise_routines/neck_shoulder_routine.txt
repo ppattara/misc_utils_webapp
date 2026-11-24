@@ -1,0 +1,32 @@
+ท่าบริหารคอ บ่า ไหล่
+Source: https://www.youtube.com/watch?v=7KAMEVgkkRM
+by หมอชวนฟิต [DeDoctor], uploaded 2023-07-29. Listed from the video on 2026-11-24.
+
+One exercise per line, in the video's order: name | description | timing
+- "hold 15 s": hold the position for 15 seconds.
+- "each side, right first": do it on the right, then on the left. The side is
+  the one the head leans or turns toward, and the hand used.
+- "10 reps x 2.4 s": 10 repetitions, each taking about 2.4 seconds.
+- "alternating": each movement one way counts as one rep (one turn, one nod
+  down or up, one lean), so 10 reps is 5 each way.
+Hold times and rep counts come from the video's on-screen timer and counter.
+The seconds per rep were measured from the video.
+
+# วอร์มอัพ
+หันศีรษะซ้าย-ขวา | ค่อยๆ หันหน้าไปทางซ้ายแล้วกลับมาตรง สลับกับทางขวา | 10 reps x 2.4 s, alternating
+ก้ม-เงยศีรษะ | ค่อยๆ ก้มหน้าลงแล้วเงยหน้าขึ้นช้าๆ อย่าเงยมากเกินไป | 10 reps x 2.7 s, alternating
+เอนศีรษะซ้าย-ขวา | ไหล่ตั้งตรง ไม่บิดไหล่ตาม ค่อยๆ เอนศีรษะไปด้านข้าง สลับซ้าย-ขวา | 10 reps x 2.9 s, alternating
+หมุนไหล่ | หมุนหัวไหล่ช้าๆ เป็นวงกลม ไปด้านหลังหรือด้านหน้าก็ได้ | 10 reps x 2.7 s
+
+# ยืดกล้ามเนื้อ
+ยืดคอด้านข้าง | นั่งหลังตรง ไหล่นิ่ง ค่อยๆ เอนศีรษะไปด้านข้างจนตึงคอและบ่า | hold 15 s, each side, right first
+ยืดคอด้านข้าง ใช้มือช่วย | เอนศีรษะไปด้านข้าง เอามือข้างเดียวกันอ้อมศีรษะช่วยกดเบาๆ | hold 15 s, each side, right first
+ยืดคอถึงท้ายทอย | มองไปที่รักแร้ ใช้มือข้างเดียวกันกดศีรษะลงเบาๆ จนตึงถึงท้ายทอย | hold 15 s, each side, left first
+ยืดคอด้านข้างและด้านหน้า | เอนศีรษะไปด้านข้าง เงยมองฟ้าเล็กน้อย แล้วใช้มือข้างเดียวกันกดศีรษะ | hold 15 s, each side, left first
+ยืดคอด้านหน้า | ค่อยๆ เงยหน้าขึ้นจนตึงคอด้านหน้า ถ้ารู้สึกไม่สบายหรือปวดมากให้ข้ามท่านี้ | hold 15 s
+
+# เสริมความแข็งแรง
+เกร็งคอต้านมือ ด้านข้าง | วางมือที่ข้างศีรษะแล้วดัน เกร็งคอต้านไว้ไม่ให้ศีรษะขยับ | hold 15 s, each side, left first
+เกร็งคอต้านมือ ด้านหลัง | ประสานมือที่ท้ายทอย ดันศีรษะไปด้านหน้า เกร็งคอต้านไว้ไม่ให้ขยับ | hold 15 s
+เกร็งคอต้านมือ ด้านหน้า | วางมือที่หน้าผาก ดันศีรษะไปด้านหลัง เกร็งคอต้านไว้ไม่ให้ขยับ | hold 15 s
+เก็บคาง | ใช้นิ้วแตะปลายคาง ดันคางไปด้านหลังตรงๆ จนรู้สึกยืดคอด้านหลัง | hold 15 s, 2 times

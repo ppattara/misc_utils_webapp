@@ -8,6 +8,8 @@ A web app that collects miscellaneous utilities for everyday use. It is a static
 - `SPEC.md`: the full description of the app, detailed enough to rebuild it (or something very close) from that file alone.
 - `README.md`: the project summary, which doubles as the user manual.
 - `timer_sound/`: the owner's recordings for the Work Timer's sounds, the source of the copies embedded in `index.html`. The app never reads this folder. Leave the files as they are unless the owner asks for a change. To change a sound, replace its file and embed it again (`SPEC.md` 5.1, Sounds).
+- `exercise_routines/`: exercise routines, one plain-text file per routine, the source for a planned routine-timer page (see Status). More routines may be added. The app doesn't use them yet.
+  - `neck_shoulder_routine.txt`: a neck and shoulder routine, listed from a YouTube video (source and format in the file's header). Each exercise has a name and description in Thai, and its hold time or reps.
 
 ## Ground rules (always follow)
 
@@ -90,4 +92,4 @@ A change isn't finished until the code and all three files agree. When reporting
 - v7 (2026-11-22): the random reminder became random short breaks: a ding, a break (10 s by default, settable), then the same ding. During a break the timer turns a bright green of its own and counts the break down, and the browser tab shows a green dot. The work clock keeps running through breaks.
 - v8 (2026-11-22): the Work Timer plays the owner's recordings at the start and end of work, of rest and of each break, embedded in `index.html` as base64. The old dings are a setting, and the sidebar previews all six sounds.
 - v9 (2026-11-22): the Work Timer's settings are typed in by hand as whole numbers, with no up/down arrows, in narrower ranges (work 10–120 min, rest 3–30 min, break length 5–15 s, gaps 1–5 and 2–10 min), and the shortest gap always stays below the longest.
-- Next: the owner will describe the utilities for Pages 2 and 3.
+- Next: the owner will describe the utilities for Pages 2 and 3. One of them will be a timer that runs through the routine in `exercise_routines/neck_shoulder_routine.txt`, and more routines may follow in that folder (owner, 2026-11-24).
