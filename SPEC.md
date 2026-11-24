@@ -5,7 +5,7 @@ This document describes the app in enough detail to rebuild it from scratch, or 
 ## 1. Overview
 
 - A personal collection of everyday utilities in one web app, with one utility per page. Pages are switched with tabs.
-- The whole app is a single static file, `index.html`, with all HTML, CSS and JavaScript inline. The Work Timer's sound recordings are embedded in it too, as base64 (see 5.1, Sounds).
+- The whole app is a single static file, `index.html`, with all HTML, CSS and JavaScript inline. The Work Timer's sound recordings are embedded in it too, as base64 (see 5.1, Sounds), and so are the Exercise page's routines, as plain text (see 5.2, Routines).
 - There is no backend, database, user login or build step, and no external dependencies (no frameworks, CDNs, web fonts or files loaded at run time). The app works offline, opened directly from disk (`file://`) or served from any static host.
 - Nothing is sent anywhere. A page may remember its own settings in the browser's `localStorage` (see 3.4). Nothing else is stored.
 - Target browsers: current Chrome, Safari, Firefox and Edge, on desktop and mobile. Plain modern JavaScript (ES2015+) is fine.
@@ -18,8 +18,9 @@ In order:
 2. `<header class="app-header">` containing a `.container` with an empty `<nav class="tabs" id="tabs" aria-label="Pages">` that the shared script fills. The app has no name, so the header shows only the tabs.
 3. `<main class="container">` containing the pages, one `<section class="page">` each.
 4. The shared navigation `<script>`.
-5. Page scripts, one `<script>` element per page that needs one.
-6. Embedded data, under a comment headed `Embedded data`: the Work Timer's recordings, one `<script type="text/plain" class="wt-recording">` element each (see 5.1, Sounds). Each is one very long line of base64, about 220 KB in all, so they come last and the code above reads without scrolling past them.
+5. Page scripts, one `<script>` element per page that needs one: the Work Timer's, then the Exercise page's.
+6. Exercise routines, under a comment headed `Exercise routines`: one `<script type="text/plain" class="ex-routine">` element per routine, holding a copy of its file's text (see 5.2, Routines). This is readable text, a few KB per routine.
+7. Embedded data, under a comment headed `Embedded data`: the Work Timer's recordings, one `<script type="text/plain" class="wt-recording">` element each (see 5.1, Sounds). Each is one very long line of base64, about 220 KB in all, so they come last and the code above reads without scrolling past them.
 
 ## 3. Page system
 
@@ -48,7 +49,7 @@ The shared script, wrapped in an IIFE, runs at the end of `<body>`:
 3. It shows the page named in the URL, and does so again on every `hashchange` event (tab clicks, back/forward, a typed URL).
 
 Showing a page:
-- The id is read from the hash by stripping a leading `#` or `#/`. Both `#/page-2` and `#page-2` work, but links always use `#/<id>`.
+- The id is read from the hash by stripping a leading `#` or `#/`. Both `#/exercise` and `#exercise` work, but links always use `#/<id>`.
 - If there is no hash, or no page has that id, the first page is shown. The URL is not rewritten.
 - The shown section gets the class `is-active`. CSS hides every other page with `.page:not(.is-active) { display: none !important; }`. The `!important` stops a page's own `display` rule from un-hiding it.
 - The matching tab link gets `aria-current="page"`, and the attribute is removed from the other links.
@@ -104,8 +105,8 @@ The shared script needs no changes.
 | Tab | id | Purpose | Content |
 |---|---|---|---|
 | Work Timer | `work-timer` | Work and rest countdowns, with random short breaks during work | See 5.1 |
-| Page 2 | `page-2` | Not decided yet | Placeholder: `<h1>Page 2</h1>` and a `.placeholder` paragraph, "Nothing here yet." |
-| Page 3 | `page-3` | Not decided yet | Same placeholder, titled Page 3 |
+| Exercise | `exercise` | Follow-along exercise routines: get-ready countdowns, hold countdowns and rep counters, with dings | See 5.2 |
+| Page 3 | `page-3` | Not decided yet | Placeholder: `<h1>Page 3</h1>` and a `.placeholder` paragraph, "Nothing here yet." |
 
 ### 5.1 Work Timer
 
@@ -362,3 +363,152 @@ Every rule is scoped under `#work-timer` and uses the shared color variables and
 - The recordings are AAC, which current Chrome, Edge, Safari and Firefox decode (Firefox through the operating system's decoders, so on Linux it needs the system's FFmpeg). A browser that can't decode a recording plays that moment's ding instead.
 - Some browsers, Safari in particular, may not change a page's tab icon after it has loaded, so the green dot may not show there. The tab title still changes.
 - The floating window needs the Document Picture-in-Picture API: desktop Chrome and Edge 116 or later, and Firefox 151 or later. Safari and phone browsers don't have it, so its button doesn't appear there. The browser decides where the window opens and sets its own smallest and largest sizes.
+
+### 5.2 Exercise
+
+A routine of exercises to follow along with. A drop-down picks the routine, and Start runs it from beginning to end with no further interaction. A 5-second get-ready countdown comes first, and a 3-second one before every later step. A hold counts down its seconds, and a set of reps counts up at the routine's pace. A ding marks the start and end of each step, and a softer ding marks each new rep. The current exercise's name (large) and description sit beside the ring. A list of the routine's exercises, with a progress bar down its side, shows the way through, and while paused a click on an exercise picks where to go on. The screen is kept on while the routine runs. The routines are embedded in the page as text, so it still works offline as one file. The page's own words are in Thai, like the exercises; only its name, "Exercise", is English. The page's ids and classes start with `ex-`. Its styles sit under `/* ---------- Exercise (#exercise) ---------- */` in the page-specific styles, after the Work Timer's, and its script is the second page script.
+
+#### Markup
+
+Inside `<section class="page" id="exercise" data-title="Exercise">`, in order:
+
+1. `<h1>Exercise</h1>`.
+2. `div.ex-pick` with `lang="th"`: `<label for="ex-routine">ชุดท่า</label>` and an empty `<select id="ex-routine">`, which the script fills with the routines.
+3. `div.ex-body` with `lang="th"`, holding:
+   - `div.ex-main`:
+     - `div.ex-stage`, holding `div#ex-ring.ex-ring` and then `div.ex-text`.
+       - The ring is built like the Work Timer's: an inline `svg.ex-ring-svg` with `viewBox="0 0 100 100"` and `aria-hidden="true"`, holding `circle.ex-ring-track` (center 50, 50, radius 45) and `path#ex-ring-arc.ex-ring-arc` with `d="M50 5a45 45 0 1 1 0 90a45 45 0 1 1 0-90z"`; then `div.ex-ring-text` holding `div#ex-count.ex-count` (`role="timer"`) and `div#ex-ring-label.ex-ring-label`.
+       - `div.ex-text` holds `p#ex-meta.ex-meta`, `h2#ex-name.ex-name` and `p#ex-desc.ex-desc`.
+     - `p#ex-info.ex-info`.
+     - `div.ex-controls` with two buttons: `#ex-start.ex-btn.ex-btn-primary` "เริ่ม" and `#ex-pause.ex-btn` "หยุดชั่วคราว", starting disabled.
+     - `p#ex-live.ex-sr` (`role="status"`), a visually hidden live region for announcements.
+   - `nav#ex-list.ex-list` with `aria-label="ลำดับท่า"`, which the script fills (see Exercise list).
+
+The script fills in every text.
+
+#### Routines
+
+- **Files:** each routine is a plain-text file (UTF-8) in `exercise_routines/`, read as follows:
+  - The first line is the routine's title, shown in the drop-down.
+  - The lines before the first line that starts with `# ` are notes for people (the file's header) and are skipped.
+  - A `# ` line starts a section, named by the rest of the line. The exercises after it belong to it.
+  - Every other non-blank line is an exercise: `name | description | timing`, split at `|` with the spaces around each field trimmed. It needs exactly three fields and a name.
+  - The timing, in any case: first `hold N s` (N seconds, decimals allowed) or `N reps x S s` (N whole reps of S seconds each; `rep` and `×` also work). Then, separated by commas, any of: `alternating` (each movement one way counts as one rep), `each side` (done on one side, then the other), `right first` or `left first` (which side comes first; right if neither), and `K times` (done K times, as sets). With both `each side` and `K times`, each set does both sides.
+  - A line that can't be read is skipped, with the console warning `Exercise: skipped a line of "<title>": <line>`. A routine with no exercises isn't listed.
+- **Embedding:** the page never reads `exercise_routines/`. Each routine is a `<script type="text/plain" class="ex-routine">` element under the comment headed `Exercise routines` (see 2), holding the file's whole text as it is, from the line after the opening tag. Its `data-file` is the file's name without `.txt`, and is the routine's id. The `text/plain` type keeps the browser from running it, and the text must not contain `</script`. The drop-down lists the routines in the order of their elements.
+- **Adding or changing a routine:** add or edit its file in `exercise_routines/`, then paste the file's whole text into its element (adding an element for a new one).
+- The elements come after the page script, so the script reads them on `DOMContentLoaded`, or at once if the page has already loaded.
+
+#### Steps and timing
+
+- A routine runs as steps: one per set and side of each exercise, in order (set by set, and in each set the first side, then the other). A hold's step lasts its hold time, and a reps step lasts the number of reps times the seconds per rep.
+- Before each step comes a get-ready countdown: 5 seconds before the first step after Start, and 3 seconds before every other step, including one picked from the list while paused.
+- The total time from a starting step is 5 seconds, plus every step from there, plus 3 seconds before each step after the first. The neck and shoulder routine has 13 exercises in 19 steps, with 332 seconds of exercise: 6:31 in all.
+
+#### Running
+
+- The routine is idle (not started), running, paused or done.
+- **Start** (เริ่ม, when idle or done) runs the routine from the starting exercise to the end: the first exercise, or the one picked from the list. The 5-second countdown comes first.
+- **Pause** (หยุดชั่วคราว, only while running) freezes the routine where it is: mid-countdown, mid-hold or mid-count. Dings that haven't played are cancelled, and one already ringing rings out.
+- **Resume:** while paused, the Start button reads ทำต่อ and carries on from where the routine paused, at once, with no countdown and no ding.
+- **Picking from the list** (while not running): a click on an exercise moves to the start of its first step's get-ready countdown. While paused, Resume then gives the 3-second countdown and starts that exercise from its beginning (a click on the current exercise starts it over). While idle or done, the exercise becomes the starting exercise, and Start gives the usual 5-second countdown.
+- **Done:** when the last step ends. Start then runs the routine again from the first exercise.
+- **Changing the routine** (the drop-down, disabled while running) stops the routine silently, cancelling its dings, and shows the new routine, idle, at its first exercise.
+- **How it's timed:** Start and Resume plan the rest of the routine: every part still to come (a get-ready countdown or a step), with its start and end times in `performance.now()` milliseconds, counted from the current position. Pause stores the position: the step, the part (countdown or step), the seconds into it, and the countdown's length. While running, the display is redrawn on every animation frame, so a count changes in step with its ding. Animation frames stop in a background tab, so a 500 ms interval (`tick`) also runs: it wakes the audio context if needed, keeps the dings in step (see Sounds), announces each new get-ready countdown, and ends the routine. Both are safe to call at any time.
+
+#### Display
+
+- **Ring:** built like the Work Timer's (see 5.1, Ring), 200px square. Its arc shows the share of the current part left: full when a countdown or step begins, running back toward the top as it goes. It is drawn with `stroke-dasharray` the same way (C = 2π × 45), written only when it changes. The script sets one of these classes on `#ex-ring`:
+  - `is-idle`: full and blue.
+  - `is-ready`: amber, during a get-ready countdown.
+  - `is-work`: blue, during a step.
+  - `is-paused`, added to `is-ready` or `is-work` while paused: grey, with the track `--border`, the arc `--muted` and the count `--muted`.
+  - `is-done`: full and blue.
+- **Count and label:** the count in the middle and the label under it:
+
+| State | Count | Label |
+|---|---|---|
+| Idle | The total time from the starting exercise, `m:ss` | เวลารวม |
+| Get-ready countdown | The seconds left, rounded up (5 … 1, or 3 … 1) | เตรียมตัว |
+| Hold | The seconds left, rounded up (15 … 1) | วินาที |
+| Reps | The rep in progress, from 1 to the number of reps, moving on every S seconds | จาก N (of N) |
+| Done | ✓ | ครบแล้ว |
+
+  While paused, they show the paused moment.
+- **Meta line** (`#ex-meta`): tags joined with " · ". First comes a tag for the state, if any: ท่าแรก (first exercise) or เริ่มที่ท่านี้ (start here) when idle, or ต่อไป (next) during a countdown. Then come the side (ข้างขวา or ข้างซ้าย) for an exercise done on each side, and the set (รอบที่ 1 จาก 2) for one done more than once. Last comes the hold (ค้างไว้ 15 วินาที) or the reps: 10 ครั้ง, then สลับไปมา if alternating, then ครั้งละ 2.4 วินาที. Seconds show with at most one decimal.
+- **Name and description** (`#ex-name`, `#ex-desc`): the exercise of the step on show. During a countdown, that is the coming step. When done, the name is ครบทุกท่าแล้ว (all done) and the description is the routine's title.
+- **Info line** (`#ex-info`): "กดเริ่ม แล้วทำตามได้เลย หรือแตะชื่อท่าในรายการเพื่อเริ่มจากท่านั้น" when idle, "หยุดชั่วคราว · แตะชื่อท่าในรายการเพื่อเลือกท่าที่จะทำต่อ" when paused, "กดเริ่มเพื่อทำอีกรอบ" when done, and empty while running. It keeps its height when empty.
+- **Buttons:** Start is enabled unless the routine runs, and reads ทำต่อ while paused and เริ่ม otherwise. Pause is enabled only while it runs. When a button disables itself, focus moves to the other one.
+- Texts and attributes are written only when they change.
+- The page doesn't change the browser tab's title. The Work Timer's countdown still takes it while that timer runs (see 3.2).
+
+#### Exercise list
+
+- `nav#ex-list` holds `p.ex-list-head`, which gives the number of exercises and the total time from the first, for example "13 ท่า · เวลารวม 6:31 นาที". Then, for each section, `p.ex-group` with the section's name, and `ol.ex-items` with one `li` per exercise. Each `li` holds `button.ex-item` (`data-ex`, the exercise's index), which holds `span.ex-bar` (holding `span.ex-fill`) and `span.ex-item-name`.
+- **Progress bar:** the `span.ex-bar` segments, one per exercise, make up a bar down the list's side, broken only between sections. Each segment fills from the top with the share of its exercise's step time done (`transform: scaleY(share)`, with 3 decimals, written when it changes). Countdowns don't count. The bar shows the position in the routine: exercises before the current one are full, even ones skipped by picking a later one, and later ones are empty. Idle, all are empty. Done, all are full.
+- **Classes:** `is-done` on the exercises before the current one (all of them when done), and `is-current` on the exercise on show, which also gets `aria-current="step"`. Idle, the current one is the starting exercise.
+- The buttons are disabled while the routine runs, and a click while it isn't running picks where to go on (see Running).
+
+#### Sounds
+
+The dings are generated with the Web Audio API, in the Work Timer's soft bell: the same four sine partials, attack and fade (see 5.1, Dings). There are three:
+
+| Ding | Notes: start, pitch, level, fade time | Plays |
+|---|---|---|
+| Start | 0 s, A5 (880 Hz), 0.5, 1.2 s | When a step starts |
+| End | 0 s, A5 (880 Hz), 0.45, 1 s; then 0.18 s, E5 (659.25 Hz), 0.45, 1.6 s | When a step ends |
+| Rep | 0 s, A5 (880 Hz), 0.16, 0.45 s | When each rep after the first starts |
+
+- So a single ding starts a step, a falling pair ends it, and the rep ding is the start ding, much quieter and shorter. The countdowns are silent, and Resume makes no sound.
+- **Playback:** the page has its own `AudioContext`, created by the first Start (browsers allow audio only after a user gesture), with a master gain of 0.9. Each ding gets its own gain node (its bus) into the master, disconnected when all its oscillators have ended or when it's cancelled.
+- **Scheduling:** Start and Resume schedule every ding of the rest of the routine ahead on the audio clock (a whole routine has about 75), so they play on time even in a background tab. The plan's `performance.now()` times become audio-clock times through a pair of matching readings (`ctx.currentTime` and `performance.now()`) taken when they're scheduled. If the context wasn't running yet, they are scheduled again as soon as it runs. Pause and a routine change cancel the dings that haven't started, and one already ringing rings out.
+- **Staying in step:** on every tick, if the audio clock has drifted 0.15 seconds or more from that pair (it stalls while a computer sleeps, for example), the dings still ahead are scheduled again. Those whose time has passed are dropped.
+- The audio context is suspended 5 seconds after the routine stops (Pause, or the end), once no ding is still ringing. If one is, it checks again every 5 seconds. The next Start or Resume wakes it.
+
+#### Keeping the screen on
+
+- While the routine runs, the page asks for a screen wake lock (Screen Wake Lock API), with no button, so the routine can be followed without touching the device. It lets go on Pause and at the end.
+- Browsers drop the lock while the page is hidden, so it is asked for again when the page is shown while the routine runs.
+- If the API is missing or the request is refused, nothing shows and the routine runs anyway. This is separate from the Work Timer's Keep screen on button.
+
+#### Saved settings
+
+- The chosen routine is saved to `localStorage` under `misc-utils:exercise` when the drop-down changes, as JSON like `{"routine":"neck_shoulder_routine"}`, the routine's id (its `data-file`). On load, it is used if it names a listed routine. Otherwise the first routine is shown.
+
+#### Styles
+
+Every rule is scoped under `#exercise`. The page's colors are custom properties on `#exercise`, with dark values in its own `prefers-color-scheme: dark` media query:
+
+| Variable | Light | Dark | Used for |
+|---|---|---|---|
+| `--ex-work` | `#2f6fde` | `#5b8ef0` | The ring's arc during a step, idle and done, the Start button, the buttons' hover border and the progress bar's fill (the same blue as `--accent`) |
+| `--ex-work-pale` | `#c1d4f5` | `#2e4266` | The ring's track with the blue arc (the Work Timer's work track) |
+| `--ex-ready` | `#a86500` | `#e0a040` | The ring's arc during a get-ready countdown: amber |
+| `--ex-ready-pale` | `#eee0cc` | `#4a3a1e` | Its track: in light, the amber mixed 20% into white; in dark, a dim amber |
+
+- Contrast: the amber arc is 3.6:1 against its track in light and 4.8:1 in dark, and 4.6:1 and 7.1:1 against the card. The blue arc and track are the Work Timer's (at least 3.1:1). The progress bar's fill is 3.6:1 against its `--border` track in light and 3.9:1 in dark. The count and text use `--text` and `--muted`.
+- `[hidden]` inside the page is forced to `display: none`. Buttons and the drop-down inherit the font and color, enabled buttons have a pointer cursor, and focus shows a 2px `--accent` outline with a 2px offset.
+- `.ex-pick` is a wrapping flex row with an 8px × 12px gap and a 20px bottom margin. The label is `--muted`. The drop-down has 6px × 10px padding, a 1px `--border` border, 8px radius and a `--surface` background, at 60% opacity when disabled.
+- `.ex-body` is a grid with a 24px gap. Wider than 720px, it has two columns, `minmax(0, 1fr) 240px`, with the list beside the routine. At 720px or narrower, the list goes below.
+- `.ex-main` is a centered flex column with a 16px gap and is a container named `ex-main` (`inline-size`).
+- `.ex-stage` is a flex row, vertically centered, with a 24px gap, full width. `.ex-text` takes the rest of the row (`flex: 1 1 0`, `min-width: 0`). When `.ex-main` is 520px wide or less (`@container ex-main`), the stage becomes a column with a 16px gap and centered text, the ring is 180px, the name 1.6rem and the description 1rem.
+- `.ex-ring`, like the Work Timer's: a size container and a one-cell grid (`grid-template: minmax(0, 1fr) / minmax(0, 1fr)`), 200px square, not shrinking. Both children sit in the cell, centered. The SVG fills it (`overflow: visible`), and the track and arc have no fill and a stroke width of 6. `.ex-count`: `font-size: 30cqmin` (`20cqmin` when idle, for the `m:ss` total), weight 600, `font-variant-numeric: tabular-nums`, letter spacing −0.02em, line height 1.1. `.ex-ring-label`: `--muted`, `font-size: max(12px, 8cqmin)`, line height 1.4.
+- `.ex-meta`: `--muted`, 0.95rem, 6px below. `.ex-name`: 2rem, line height 1.35, no margin. `.ex-desc`: 1.1rem, 8px above.
+- `.ex-info`: `--muted`, 0.95rem, centered, no margin, at least 1.5em tall.
+- `.ex-controls` is a flex row with an 8px gap, full width up to 360px. `.ex-btn` is styled like the Work Timer's `.wt-btn`: equal widths, 9px × 10px padding, pill-shaped, a 1px `--border` border, `--surface` background, weight 600, the border turning `--ex-work` on hover, and 45% opacity when disabled. `.ex-btn-primary` has an `--ex-work` background and border and `--accent-text` text.
+- **List:** `.ex-list` is 0.85rem. `.ex-list-head` is `--muted` with no margin. `.ex-group` is `--muted`, weight 600, with a 14px top margin and 4px below. `.ex-items` has no margin, padding or list markers. `.ex-item` is a full-width flex row (items stretched, 10px gap) with no padding, border or background, and left-aligned text. `.ex-bar` is 4px wide with a `--border` background and `overflow: hidden`, and reaches 1px into the next row (`margin-bottom: -1px`), so no seam shows between segments. Its ends are rounded (2px) at the first and last row of each section. `.ex-fill` fills the segment (`position: absolute; inset: 0`) in `--ex-work`, scaled from the top (`transform-origin: top`). `.ex-item-name` has 3px padding above and below and a 20px line height, so every row is a whole 26px tall. Done exercises are `--muted` and the current one is weight 600. While the buttons are enabled, hovering one turns its name `--accent` and underlines it.
+- `.ex-sr` is visually hidden, like the Work Timer's `.wt-sr`.
+
+#### Accessibility
+
+- The Thai parts of the page have `lang="th"`, so screen readers read them with a Thai voice. The `h1` stays English.
+- `role="timer"` on the count keeps screen readers from reading out every change. The ring's SVG is hidden from them.
+- `#ex-live` announces "เตรียมตัว: " and the coming exercise's name (and its side, if any) when each get-ready countdown starts, and "จบชุดท่าแล้ว" (the routine is done) at the end. The live region is emptied first and filled 100 ms later, so a repeated message is read again. The dings mark the start and end of each step.
+- The list's exercises are buttons, so they work from the keyboard, and the one on show has `aria-current="step"`.
+
+#### Known limits
+
+- Phones usually suspend a page when the screen locks or the browser goes to the background, so the routine can only be followed with the page on screen. The page keeps the screen on while the routine runs, where the browser allows it. On an iPhone, silent mode may mute the dings.
+- In a background tab, the dings stay on time, and the display catches up when the page is shown again. The routine's end registers when the slowed-down interval next runs.
+- Delays in the audio output, such as Bluetooth headphones' (often 0.1 to 0.3 seconds), make each ding come a little after its count changes.
+- In a browser without Web Audio, the routine runs silently.

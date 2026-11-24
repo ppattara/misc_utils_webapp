@@ -15,7 +15,7 @@ A small personal web app that collects everyday utilities in one place, one per 
 | Tab | What it does |
 |---|---|
 | Work Timer | Work and rest countdowns, with random short breaks during work |
-| Page 2 | Not built yet |
+| Exercise | Exercise routines to follow along with: holds are timed and reps counted, with dings |
 | Page 3 | Not built yet |
 
 ## Work Timer
@@ -52,7 +52,25 @@ A countdown for focused work and another for breaks. While you work, short break
 - **In the background:** on a computer, the timer keeps running and the sounds play on time while the page sits in a background tab, or while you use another utility in the app.
 - **On a phone:** phones usually pause web pages when the screen locks or you switch apps, so no sounds play then. The time is still right when you come back. Use Keep screen on to avoid this. On an iPhone, silent mode may mute the sounds.
 
+## Exercise
+
+An exercise routine to follow along with. Pick a routine, press เริ่ม (Start), and follow it from beginning to end without touching anything. The page counts down each hold, counts your reps at the right pace, and dings to tell you when to start and stop. The page's words are in Thai, like the exercises.
+
+- **Routines:** pick one from the ชุดท่า drop-down. For now there is one: ท่าบริหารคอ บ่า ไหล่, 13 neck and shoulder exercises taking about 6½ minutes, from a video by หมอชวนฟิต [DeDoctor]. Its link is in `exercise_routines/neck_shoulder_routine.txt`. The page remembers your choice.
+- **Start:** first comes a 5-second countdown (เตรียมตัว) to get ready. Then the routine runs by itself to the end. Before each later exercise, and before switching sides, a 3-second countdown shows what comes next (ต่อไป) and gives you time to get into position.
+- **Holds:** the ring counts the hold down in seconds. For exercises done on each side, the page shows ข้างขวา or ข้างซ้าย, and for one done twice, รอบที่ 1 จาก 2.
+- **Reps:** the ring counts your reps (for example 2 จาก 10) at the routine's pace. In alternating moves (สลับไปมา), each movement one way counts as one rep, so 10 reps means 5 each way.
+- **Dings:** one ding when an exercise starts, a falling two-note ding when it ends, and a softer, shorter ding at each new rep. The countdowns are silent.
+- **On screen:** the exercise's name in large type, with its description beside the ring. Above the name are the side, the set, and the hold time or reps. The ring's color shows what's happening: amber during a countdown, blue during an exercise, grey while paused. Before you start, the ring shows the total time.
+- **The list:** on the right (below, on a phone) are all of the routine's exercises in small type, grouped into warm-up, stretches and strengthening, with the total time at the top. The bar beside them fills as you go. Finished exercises turn grey, and the current one is bold.
+- **Pause and resume:** หยุดชั่วคราว (Pause) stops everything where it is. ทำต่อ (Resume) carries on from that moment, straight away. Or, while paused, click an exercise in the list to continue from there instead. Resume then gives you the 3-second countdown and starts that exercise from the beginning.
+- **Start partway:** before starting, click an exercise in the list to start from it. The ring shows the time from there to the end.
+- **When it's done:** the page shows ครบทุกท่าแล้ว. Press เริ่ม to do it again.
+- **Screen stays on:** while the routine runs, the page stops the screen from turning off, in browsers that allow it, and lets it go when you pause or finish.
+- **In the background:** on a computer, the dings stay on time while you use another tab or utility, and the screen catches up when you come back. Phones usually pause web pages when the screen locks or you switch apps, so keep the page on screen. On an iPhone, silent mode may mute the dings.
+
 ## More
 
+- `exercise_routines/`: the exercise routines, one text file each. The app has its own copies built in, so after changing a file, it needs to be copied into `index.html` again (see `SPEC.md` 5.2).
 - `SPEC.md`: the full description of how the app works, detailed enough to rebuild it.
 - `CLAUDE.md`: working rules for developing this project with Claude Code.

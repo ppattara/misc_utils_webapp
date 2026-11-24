@@ -550,6 +550,183 @@
       #work-timer.is-floating #wt-reset { display: none; }
     }
 
+    /* ---------- Exercise (#exercise) ---------- */
+    /* The ring is blue (the accent) while a step runs and amber during the get-ready countdown, each
+       over a pale track of its own color, and grey while paused. */
+    #exercise {
+      --ex-work: #2f6fde;
+      --ex-work-pale: #c1d4f5;
+      --ex-ready: #a86500;
+      --ex-ready-pale: #eee0cc;
+    }
+    @media (prefers-color-scheme: dark) {
+      #exercise {
+        --ex-work: #5b8ef0;
+        --ex-work-pale: #2e4266;
+        --ex-ready: #e0a040;
+        --ex-ready-pale: #4a3a1e;
+      }
+    }
+    #exercise [hidden] { display: none !important; }
+    #exercise button,
+    #exercise select { font: inherit; color: inherit; }
+    #exercise button:not(:disabled) { cursor: pointer; }
+    #exercise :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* Routine picker */
+    #exercise .ex-pick {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 12px;
+      margin-bottom: 20px;
+    }
+    #exercise .ex-pick label { color: var(--muted); }
+    #exercise .ex-pick select {
+      max-width: 100%;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+    #exercise .ex-pick select:disabled { opacity: 0.6; }
+
+    /* The routine on the left and the list of its exercises on the right, or below on narrow screens. */
+    #exercise .ex-body { display: grid; gap: 24px; align-items: start; }
+    @media (min-width: 721px) {
+      #exercise .ex-body { grid-template-columns: minmax(0, 1fr) 240px; }
+    }
+    #exercise .ex-main {
+      container: ex-main / inline-size;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* The ring, with the exercise's name and description beside it. The count and the label under it
+       are sized from the ring (a size container), like the Work Timer's. */
+    #exercise .ex-stage { display: flex; align-items: center; gap: 24px; width: 100%; }
+    #exercise .ex-ring {
+      container-type: size;
+      display: grid;
+      grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+      place-items: center;
+      flex: none;
+      width: 200px;
+      height: 200px;
+    }
+    #exercise .ex-ring > * { grid-area: 1 / 1; }
+    #exercise .ex-ring-svg { width: 100%; height: 100%; overflow: visible; }
+    #exercise .ex-ring-track,
+    #exercise .ex-ring-arc { fill: none; stroke-width: 6; }
+    #exercise .ex-ring-track { stroke: var(--ex-work-pale); }
+    #exercise .ex-ring-arc { stroke: var(--ex-work); }
+    #exercise .ex-ring.is-ready .ex-ring-track { stroke: var(--ex-ready-pale); }
+    #exercise .ex-ring.is-ready .ex-ring-arc { stroke: var(--ex-ready); }
+    #exercise .ex-ring.is-paused .ex-ring-track { stroke: var(--border); }
+    #exercise .ex-ring.is-paused .ex-ring-arc { stroke: var(--muted); }
+    #exercise .ex-ring-text { display: flex; flex-direction: column; align-items: center; }
+    #exercise .ex-count {
+      font-size: 30cqmin;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    #exercise .ex-ring.is-idle .ex-count { font-size: 20cqmin; }
+    #exercise .ex-ring.is-paused .ex-count { color: var(--muted); }
+    #exercise .ex-ring-label { color: var(--muted); font-size: max(12px, 8cqmin); line-height: 1.4; }
+    #exercise .ex-text { flex: 1 1 0; min-width: 0; }
+    #exercise .ex-meta { margin: 0 0 6px; color: var(--muted); font-size: 0.95rem; }
+    #exercise .ex-name { margin: 0; font-size: 2rem; line-height: 1.35; }
+    #exercise .ex-desc { margin: 8px 0 0; font-size: 1.1rem; }
+    /* Too narrow for the text beside the ring: it goes under it, centered. */
+    @container ex-main (max-width: 520px) {
+      #exercise .ex-stage { flex-direction: column; gap: 16px; text-align: center; }
+      #exercise .ex-ring { width: 180px; height: 180px; }
+      #exercise .ex-name { font-size: 1.6rem; }
+      #exercise .ex-desc { font-size: 1rem; }
+    }
+    #exercise .ex-info {
+      min-height: 1.5em;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-align: center;
+    }
+    #exercise .ex-controls { display: flex; gap: 8px; width: 100%; max-width: 360px; }
+    #exercise .ex-btn {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      font-weight: 600;
+    }
+    #exercise .ex-btn:not(:disabled):hover { border-color: var(--ex-work); }
+    #exercise .ex-btn-primary {
+      border-color: var(--ex-work);
+      background: var(--ex-work);
+      color: var(--accent-text);
+    }
+    #exercise .ex-btn:disabled { opacity: 0.45; }
+
+    /* The list of the routine's exercises, in small text and grouped by section, with a progress bar
+       down its side: one segment per exercise, which fills as that exercise is done. While the routine
+       isn't running, each name is a button that picks where to continue. */
+    #exercise .ex-list { font-size: 0.85rem; }
+    #exercise .ex-list-head { margin: 0; color: var(--muted); }
+    #exercise .ex-group { margin: 14px 0 4px; color: var(--muted); font-weight: 600; }
+    #exercise .ex-items { margin: 0; padding: 0; list-style: none; }
+    #exercise .ex-item {
+      display: flex;
+      align-items: stretch;
+      gap: 10px;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      background: none;
+      text-align: left;
+    }
+    /* Each segment reaches 1px into the next row, so no seam shows between them. */
+    #exercise .ex-bar {
+      position: relative;
+      flex: none;
+      width: 4px;
+      margin-bottom: -1px;
+      overflow: hidden;
+      background: var(--border);
+    }
+    #exercise li:first-child .ex-bar { border-radius: 2px 2px 0 0; }
+    #exercise li:last-child .ex-bar { border-radius: 0 0 2px 2px; }
+    #exercise li:only-child .ex-bar { border-radius: 2px; }
+    #exercise .ex-fill {
+      position: absolute;
+      inset: 0;
+      background: var(--ex-work);
+      transform: scaleY(0);
+      transform-origin: top;
+    }
+    #exercise .ex-item-name { padding: 3px 0; line-height: 20px; }
+    #exercise .ex-item.is-done .ex-item-name { color: var(--muted); }
+    #exercise .ex-item.is-current .ex-item-name { font-weight: 600; }
+    #exercise .ex-item:not(:disabled):hover .ex-item-name { color: var(--accent); text-decoration: underline; }
+
+    /* Visually hidden, but read by screen readers. */
+    #exercise .ex-sr {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
   </style>
 </head>
 <body>
@@ -666,9 +843,42 @@
       </div>
     </section>
 
-    <section class="page" id="page-2" data-title="Page 2">
-      <h1>Page 2</h1>
-      <p class="placeholder">Nothing here yet.</p>
+    <section class="page" id="exercise" data-title="Exercise">
+      <h1>Exercise</h1>
+      <div class="ex-pick" lang="th">
+        <label for="ex-routine">ชุดท่า</label>
+        <select id="ex-routine"></select>
+      </div>
+
+      <div class="ex-body" lang="th">
+        <div class="ex-main">
+          <div class="ex-stage">
+            <div class="ex-ring" id="ex-ring">
+              <svg class="ex-ring-svg" viewBox="0 0 100 100" aria-hidden="true">
+                <circle class="ex-ring-track" cx="50" cy="50" r="45"/>
+                <path class="ex-ring-arc" id="ex-ring-arc" d="M50 5a45 45 0 1 1 0 90a45 45 0 1 1 0-90z"/>
+              </svg>
+              <div class="ex-ring-text">
+                <div class="ex-count" id="ex-count" role="timer"></div>
+                <div class="ex-ring-label" id="ex-ring-label"></div>
+              </div>
+            </div>
+            <div class="ex-text">
+              <p class="ex-meta" id="ex-meta"></p>
+              <h2 class="ex-name" id="ex-name"></h2>
+              <p class="ex-desc" id="ex-desc"></p>
+            </div>
+          </div>
+          <p class="ex-info" id="ex-info"></p>
+          <div class="ex-controls">
+            <button type="button" class="ex-btn ex-btn-primary" id="ex-start">เริ่ม</button>
+            <button type="button" class="ex-btn" id="ex-pause" disabled>หยุดชั่วคราว</button>
+          </div>
+          <p class="ex-sr" id="ex-live" role="status"></p>
+        </div>
+
+        <nav class="ex-list" id="ex-list" aria-label="ลำดับท่า"></nav>
+      </div>
     </section>
 
     <section class="page" id="page-3" data-title="Page 3">
@@ -1568,6 +1778,740 @@
       render();
     })();
   </script>
+
+  <!-- Exercise: runs an exercise routine to follow along with. A get-ready countdown comes before each
+       step, holds count down and reps are counted, with dings, and a list of the exercises shows the
+       progress and, while paused, picks where to continue. The routines are embedded as text below. -->
+  <script>
+    (() => {
+      const page = document.getElementById('exercise');
+      if (!page) return;
+      const $ = (selector) => page.querySelector(selector);
+
+      const select = $('#ex-routine');
+      const ringEl = $('#ex-ring');
+      const arcEl = $('#ex-ring-arc');
+      const countEl = $('#ex-count');
+      const ringLabel = $('#ex-ring-label');
+      const metaEl = $('#ex-meta');
+      const nameEl = $('#ex-name');
+      const descEl = $('#ex-desc');
+      const infoEl = $('#ex-info');
+      const startBtn = $('#ex-start');
+      const pauseBtn = $('#ex-pause');
+      const listEl = $('#ex-list');
+      const liveEl = $('#ex-live');
+
+      const FIRST_READY = 5;  // seconds of get-ready countdown after Start
+      const STEP_READY = 3;   // ...and before every later step, or a step picked from the list while paused
+      const SIDES = { right: 'ข้างขวา', left: 'ข้างซ้าย' };
+      const CIRCUMFERENCE = 2 * Math.PI * 45;  // of the ring, in viewBox units
+      const STORAGE_KEY = 'misc-utils:exercise';
+
+      // ---------- Routines, embedded in the page as plain text ----------
+      // Each script.ex-routine element at the end of the page holds a copy of one file in
+      // exercise_routines/. Its first line is the routine's title, and the lines up to the first "# "
+      // line are notes. Each "# " line starts a section, and each "name | description | timing" line
+      // after it is an exercise. A line that can't be read is skipped, with a warning in the console.
+
+      // Reads a timing such as "hold 15 s", "hold 15 s, each side, right first", "hold 15 s, 2 times"
+      // or "10 reps x 2.4 s, alternating". Returns null if it can't.
+      function parseTiming(text) {
+        const [first, ...extras] = text.toLowerCase().split(',').map((s) => s.trim());
+        const timing = { hold: 0, reps: 0, every: 0, alternating: false, sides: null, sets: 1 };
+        let m = /^hold (\d+(?:\.\d+)?) ?s$/.exec(first);
+        if (m) {
+          timing.hold = Number(m[1]);
+        } else if ((m = /^(\d+) reps? [x×] (\d+(?:\.\d+)?) ?s$/.exec(first))) {
+          timing.reps = Number(m[1]);
+          timing.every = Number(m[2]);
+        } else {
+          return null;
+        }
+        let eachSide = false;
+        let firstSide = 'right';
+        for (const extra of extras) {
+          if (extra === 'alternating') timing.alternating = true;
+          else if (extra === 'each side') eachSide = true;
+          else if (extra === 'right first' || extra === 'left first') firstSide = extra.split(' ')[0];
+          else if ((m = /^(\d+) times?$/.exec(extra))) timing.sets = Number(m[1]);
+          else return null;
+        }
+        if (eachSide) timing.sides = firstSide === 'right' ? ['right', 'left'] : ['left', 'right'];
+        if (!(timing.hold > 0 || (timing.reps > 0 && timing.every > 0)) || !(timing.sets > 0)) return null;
+        return timing;
+      }
+
+      function parseRoutine(el, index) {
+        const lines = el.textContent.split(/\r?\n/).map((line) => line.trim());
+        while (lines.length && !lines[0]) lines.shift();
+        const id = el.dataset.file || 'routine-' + index;
+        const routine = { id, title: lines[0] || id, exercises: [] };
+        let section = null;  // null until the first "# " line: the notes before it are skipped
+        for (const line of lines.slice(1)) {
+          if (line.startsWith('# ')) {
+            section = line.slice(2).trim();
+          } else if (section !== null && line) {
+            const fields = line.split('|').map((s) => s.trim());
+            const timing = fields.length === 3 && fields[0] ? parseTiming(fields[2]) : null;
+            if (timing) routine.exercises.push({ name: fields[0], desc: fields[1], section, ...timing });
+            else console.warn('Exercise: skipped a line of "' + routine.title + '": ' + line);
+          }
+        }
+        return routine;
+      }
+
+      // A routine runs as steps: one for each side and each set of every exercise, in order.
+      function stepsOf(routine) {
+        const list = [];
+        routine.exercises.forEach((ex, exIndex) => {
+          for (let set = 1; set <= ex.sets; set++) {
+            for (const side of ex.sides || [null]) {
+              list.push({ ex, exIndex, side, set, length: ex.hold || ex.reps * ex.every });
+            }
+          }
+        });
+        return list;
+      }
+
+      // Seconds as m:ss.
+      const clock = (s) => {
+        const whole = Math.round(s);
+        return Math.floor(whole / 60) + ':' + String(whole % 60).padStart(2, '0');
+      };
+      // Seconds with at most one decimal: 15, 2.4.
+      const seconds = (s) => String(Math.round(s * 10) / 10);
+
+      // How a step is done: its side and set, then its hold time, or its reps and their pace.
+      function stepTags(step) {
+        const ex = step.ex;
+        const tags = [];
+        if (step.side) tags.push(SIDES[step.side]);
+        if (ex.sets > 1) tags.push('รอบที่ ' + step.set + ' จาก ' + ex.sets);
+        if (ex.hold) {
+          tags.push('ค้างไว้ ' + seconds(ex.hold) + ' วินาที');
+        } else {
+          tags.push(ex.reps + ' ครั้ง');
+          if (ex.alternating) tags.push('สลับไปมา');
+          tags.push('ครั้งละ ' + seconds(ex.every) + ' วินาที');
+        }
+        return tags;
+      }
+
+      // ---------- The chosen routine, remembered in localStorage ----------
+
+      function loadChoice() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          return saved && typeof saved.routine === 'string' ? saved.routine : null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function saveChoice() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({ routine: routine.id }));
+        } catch (e) { /* storage unavailable: the choice just isn't remembered */ }
+      }
+
+      // ---------- Sounds ----------
+      // Dings generated with the Web Audio API, in the Work Timer's soft bell: four sine partials with a
+      // 5 ms attack and an exponential fade, the higher ones quieter and shorter. A single ding starts
+      // each step, a falling pair ends it, and a short, quiet ding marks each rep after the first.
+      const PARTIALS = [
+        { ratio: 1, level: 1, fade: 1 },
+        { ratio: 2, level: 0.4, fade: 0.6 },
+        { ratio: 3, level: 0.18, fade: 0.4 },
+        { ratio: 4.16, level: 0.08, fade: 0.25 },
+      ];
+      // Each note: [start (s), frequency (Hz), peak level, fade time (s)].
+      const DINGS = {
+        start: [[0, 880, 0.5, 1.2]],                          // A5
+        end: [[0, 880, 0.45, 1], [0.18, 659.25, 0.45, 1.6]],  // falling: A5, E5
+        rep: [[0, 880, 0.16, 0.45]],                          // A5, quiet and short
+      };
+
+      let ctx = null;            // the AudioContext, created by the first Start
+      let master = null;
+      let suspendTimer = 0;
+      const sounds = new Set();  // dings scheduled or ringing, until they end or are cancelled
+      // An audio-clock time (s) and the performance.now() time (ms) that matched it when the dings
+      // were last scheduled: the routine's times turn into audio-clock times through them.
+      let audioBase = 0;
+      let perfBase = 0;
+
+      // Returns the audio context, creating or waking it. Browsers allow sound only after a user
+      // gesture, so the first call comes from a click on Start.
+      function audio() {
+        clearTimeout(suspendTimer);
+        if (!ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return null;
+          ctx = new AudioCtx();
+          master = ctx.createGain();
+          master.gain.value = 0.9;
+          master.connect(ctx.destination);
+        }
+        if (ctx.state !== 'running') ctx.resume().catch(() => {});
+        return ctx;
+      }
+
+      // Lets the audio device idle once the routine isn't running and the last ding has rung out.
+      function suspendSoon() {
+        clearTimeout(suspendTimer);
+        suspendTimer = setTimeout(() => {
+          if (!ctx || state === 'running') return;
+          if (sounds.size) suspendSoon();
+          else ctx.suspend().catch(() => {});
+        }, 5000);
+      }
+
+      // Schedules the ding `name` on the audio clock, for the time `at` (performance.now(), ms). It goes
+      // through its own gain node (its bus), so it can be cancelled.
+      function ding(name, at) {
+        const t = audioBase + Math.max(0.03, (at - perfBase) / 1000);
+        const bus = ctx.createGain();
+        bus.connect(master);
+        const oscillators = [];
+        for (const [offset, freq, level, fade] of DINGS[name]) {
+          const t0 = t + offset;
+          for (const p of PARTIALS) {
+            const t1 = t0 + fade * p.fade;
+            const osc = ctx.createOscillator();
+            const env = ctx.createGain();
+            osc.frequency.value = freq * p.ratio;
+            env.gain.setValueAtTime(0, t0);
+            env.gain.linearRampToValueAtTime(level * p.level, t0 + 0.005);
+            env.gain.exponentialRampToValueAtTime(0.0001, t1);
+            osc.connect(env);
+            env.connect(bus);
+            osc.start(t0);
+            osc.stop(t1 + 0.05);
+            oscillators.push(osc);
+          }
+        }
+        let over = false;
+        const end = () => {
+          if (over) return;
+          over = true;
+          bus.disconnect();
+          sounds.delete(sound);
+        };
+        const sound = {
+          at,
+          cancel() {
+            oscillators.forEach((osc) => { try { osc.stop(); } catch (e) { /* already stopped */ } });
+            end();
+          },
+        };
+        let left = oscillators.length;
+        oscillators.forEach((osc) => { osc.onended = () => { if (--left === 0) end(); }; });
+        sounds.add(sound);
+      }
+
+      // Schedules the dings of the plan from the time `from` (performance.now(), ms) on: at the start
+      // and the end of each step, and at the start of each rep after the first.
+      function scheduleDings(from) {
+        if (!ctx) return;
+        audioBase = ctx.currentTime;
+        perfBase = performance.now();
+        for (const part of plan) {
+          if (part.kind !== 'work' || part.end < from) continue;
+          const ex = steps[part.step].ex;
+          if (part.start >= from) ding('start', part.start);
+          for (let rep = 1; rep < ex.reps; rep++) {
+            const at = part.start + rep * ex.every * 1000;
+            if (at >= from) ding('rep', at);
+          }
+          ding('end', part.end);
+        }
+      }
+
+      // Cancels the dings that haven't started. One that is ringing rings out.
+      function cancelDings() {
+        const now = performance.now();
+        for (const sound of [...sounds]) if (sound.at > now) sound.cancel();
+      }
+
+      // If the audio clock has drifted from the page's clock (it stalls while a computer sleeps, for
+      // example), schedules the dings still ahead again. Those whose time has passed are dropped.
+      function resyncDings() {
+        if (!ctx || ctx.state !== 'running' || state !== 'running') return;
+        const drift = ctx.currentTime - (audioBase + (performance.now() - perfBase) / 1000);
+        if (Math.abs(drift) < 0.15) return;
+        cancelDings();
+        scheduleDings(performance.now());
+      }
+
+      // ---------- Running a routine ----------
+      // state is 'idle' (not started), 'running', 'paused' or 'done'. While the routine isn't running,
+      // pos is where it stands: the step, its part ('ready' for its get-ready countdown, or 'work'), the
+      // seconds into that part, and how long that countdown is. While it runs, plan holds the parts still
+      // to come, with their times.
+
+      let routines = [];
+      let routine = null;
+      let steps = [];
+      let state = 'idle';
+      let pos = null;
+      let plan = [];
+      let shownPart = null;  // the part last announced to screen readers
+
+      const readyAt = (step, readyLength) => ({ step, part: 'ready', at: 0, readyLength });
+
+      // The rest of the routine from position `from`, as parts with their start and end times
+      // (performance.now(), ms), counting from `now`: each step's get-ready countdown, then the step.
+      function makePlan(from, now) {
+        const parts = [];
+        let t = now - from.at * 1000;
+        for (let i = from.step; i < steps.length; i++) {
+          if (i > from.step || from.part === 'ready') {
+            const readyLength = i === from.step ? from.readyLength : STEP_READY;
+            parts.push({ kind: 'ready', step: i, length: readyLength, start: t, end: t + readyLength * 1000 });
+            t += readyLength * 1000;
+          }
+          const workLength = steps[i].length;
+          parts.push({ kind: 'work', step: i, length: workLength, start: t, end: t + workLength * 1000 });
+          t += workLength * 1000;
+        }
+        return parts;
+      }
+
+      const partAt = (t) => plan.find((part) => t < part.end) || null;
+
+      // The time from Start to the end, starting at step `from`: its 5-second get-ready countdown, then
+      // every step, with a 3-second one before each step after the first.
+      function totalFrom(from) {
+        let total = FIRST_READY;
+        for (let i = from; i < steps.length; i++) total += steps[i].length + (i > from ? STEP_READY : 0);
+        return total;
+      }
+
+      // Start (fresh): from the chosen step, after the 5-second get-ready countdown. Resume: from where
+      // it paused, at once.
+      function run(fresh) {
+        if (fresh) pos = readyAt(pos.step, FIRST_READY);
+        const now = performance.now();
+        plan = makePlan(pos, now);
+        state = 'running';
+        shownPart = null;
+        const ac = audio();
+        if (ac) {
+          scheduleDings(now);
+          // A context that was asleep starts a moment later: schedule again from when it runs.
+          if (ac.state !== 'running') {
+            ac.resume().then(() => {
+              if (state !== 'running') return;
+              cancelDings();
+              scheduleDings(performance.now());
+            }).catch(() => {});
+          }
+        }
+        startTicking();
+        keepAwake();
+        tick();
+      }
+
+      function pause() {
+        if (state !== 'running') return;
+        const now = performance.now();
+        const part = partAt(now);
+        if (!part) {
+          finish();
+          return;
+        }
+        pos = {
+          step: part.step,
+          part: part.kind,
+          at: (now - part.start) / 1000,
+          readyLength: part.kind === 'ready' ? part.length : STEP_READY,
+        };
+        state = 'paused';
+        plan = [];
+        cancelDings();
+        stopTicking();
+        releaseScreen();
+        suspendSoon();
+        render();
+      }
+
+      // Runs when the last step ends. Its end ding is already ringing from its schedule.
+      function finish() {
+        state = 'done';
+        plan = [];
+        pos = readyAt(0, FIRST_READY);
+        stopTicking();
+        releaseScreen();
+        suspendSoon();
+        announce('จบชุดท่าแล้ว');
+        render();
+      }
+
+      // Clicking an exercise in the list while the routine isn't running picks where it goes on: that
+      // exercise's first step, after its get-ready countdown (3 seconds on Resume, 5 on Start).
+      function jumpTo(exIndex) {
+        if (state === 'running') return;
+        const step = rows[exIndex].first;
+        if (state === 'paused') {
+          pos = readyAt(step, STEP_READY);
+        } else {
+          state = 'idle';
+          pos = readyAt(step, FIRST_READY);
+        }
+        render();
+      }
+
+      function choose(next) {
+        cancelDings();
+        stopTicking();
+        releaseScreen();
+        routine = next;
+        steps = stepsOf(routine);
+        state = 'idle';
+        plan = [];
+        pos = readyAt(0, FIRST_READY);
+        select.value = routine.id;
+        buildList();
+        render();
+      }
+
+      // Reads a message out to screen readers. The live region is emptied first, so that the same
+      // message is announced again if it repeats.
+      function announce(message) {
+        liveEl.textContent = '';
+        setTimeout(() => { liveEl.textContent = message; }, 100);
+      }
+
+      // ---------- Ticking ----------
+      // While the routine runs, the display is redrawn on every animation frame, so a count changes
+      // with its ding. Animation frames stop in a background tab, so a 500 ms interval also keeps the
+      // dings in step and ends the routine on time. Both are safe to call at any time.
+
+      let frameId = 0;
+      let intervalId = 0;
+
+      function startTicking() {
+        if (!intervalId) intervalId = setInterval(tick, 500);
+        if (!frameId) frameId = requestAnimationFrame(onFrame);
+      }
+
+      function stopTicking() {
+        clearInterval(intervalId);
+        intervalId = 0;
+        cancelAnimationFrame(frameId);
+        frameId = 0;
+      }
+
+      function onFrame() {
+        frameId = 0;
+        if (state !== 'running') return;
+        render();
+        if (state === 'running') frameId = requestAnimationFrame(onFrame);
+      }
+
+      function tick() {
+        if (state !== 'running') return;
+        if (ctx && ctx.state !== 'running' && ctx.state !== 'closed') ctx.resume().catch(() => {});
+        resyncDings();
+        const part = partAt(performance.now());
+        if (part && part !== shownPart) {
+          shownPart = part;
+          const step = steps[part.step];
+          if (part.kind === 'ready') announce('เตรียมตัว: ' + step.ex.name + (step.side ? ' ' + SIDES[step.side] : ''));
+        }
+        render();
+      }
+
+      // ---------- Display ----------
+
+      const setText = (el, text) => { if (el.textContent !== text) el.textContent = text; };
+
+      function render() {
+        const now = performance.now();
+        let part = null;
+        if (state === 'running') {
+          part = partAt(now);
+          if (!part) {
+            finish();
+            return;
+          }
+        }
+        // The part on show: the one in progress, or where the routine stands while it isn't running.
+        const shown = part || {
+          kind: pos.part,
+          step: pos.step,
+          length: pos.part === 'ready' ? pos.readyLength : steps[pos.step].length,
+          start: now - pos.at * 1000,
+        };
+        const step = steps[shown.step];
+        const elapsed = (now - shown.start) / 1000;
+        const left = Math.max(0, shown.length - elapsed);
+
+        let look;
+        let count;
+        let label;
+        let share = 1;  // of the ring's arc: the share of the part left
+        let tags = [];
+        let name;
+        let desc;
+        let info = '';
+        if (state === 'done') {
+          look = 'is-done';
+          count = '✓';
+          label = 'ครบแล้ว';
+          name = 'ครบทุกท่าแล้ว';
+          desc = routine.title;
+          info = 'กดเริ่มเพื่อทำอีกรอบ';
+        } else {
+          name = step.ex.name;
+          desc = step.ex.desc;
+          tags = stepTags(step);
+          if (state === 'idle') {
+            look = 'is-idle';
+            count = clock(totalFrom(shown.step));
+            label = 'เวลารวม';
+            tags.unshift(shown.step === 0 ? 'ท่าแรก' : 'เริ่มที่ท่านี้');
+            info = 'กดเริ่ม แล้วทำตามได้เลย หรือแตะชื่อท่าในรายการเพื่อเริ่มจากท่านั้น';
+          } else {
+            share = left / shown.length;
+            if (shown.kind === 'ready') {
+              look = 'is-ready';
+              count = String(Math.ceil(left));
+              label = 'เตรียมตัว';
+              tags.unshift('ต่อไป');
+            } else if (step.ex.hold) {
+              look = 'is-work';
+              count = String(Math.ceil(left));
+              label = 'วินาที';
+            } else {
+              look = 'is-work';
+              count = String(Math.min(step.ex.reps, Math.floor(elapsed / step.ex.every) + 1));
+              label = 'จาก ' + step.ex.reps;
+            }
+            if (state === 'paused') {
+              look += ' is-paused';
+              info = 'หยุดชั่วคราว · แตะชื่อท่าในรายการเพื่อเลือกท่าที่จะทำต่อ';
+            }
+          }
+        }
+
+        const ringClass = 'ex-ring ' + look;
+        if (ringEl.getAttribute('class') !== ringClass) ringEl.setAttribute('class', ringClass);
+        const dash = share >= 1 ? 'none' : (share * CIRCUMFERENCE).toFixed(2) + ' ' + CIRCUMFERENCE.toFixed(2);
+        if (arcEl.getAttribute('stroke-dasharray') !== dash) arcEl.setAttribute('stroke-dasharray', dash);
+        setText(countEl, count);
+        setText(ringLabel, label);
+        setText(metaEl, tags.join(' · '));
+        setText(nameEl, name);
+        setText(descEl, desc);
+        setText(infoEl, info);
+
+        startBtn.disabled = state === 'running';
+        setText(startBtn, state === 'paused' ? 'ทำต่อ' : 'เริ่ม');
+        pauseBtn.disabled = state !== 'running';
+        select.disabled = state === 'running';
+        renderList(shown.step, shown.kind === 'work' ? elapsed : 0);
+      }
+
+      // ---------- The list of exercises, with the progress bar ----------
+      // One row per exercise, grouped by section. Each row's segment of the bar fills as the exercise's
+      // work is done (its get-ready countdowns don't count). Done exercises are grey and the current one
+      // is bold. While the routine isn't running, a click on a row picks where to go on (jumpTo).
+
+      let rows = [];  // per exercise: its button and bar fill, its steps (first to last) and their length
+
+      function buildList() {
+        listEl.textContent = '';
+        rows = [];
+        const head = document.createElement('p');
+        head.className = 'ex-list-head';
+        head.textContent = routine.exercises.length + ' ท่า · เวลารวม ' + clock(totalFrom(0)) + ' นาที';
+        listEl.append(head);
+        let section = null;
+        let items = null;
+        routine.exercises.forEach((ex, exIndex) => {
+          if (!items || ex.section !== section) {
+            section = ex.section;
+            const groupLabel = document.createElement('p');
+            groupLabel.className = 'ex-group';
+            groupLabel.textContent = section;
+            items = document.createElement('ol');
+            items.className = 'ex-items';
+            listEl.append(groupLabel, items);
+          }
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'ex-item';
+          button.dataset.ex = String(exIndex);
+          const bar = document.createElement('span');
+          bar.className = 'ex-bar';
+          const fill = document.createElement('span');
+          fill.className = 'ex-fill';
+          bar.append(fill);
+          const label = document.createElement('span');
+          label.className = 'ex-item-name';
+          label.textContent = ex.name;
+          button.append(bar, label);
+          const item = document.createElement('li');
+          item.append(button);
+          items.append(item);
+          const first = steps.findIndex((s) => s.exIndex === exIndex);
+          const last = first + ex.sets * (ex.sides ? ex.sides.length : 1) - 1;
+          let length = 0;
+          for (let i = first; i <= last; i++) length += steps[i].length;
+          rows.push({ button, fill, first, last, length, look: null, scale: null });
+        });
+      }
+
+      // stepIndex: the step on show; workDone: the seconds of its work done.
+      function renderList(stepIndex, workDone) {
+        const started = state === 'running' || state === 'paused';
+        for (const row of rows) {
+          const done = state === 'done' || (started && row.last < stepIndex);
+          const current = state !== 'done' && row.first <= stepIndex && stepIndex <= row.last;
+          let share = done ? 1 : 0;
+          if (current && started) {
+            let secs = workDone;
+            for (let i = row.first; i < stepIndex; i++) secs += steps[i].length;
+            share = Math.min(1, secs / row.length);
+          }
+          const look = (done ? ' is-done' : '') + (current ? ' is-current' : '');
+          if (row.look !== look) {
+            row.look = look;
+            row.button.className = 'ex-item' + look;
+            if (current) row.button.setAttribute('aria-current', 'step');
+            else row.button.removeAttribute('aria-current');
+          }
+          const locked = state === 'running';
+          if (row.button.disabled !== locked) row.button.disabled = locked;
+          const scale = share.toFixed(3);
+          if (row.scale !== scale) {
+            row.scale = scale;
+            row.fill.style.transform = 'scaleY(' + scale + ')';
+          }
+        }
+      }
+
+      // ---------- Keeping the screen on (Screen Wake Lock API) ----------
+      // While a routine runs, the page asks to keep the screen on, so it can be followed without
+      // touching the device. Browsers drop the lock while the page is hidden, so it is asked for again
+      // on return. Where that isn't supported or allowed, the routine runs anyway.
+
+      let wakeLock = null;
+      let wakePending = false;
+
+      async function keepAwake() {
+        if (!('wakeLock' in navigator) || wakeLock || wakePending) return;
+        if (document.visibilityState !== 'visible') return;
+        wakePending = true;
+        try {
+          const lock = await navigator.wakeLock.request('screen');
+          if (state !== 'running') {  // paused or finished while the request was pending
+            lock.release().catch(() => {});
+          } else {
+            wakeLock = lock;
+            lock.addEventListener('release', () => { if (wakeLock === lock) wakeLock = null; });
+          }
+        } catch (e) { /* not allowed: the routine runs anyway */ }
+        wakePending = false;
+      }
+
+      function releaseScreen() {
+        if (!wakeLock) return;
+        wakeLock.release().catch(() => {});
+        wakeLock = null;
+      }
+
+      // ---------- Controls ----------
+
+      // If the clicked button disables itself, move focus on so keyboard users aren't stranded.
+      function onPress(button, action, focusNext) {
+        button.addEventListener('click', () => {
+          const hadFocus = document.activeElement === button;
+          action();
+          if (hadFocus && button.disabled) focusNext.focus();
+        });
+      }
+
+      // The routines are embedded after this script, so they are read once the page has loaded.
+      function init() {
+        routines = [...document.querySelectorAll('script.ex-routine')]
+          .map(parseRoutine)
+          .filter((r) => r.exercises.length > 0);
+        if (!routines.length) {
+          setText(nameEl, 'ยังไม่มีชุดท่า');
+          startBtn.disabled = true;
+          select.disabled = true;
+          return;
+        }
+        routines.forEach((r) => select.add(new Option(r.title, r.id)));
+        const saved = loadChoice();
+        choose(routines.find((r) => r.id === saved) || routines[0]);
+
+        select.addEventListener('change', () => {
+          choose(routines.find((r) => r.id === select.value) || routines[0]);
+          saveChoice();
+        });
+        onPress(startBtn, () => run(state !== 'paused'), pauseBtn);
+        onPress(pauseBtn, pause, startBtn);
+        listEl.addEventListener('click', (event) => {
+          const button = event.target.closest('.ex-item');
+          if (button && !button.disabled) jumpTo(Number(button.dataset.ex));
+        });
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState !== 'visible' || state !== 'running') return;
+          keepAwake();
+          tick();
+        });
+      }
+
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
+      else init();
+    })();
+  </script>
+
+  <!-- ============================================================
+       Exercise routines, read by the Exercise page: copies of the files in exercise_routines/, as
+       plain text, one <script type="text/plain" class="ex-routine"> each, listed in its drop-down in
+       this order. data-file is the file's name without .txt. To add or change a routine, add or edit
+       its file, then paste the file's whole text into its element here. See SPEC.md 5.2, Routines.
+       ============================================================ -->
+  <script type="text/plain" class="ex-routine" data-file="neck_shoulder_routine">
+ท่าบริหารคอ บ่า ไหล่
+Source: https://www.youtube.com/watch?v=7KAMEVgkkRM
+by หมอชวนฟิต [DeDoctor], uploaded 2023-07-29. Listed from the video on 2026-11-24.
+
+One exercise per line, in the video's order: name | description | timing
+- "hold 15 s": hold the position for 15 seconds.
+- "each side, right first": do it on the right, then on the left. The side is
+  the one the head leans or turns toward, and the hand used.
+- "10 reps x 2.4 s": 10 repetitions, each taking about 2.4 seconds.
+- "alternating": each movement one way counts as one rep (one turn, one nod
+  down or up, one lean), so 10 reps is 5 each way.
+Hold times and rep counts come from the video's on-screen timer and counter.
+The seconds per rep were measured from the video.
+
+# วอร์มอัพ
+หันศีรษะซ้าย-ขวา | ค่อยๆ หันหน้าไปทางซ้ายแล้วกลับมาตรง สลับกับทางขวา | 10 reps x 2.4 s, alternating
+ก้ม-เงยศีรษะ | ค่อยๆ ก้มหน้าลงแล้วเงยหน้าขึ้นช้าๆ อย่าเงยมากเกินไป | 10 reps x 2.7 s, alternating
+เอนศีรษะซ้าย-ขวา | ไหล่ตั้งตรง ไม่บิดไหล่ตาม ค่อยๆ เอนศีรษะไปด้านข้าง สลับซ้าย-ขวา | 10 reps x 2.9 s, alternating
+หมุนไหล่ | หมุนหัวไหล่ช้าๆ เป็นวงกลม ไปด้านหลังหรือด้านหน้าก็ได้ | 10 reps x 2.7 s
+
+# ยืดกล้ามเนื้อ
+ยืดคอด้านข้าง | นั่งหลังตรง ไหล่นิ่ง ค่อยๆ เอนศีรษะไปด้านข้างจนตึงคอและบ่า | hold 15 s, each side, right first
+ยืดคอด้านข้าง ใช้มือช่วย | เอนศีรษะไปด้านข้าง เอามือข้างเดียวกันอ้อมศีรษะช่วยกดเบาๆ | hold 15 s, each side, right first
+ยืดคอถึงท้ายทอย | มองไปที่รักแร้ ใช้มือข้างเดียวกันกดศีรษะลงเบาๆ จนตึงถึงท้ายทอย | hold 15 s, each side, left first
+ยืดคอด้านข้างและด้านหน้า | เอนศีรษะไปด้านข้าง เงยมองฟ้าเล็กน้อย แล้วใช้มือข้างเดียวกันกดศีรษะ | hold 15 s, each side, left first
+ยืดคอด้านหน้า | ค่อยๆ เงยหน้าขึ้นจนตึงคอด้านหน้า ถ้ารู้สึกไม่สบายหรือปวดมากให้ข้ามท่านี้ | hold 15 s
+
+# เสริมความแข็งแรง
+เกร็งคอต้านมือ ด้านข้าง | วางมือที่ข้างศีรษะแล้วดัน เกร็งคอต้านไว้ไม่ให้ศีรษะขยับ | hold 15 s, each side, left first
+เกร็งคอต้านมือ ด้านหลัง | ประสานมือที่ท้ายทอย ดันศีรษะไปด้านหน้า เกร็งคอต้านไว้ไม่ให้ขยับ | hold 15 s
+เกร็งคอต้านมือ ด้านหน้า | วางมือที่หน้าผาก ดันศีรษะไปด้านหลัง เกร็งคอต้านไว้ไม่ให้ขยับ | hold 15 s
+เก็บคาง | ใช้นิ้วแตะปลายคาง ดันคางไปด้านหลังตรงๆ จนรู้สึกยืดคอด้านหลัง | hold 15 s, 2 times
+  </script>
+
   <!-- ============================================================
        Embedded data, kept last so the code above reads without scrolling past it.
        Work Timer: its recorded sounds, copies of the .m4a files in timer_sound/, each as base64

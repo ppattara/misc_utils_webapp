@@ -3,13 +3,13 @@
 A web app that collects miscellaneous utilities for everyday use. It is a static HTML file, with no backend, database or user login.
 
 ## Project files
-- `index.html`: the app itself. It ends with the Work Timer's recorded sounds, embedded as base64 (see Working on the app).
+- `index.html`: the app itself. It ends with the Exercise page's routines as plain text, then the Work Timer's recorded sounds as base64 (see Working on the app).
 - `CLAUDE.md`: ground rules and working notes for Claude (this file).
 - `SPEC.md`: the full description of the app, detailed enough to rebuild it (or something very close) from that file alone.
 - `README.md`: the project summary, which doubles as the user manual.
 - `timer_sound/`: the owner's recordings for the Work Timer's sounds, the source of the copies embedded in `index.html`. The app never reads this folder. Leave the files as they are unless the owner asks for a change. To change a sound, replace its file and embed it again (`SPEC.md` 5.1, Sounds).
-- `exercise_routines/`: exercise routines, one plain-text file per routine, the source for a planned routine-timer page (see Status). More routines may be added. The app doesn't use them yet.
-  - `neck_shoulder_routine.txt`: a neck and shoulder routine, listed from a YouTube video (source and format in the file's header). Each exercise has a name and description in Thai, and its hold time or reps.
+- `exercise_routines/`: the Exercise page's routines, one plain-text file per routine (format in `SPEC.md` 5.2, Routines). They are the source of the copies embedded in `index.html`. The app never reads this folder, so after adding or changing a file, embed it again by pasting its whole text into its `script.ex-routine` element. More routines may be added.
+  - `neck_shoulder_routine.txt`: a neck and shoulder routine, listed from a YouTube video (source and notation in the file's header). Each exercise has a name and description in Thai, and its hold time or reps.
 
 ## Ground rules (always follow)
 
@@ -36,6 +36,7 @@ A change isn't finished until the code and all three files agree. When reporting
 - Read `SPEC.md` before changing the app. It covers the structure, conventions and constraints (one self-contained file, no external dependencies), including how to add a page.
 - To check a change, open `index.html` in a browser. There is no server or build step.
 - `index.html` ends with about 220 KB of base64: the embedded recordings, four very long lines under the comment headed `Embedded data`. Read only the code above them, for example with a line limit that stops at that comment (`grep -n 'Embedded data' index.html` gives its line), and never print or hand-edit them. `SPEC.md` 5.1 (Sounds) says how to replace a recording.
+- Just above the `Embedded data` comment, under one headed `Exercise routines`, are the Exercise page's routines, as readable text. Each must stay an exact copy of its file in `exercise_routines/` (`SPEC.md` 5.2, Routines).
 
 ## Decisions
 - **Saved settings** (owner, 2026-11-22): pages may remember their settings in the browser's `localStorage` only, never in files, a database or an account. If the browser's data is cleared, settings simply return to their defaults. Keep this simple. The convention is in `SPEC.md` section 3.4.
@@ -81,6 +82,31 @@ A change isn't finished until the code and all three files agree. When reporting
   - The fields went from 4.5em to 3.5em wide, since they no longer have arrows.
 
   Details in `SPEC.md` 5.1 (Settings sidebar).
+- **Exercise page** (owner, 2026-11-24): Page 2 became the Exercise page (`#/exercise`), for following an exercise routine.
+  - A drop-down picks the routine (one for now), and Start runs it from beginning to end with no further interaction, after a 5-second countdown to get ready.
+  - A hold shows a countdown, with a ding at its start and end. Reps show a counter that counts at the pace in the routine's list, with a ding at the start and end and a softer ding at each rep.
+  - The exercise's name is in big type, with its description in smaller type, beside the timer or counter. A list of all the exercise names, in small type with a progress bar, sits at the side.
+  - A Pause button. While paused, a click on an exercise in the list picks where to continue.
+  - The routines are embedded in `index.html`, so the app stays self-contained and works offline.
+
+  Asked about the open points, the owner chose:
+  - a 3-second get-ready countdown before every later step: each exercise, side and set (the first keeps its 5 seconds);
+  - Resume carries on where it paused, straight away;
+  - the page's own words in Thai, like the exercises (the tab stays "Exercise");
+  - different dings for the start and end of a step: a single ding to start, a falling two-note ding to end.
+
+  Details chosen by Claude:
+  - An exercise done on each side, or several times, runs as one step per side and set, and the page shows the side (ข้างขวา or ข้างซ้าย) or the set (รอบที่ 1 จาก 2). The list has one row per exercise.
+  - The rep ding is the start ding, much quieter and shorter. The countdowns are silent.
+  - A click on an exercise while paused goes to the start of its 3-second countdown. Before starting or after finishing, a click picks where Start begins, still after the 5-second countdown.
+  - The progress bar shows the position in the routine: exercises before the current one are full, even if they were skipped.
+  - The ring is amber during a countdown, blue during an exercise and grey while paused. Before starting, it shows the total time.
+  - The screen is kept on automatically while the routine runs, with no button.
+  - The page leaves the browser tab's title alone, so the Work Timer's countdown keeps it.
+  - Each routine is embedded as its file's exact text and read by the page, so updating one means pasting its file again.
+  - The chosen routine is saved under `misc-utils:exercise`.
+
+  Details in `SPEC.md` 5.2.
 
 ## Status
 - v1: blank shell with three placeholder pages (Page 1, Page 2, Page 3) and the shared tab navigation.
@@ -92,4 +118,5 @@ A change isn't finished until the code and all three files agree. When reporting
 - v7 (2026-11-22): the random reminder became random short breaks: a ding, a break (10 s by default, settable), then the same ding. During a break the timer turns a bright green of its own and counts the break down, and the browser tab shows a green dot. The work clock keeps running through breaks.
 - v8 (2026-11-22): the Work Timer plays the owner's recordings at the start and end of work, of rest and of each break, embedded in `index.html` as base64. The old dings are a setting, and the sidebar previews all six sounds.
 - v9 (2026-11-22): the Work Timer's settings are typed in by hand as whole numbers, with no up/down arrows, in narrower ranges (work 10–120 min, rest 3–30 min, break length 5–15 s, gaps 1–5 and 2–10 min), and the shortest gap always stays below the longest.
-- Next: the owner will describe the utilities for Pages 2 and 3. One of them will be a timer that runs through the routine in `exercise_routines/neck_shoulder_routine.txt`, and more routines may follow in that folder (owner, 2026-11-24).
+- v10 (2026-11-24): Page 2 is now the Exercise page (`#/exercise`). It runs an exercise routine to follow along with: get-ready countdowns, timed holds and counted reps with dings, a progress list for picking where to go on while paused, and the screen kept on. Its routines come from `exercise_routines/`, embedded in `index.html`. Page 3 is still a placeholder.
+- Next: the owner will describe the utility for Page 3. More routines may be added to `exercise_routines/`, each one embedded in `index.html` too.
