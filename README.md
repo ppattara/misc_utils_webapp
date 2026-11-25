@@ -16,7 +16,7 @@ A small personal web app that collects everyday utilities in one place, one per 
 |---|---|
 | Work Timer | Work and rest countdowns, with random short breaks during work |
 | Exercise | Exercise routines to follow along with: holds are timed and reps counted, with dings |
-| Page 3 | Not built yet |
+| Eye Exercise | An eye exercise recording, played five times with short breaks, then a big ding |
 
 ## Work Timer
 
@@ -69,8 +69,21 @@ An exercise routine to follow along with. Pick a routine, press เริ่ม 
 - **Screen stays on:** while the routine runs, the page stops the screen from turning off, in browsers that allow it, and lets it go when you pause or finish.
 - **In the background:** on a computer, the dings stay on time while you use another tab or utility, and the screen catches up when you come back. Phones usually pause web pages when the screen locks or you switch apps, so keep the page on screen. On an iPhone, silent mode may mute the dings.
 
+## Eye Exercise
+
+An eye exercise recording, played five times in a row with a 3-second break between plays, and a big ding when it's all done. It takes about 1½ minutes.
+
+- **Start, Pause, Reset:** Start plays it from the beginning. Pause stops it right where it is, even mid-sentence, and the Start button then reads Resume, which carries on from that point. Reset stops it and goes back to the beginning.
+- **The ring:** while the recording plays, the middle shows which play it is (for example 2 of 5), and the ring's blue strip runs down as that play goes. During each break the ring turns green and counts down 3, 2, 1. It turns grey while paused. Before you start, it shows the total time, and at the end a ✓.
+- **The breaks:** each 3-second break starts when the recording ends. The recording has a second or so of quiet at each end, so about 5 seconds pass between one play's voice and the next.
+- **Sounds:** the recording plays at its own volume. When the last play ends, a big, low ding rings out for a few seconds, clearly louder than the voice. The recording is built into the page, so it works offline too.
+- **Screen stays on:** while it plays, the page stops the screen from turning off, in browsers that allow it, and lets it go when you pause, reset or finish.
+- **In the background:** on a computer, it keeps playing on time while you use another tab or utility. Phones usually pause web pages when the screen locks or you switch apps, so keep the page on screen. If the sound doesn't come back when you return, press Pause and then Resume. On an iPhone, silent mode may mute it.
+- If your browser can't play the recording, the page says so and the Start button stays off.
+
 ## More
 
 - `exercise_routines/`: the exercise routines, one text file each. The app has its own copies built in, so after changing a file, it needs to be copied into `index.html` again (see `SPEC.md` 5.2).
+- `eye_exercise/`: the Eye Exercise recording. The app has its own copy built in, so after replacing it, it needs to be copied into `index.html` again (see `SPEC.md` 5.3).
 - `SPEC.md`: the full description of how the app works, detailed enough to rebuild it.
 - `CLAUDE.md`: working rules for developing this project with Claude Code.

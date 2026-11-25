@@ -5,7 +5,7 @@ This document describes the app in enough detail to rebuild it from scratch, or 
 ## 1. Overview
 
 - A personal collection of everyday utilities in one web app, with one utility per page. Pages are switched with tabs.
-- The whole app is a single static file, `index.html`, with all HTML, CSS and JavaScript inline. The Work Timer's sound recordings are embedded in it too, as base64 (see 5.1, Sounds), and so are the Exercise page's routines, as plain text (see 5.2, Routines).
+- The whole app is a single static file, `index.html`, with all HTML, CSS and JavaScript inline. The Work Timer's sound recordings and the Eye Exercise's recording are embedded in it too, as base64 (see 5.1, Sounds, and 5.3, Recording), and so are the Exercise page's routines, as plain text (see 5.2, Routines).
 - There is no backend, database, user login or build step, and no external dependencies (no frameworks, CDNs, web fonts or files loaded at run time). The app works offline, opened directly from disk (`file://`) or served from any static host.
 - Nothing is sent anywhere. A page may remember its own settings in the browser's `localStorage` (see 3.4). Nothing else is stored.
 - Target browsers: current Chrome, Safari, Firefox and Edge, on desktop and mobile. Plain modern JavaScript (ES2015+) is fine.
@@ -18,9 +18,9 @@ In order:
 2. `<header class="app-header">` containing a `.container` with an empty `<nav class="tabs" id="tabs" aria-label="Pages">` that the shared script fills. The app has no name, so the header shows only the tabs.
 3. `<main class="container">` containing the pages, one `<section class="page">` each.
 4. The shared navigation `<script>`.
-5. Page scripts, one `<script>` element per page that needs one: the Work Timer's, then the Exercise page's.
+5. Page scripts, one `<script>` element per page that needs one: the Work Timer's, then the Exercise page's, then the Eye Exercise's.
 6. Exercise routines, under a comment headed `Exercise routines`: one `<script type="text/plain" class="ex-routine">` element per routine, holding a copy of its file's text (see 5.2, Routines). This is readable text, a few KB per routine.
-7. Embedded data, under a comment headed `Embedded data`: the Work Timer's recordings, one `<script type="text/plain" class="wt-recording">` element each (see 5.1, Sounds). Each is one very long line of base64, about 220 KB in all, so they come last and the code above reads without scrolling past them.
+7. Embedded data, under a comment headed `Embedded data`: the Work Timer's recordings, one `<script type="text/plain" class="wt-recording">` element each (see 5.1, Sounds), then the Eye Exercise's recording, in a `<script type="text/plain" class="ee-recording">` element (see 5.3, Recording). Each is one very long line of base64, about 400 KB in all, so they come last and the code above reads without scrolling past them.
 
 ## 3. Page system
 
@@ -106,7 +106,7 @@ The shared script needs no changes.
 |---|---|---|---|
 | Work Timer | `work-timer` | Work and rest countdowns, with random short breaks during work | See 5.1 |
 | Exercise | `exercise` | Follow-along exercise routines: get-ready countdowns, hold countdowns and rep counters, with dings | See 5.2 |
-| Page 3 | `page-3` | Not decided yet | Placeholder: `<h1>Page 3</h1>` and a `.placeholder` paragraph, "Nothing here yet." |
+| Eye Exercise | `eye-exercise` | Plays an eye exercise recording five times, with a 3-second break between plays, then a big ding | See 5.3 |
 
 ### 5.1 Work Timer
 
@@ -512,3 +512,114 @@ Every rule is scoped under `#exercise`. The page's colors are custom properties 
 - In a background tab, the dings stay on time, and the display catches up when the page is shown again. The routine's end registers when the slowed-down interval next runs.
 - Delays in the audio output, such as Bluetooth headphones' (often 0.1 to 0.3 seconds), make each ding come a little after its count changes.
 - In a browser without Web Audio, the routine runs silently.
+
+### 5.3 Eye Exercise
+
+Plays an eye exercise recording five times, with a 3-second break after each play but the last, then rings a big ding. Start, Pause and Reset control it. A ring like the Work Timer's shows which play is on ("2 of 5") and counts down each break. The page shows no other text: no description or instructions. The recording is embedded in the page, so it still works offline as one file. The page's words are in English. The page's ids and classes start with `ee-`. Its styles sit under `/* ---------- Eye Exercise (#eye-exercise) ---------- */` in the page-specific styles, after the Exercise page's, and its script is the third page script.
+
+#### Markup
+
+Inside `<section class="page" id="eye-exercise" data-title="Eye Exercise">`, in order:
+
+1. `<h1>Eye Exercise</h1>`.
+2. `div.ee-main`, holding:
+   - `div#ee-ring.ee-ring`, built like the Work Timer's ring: an inline `svg.ee-ring-svg` with `viewBox="0 0 100 100"` and `aria-hidden="true"`, holding `circle.ee-ring-track` (center 50, 50, radius 45) and `path#ee-ring-arc.ee-ring-arc` with `d="M50 5a45 45 0 1 1 0 90a45 45 0 1 1 0-90z"`; then `div.ee-ring-text` holding `div#ee-count.ee-count` (`role="timer"`) and `div#ee-ring-label.ee-ring-label`, which the script fills.
+   - `div.ee-controls` with three buttons, all starting disabled: `#ee-start.ee-btn.ee-btn-primary` "Start", `#ee-pause.ee-btn` "Pause" and `#ee-reset.ee-btn` "Reset".
+   - `p#ee-note.ee-note` (`role="status"`), empty unless the recording can't be played.
+   - `p#ee-live.ee-sr` (`role="status"`), a visually hidden live region for announcements.
+
+#### Recording
+
+- **File:** `eye_exercise/eye_exercise.m4a`, AAC in an `.m4a` container, 48 kHz mono, 15.79 s, 136 KB. The voice starts about 1 s in and ends about 1.4 s before the end of the file. Those quiet ends stay, as part of each play.
+- **Embedding:** the app never reads `eye_exercise/`. The recording is a `<script type="text/plain" class="ee-recording">` element at the very end of `<body>`, after the Work Timer's recordings (see 2). Its text is the file's bytes in base64, on one line (about 181 KB). The `text/plain` type keeps the browser from running it.
+- **Decoding:** when the page is first shown (on load, or on the first `hashchange` that shows it), the script decodes the recording, once for the page's lifetime. `atob` turns the element's text into bytes, and `decodeAudioData` on a throwaway `OfflineAudioContext` (1 channel, 1 frame, 48 kHz, never rendered) turns those into an `AudioBuffer`. An offline context needs no user gesture, so the total time shows before Start. Decoding takes a fraction of a second (about 0.07 s in Chrome on a Mac). The buffer then plays in the page's own `AudioContext`: an `AudioBuffer` isn't tied to the context that made it, and if the audio device runs at another rate, the browser converts it as it plays. The routine's length comes from the decoded buffer.
+- **Can't play:** if the browser has no `OfflineAudioContext` or `AudioContext`, the element is missing, or decoding fails, the ring turns grey and empty (`is-off`), Start stays disabled, and `#ee-note` says "This browser can’t play the recording."
+- **Changing the recording:** replace `eye_exercise/eye_exercise.m4a`, then put the new file's base64 (for example from `base64 -i eye_exercise/eye_exercise.m4a`) in the element, as one line. The script reads the new length from the recording, so nothing else needs to change. AAC (`.m4a`) and MP3 are safe formats: every target browser decodes them.
+
+#### Running
+
+- **The routine:** the recording plays 5 times, with a 3-second break after each play but the last: play, break, play, break, play, break, play, break, play. Each break counts from the end of the file, so with the recording's quiet ends, about 5½ seconds pass between the voice of one play and the next. With this recording the routine lasts about 91 seconds (5 × 15.8 + 4 × 3), shown as 1:31. Chrome decodes the file as 15.83 s, as it keeps the AAC encoder's 44 ms of priming at its start. The 5 plays and the 3 seconds are constants in the script (`PLAYS` and `GAP`), not settings.
+- When the last play ends (at the end of the file), the big ding rings and the routine is done.
+- The routine is idle (not started), running, paused or done.
+- **Start** (when idle or done) runs the routine from the first play, at once (50 ms after the click, `LEAD`).
+- **Pause** (only while running) stops the routine where it is, mid-play or mid-break. A play in progress fades out over about 30 ms, so it doesn't click, and the plays and the big ding still to come are cancelled.
+- **Resume:** while paused, the Start button reads Resume and carries on from where the routine paused, at once. A play picks up at the same point in the recording, fading in over 15 ms (`FADE`), and a break counts down the rest of its time.
+- **Reset** (while running or paused) stops the routine silently, as Pause does, and puts it back to the start, idle.
+- **Done:** when the last play ends. Start then runs the routine again from the first play.
+- Nothing is saved: the routine is idle on every load.
+- **How it's timed:** the routine's time is kept on the audio clock (`ctx.currentTime`), so the display always matches what plays. If the audio starts a moment late, or its clock stalls (while a computer sleeps, for example), the display waits with it. Start and Resume schedule the rest of the routine ahead on the audio clock: each play still to come through its own `AudioBufferSourceNode` (`start(time)`, or `start(time, offset)` for the play resumed partway), and the big ding at the end. So everything plays on time even in a background tab. While the routine runs, it is `ctx.currentTime − origin` seconds in, where Start and Resume set `origin` (the moment the routine started, or would have started). It never shows a moment before the one it started or resumed from (`at`). While it doesn't run, `at` holds where it stands: 0 when idle, or the paused moment.
+- **Redrawing:** while running, the display is redrawn on every animation frame, so the arc moves smoothly. Animation frames stop in a background tab, so a 500 ms interval (`tick`) also runs: it wakes the audio context if it was suspended, and ends the routine on time. Both are safe to call at any time.
+
+#### Display
+
+- **Ring:** built like the Work Timer's (see 5.1, Ring), `min(300px, 100cqi)` square. Its arc shows the share left of the play or break in progress: full when one begins, running back toward the top as it goes. It is drawn with `stroke-dasharray` the same way (C = 2π × 45), written only when it changes. The script sets one of these classes on `#ee-ring`:
+  - `is-idle`: full and blue.
+  - `is-play`: blue, while the recording plays.
+  - `is-break`: green, during a break.
+  - `is-paused`, added to `is-play` or `is-break` while paused: grey, with the track `--border`, the arc `--muted` and the count `--muted`.
+  - `is-done`: full and blue.
+  - `is-off`: grey and empty, when the recording can't be played.
+- **Count and label:** the count in the middle and the label under it:
+
+| State | Count | Label |
+|---|---|---|
+| Idle | The routine's total time, `m:ss` (1:31) | Total time |
+| A play | Its number, 1 to 5 | of 5 |
+| A break | The seconds left, rounded up (3, 2, 1) | Break |
+| Done | ✓ | Done |
+
+  While paused, they show the paused moment. Until the recording is decoded, both are empty.
+- The page shows no other text while it works: no description, instructions or info line. The only other text is `#ee-note`, when the recording can't be played.
+- **Buttons:** Start is enabled once the recording is decoded, unless the routine runs. It reads Resume while paused and Start otherwise. Pause is enabled only while the routine runs, and Reset while it runs or is paused.
+- Texts and attributes are written only when they change.
+- The page doesn't change the browser tab's title. The Work Timer's countdown still takes it while that timer runs (see 3.2).
+
+#### Sounds
+
+- **The recording** plays at its own level, through a master gain of 0.9. It peaks at about −11 dBFS, and its loudest 400 ms average about −26 dBFS, so it is a quiet recording, 7 to 12 dB quieter than the Work Timer's.
+- **The big ding** is generated with the Web Audio API in the Work Timer's soft bell: the same four sine partials, attack and fade (see 5.1, Dings). It is two notes struck together:
+
+| Ding | Notes: start, pitch, level, fade time | Plays |
+|---|---|---|
+| Big ding | 0 s, A4 (440 Hz), 0.25, 5 s; and 0 s, A5 (880 Hz), 0.125, 3 s | When the last play ends |
+
+  - So it is lower and longer than the other pages' dings, and rings for about 5 seconds. Its level is set from the recording rather than from the other dings. It peaks at about −8 dBFS, and its loudest 400 ms are about 10 dB louder than the recording's, so it stands out clearly from the voice without being harsh. At the other dings' levels (0.5 for its main note) it would be about 16 dB louder than the voice.
+- **Playback:** the page has its own `AudioContext`, created by the first Start (browsers allow audio only after a user gesture), with a master gain of 0.9. Each play and the big ding get their own gain node (bus) into the master. A play resumed partway fades in on its bus. A play stopped by Pause or Reset fades out on it, with `setTargetAtTime` to 0 and a 5 ms time constant, and its source stops 30 ms later. Sounds still to come are stopped before they start. Each bus is disconnected when all of its sources have ended or the sound is cancelled. The script keeps the set of sounds scheduled or playing.
+- The audio context is suspended 5 seconds after the routine stops (Pause, Reset or the end), once no sound is still playing. While the big ding rings out, it checks again every 5 seconds. The next Start or Resume wakes it. Since the routine's time is on the audio clock, nothing is lost while the audio wakes.
+
+#### Keeping the screen on
+
+- As on the Exercise page (5.2), while the routine runs, the page asks for a screen wake lock, with no button. It asks again when the page is shown again while the routine runs, and lets go on Pause, on Reset and at the end. If the API is missing or the request is refused, nothing shows and the routine runs anyway.
+
+#### Styles
+
+Every rule is scoped under `#eye-exercise`. The page's colors are custom properties on `#eye-exercise`, with dark values in its own `prefers-color-scheme: dark` media query. They are the Work Timer's work and rest shades:
+
+| Variable | Light | Dark | Used for |
+|---|---|---|---|
+| `--ee-play` | `#2f6fde` | `#5b8ef0` | The ring's arc while a play is on, idle and done, the Start button and the buttons' hover border (the same blue as `--accent`) |
+| `--ee-play-pale` | `#c1d4f5` | `#2e4266` | The ring's track under the blue arc |
+| `--ee-break` | `#318454` | `#53ae77` | The ring's arc during a break (the Work Timer's Rest green) |
+| `--ee-break-pale` | `#c1dacc` | `#2f4a38` | Its track |
+
+- Contrast, light and dark: the blue arc is 3.15:1 against its track in both, and the green arc 3.11:1 and 3.56:1. Against the card, the blue is 4.72:1 and 5.05:1, and the green 4.61:1 and 5.91:1. The grey arc (paused) is 4.13:1 and 4.97:1 against its track. The Start button's `--accent-text` label is 4.72:1 and 5.92:1 on the blue.
+- `[hidden]` inside the page is forced to `display: none`. Buttons inherit the font and color, enabled buttons have a pointer cursor, and focus shows a 2px `--accent` outline with a 2px offset.
+- `.ee-main` is a centered flex column with a 16px gap and `container-type: inline-size`.
+- `.ee-ring`, like the Work Timer's: a size container and a one-cell grid (`grid-template: minmax(0, 1fr) / minmax(0, 1fr)`), `min(300px, 100cqi)` on each side (`cqi` here is the width of `.ee-main`). Both children sit in the cell, centered. The SVG fills it (`overflow: visible`), and the track and arc have no fill and a stroke width of 6.
+- `.ee-ring-text` is a centered flex column. `.ee-count`: `font-size: 30cqmin` (`22cqmin` when idle, for the `m:ss` total), weight 600, `font-variant-numeric: tabular-nums`, letter spacing −0.02em, line height 1.1. `.ee-ring-label`: `--muted`, `font-size: max(12px, 7cqmin)`, line height 1.3. At the full 300px, the count is 90px (66px when idle) and the label 21px.
+- `.ee-controls` is a flex row with an 8px gap, full width up to 360px, and an 8px top margin. `.ee-btn` is styled like the Work Timer's `.wt-btn`: equal widths (`flex: 1 1 0`), 9px × 10px padding, pill-shaped, a 1px `--border` border, `--surface` background, weight 600, the border turning `--ee-play` on hover, and 45% opacity when disabled. `.ee-btn-primary` has an `--ee-play` background and border and `--accent-text` text.
+- `.ee-note`: `--muted`, 0.85rem, centered, no margin, and not shown when empty.
+- `.ee-sr` is visually hidden, like the Work Timer's `.wt-sr`.
+
+#### Accessibility
+
+- `role="timer"` on the count keeps screen readers from reading out every change. The ring's SVG is hidden from them.
+- `#ee-live` announces "Eye exercise done" at the end. It is emptied first and filled 100 ms later, so a repeated message is read again. Nothing is announced while the routine runs, so a screen reader doesn't talk over the recording.
+- When Start, Pause or Reset disables the button that had focus, focus moves on: from Start to Pause, from Pause to Start, and from Reset to Start. When the routine ends by itself, focus on Pause or Reset moves to Start.
+
+#### Known limits
+
+- Phones usually suspend a page when the screen locks or the browser goes to the background, and the recording stops with it. Since the routine's time is on the audio clock, the routine doesn't run on in the meantime. If the audio doesn't come back by itself on return, Pause and then Resume start it again. The page keeps the screen on while the routine runs, where the browser allows it. On an iPhone, silent mode may mute the recording and the ding.
+- In a background tab on a computer, the recording and the ding stay on time, and the display catches up when the page is shown again. The routine's end registers when the slowed-down interval next runs.
+- Delays in the audio output, such as Bluetooth headphones' (often 0.1 to 0.3 seconds), make the display run a little ahead of what's heard.
+- The recording is AAC, which current Chrome, Edge, Safari and Firefox decode (Firefox through the operating system's decoders, so on Linux it needs the system's FFmpeg). In a browser that can't decode it, or has no Web Audio, the page can't play it (see Recording).

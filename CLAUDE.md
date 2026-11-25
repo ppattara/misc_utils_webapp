@@ -3,13 +3,14 @@
 A web app that collects miscellaneous utilities for everyday use. It is a static HTML file, with no backend, database or user login.
 
 ## Project files
-- `index.html`: the app itself. It ends with the Exercise page's routines as plain text, then the Work Timer's recorded sounds as base64 (see Working on the app).
+- `index.html`: the app itself. It ends with the Exercise page's routines as plain text, then the recordings as base64: the Work Timer's sounds and the Eye Exercise's recording (see Working on the app).
 - `CLAUDE.md`: ground rules and working notes for Claude (this file).
 - `SPEC.md`: the full description of the app, detailed enough to rebuild it (or something very close) from that file alone.
 - `README.md`: the project summary, which doubles as the user manual.
 - `timer_sound/`: the owner's recordings for the Work Timer's sounds, the source of the copies embedded in `index.html`. The app never reads this folder. Leave the files as they are unless the owner asks for a change. To change a sound, replace its file and embed it again (`SPEC.md` 5.1, Sounds).
 - `exercise_routines/`: the Exercise page's routines, one plain-text file per routine (format in `SPEC.md` 5.2, Routines). They are the source of the copies embedded in `index.html`. The app never reads this folder, so after adding or changing a file, embed it again by pasting its whole text into its `script.ex-routine` element. More routines may be added.
   - `neck_shoulder_routine.txt`: a neck and shoulder routine, listed from a YouTube video (source and notation in the file's header). Each exercise has a name and description in Thai, and its hold time or reps.
+- `eye_exercise/`: the Eye Exercise page's recording, `eye_exercise.m4a`, the source of the copy embedded in `index.html`. The app never reads this folder. Leave the file as it is unless the owner asks for a change. To change it, replace the file and embed it again (`SPEC.md` 5.3, Recording).
 
 ## Ground rules (always follow)
 
@@ -35,7 +36,7 @@ A change isn't finished until the code and all three files agree. When reporting
 ## Working on the app
 - Read `SPEC.md` before changing the app. It covers the structure, conventions and constraints (one self-contained file, no external dependencies), including how to add a page.
 - To check a change, open `index.html` in a browser. There is no server or build step.
-- `index.html` ends with about 220 KB of base64: the embedded recordings, four very long lines under the comment headed `Embedded data`. Read only the code above them, for example with a line limit that stops at that comment (`grep -n 'Embedded data' index.html` gives its line), and never print or hand-edit them. `SPEC.md` 5.1 (Sounds) says how to replace a recording.
+- `index.html` ends with about 400 KB of base64: the embedded recordings, five very long lines under the comment headed `Embedded data`. Read only the code above them, for example with a line limit that stops at that comment (`grep -n 'Embedded data' index.html` gives its line), and never print or hand-edit them. A plain `grep` over the whole file prints those lines too when they match, so limit it to the code (for example with `awk` on line numbers) or use `grep -o` with a short pattern. `SPEC.md` 5.1 (Sounds) and 5.3 (Recording) say how to replace a recording.
 - Just above the `Embedded data` comment, under one headed `Exercise routines`, are the Exercise page's routines, as readable text. Each must stay an exact copy of its file in `exercise_routines/` (`SPEC.md` 5.2, Routines).
 
 ## Decisions
@@ -107,6 +108,27 @@ A change isn't finished until the code and all three files agree. When reporting
   - The chosen routine is saved under `misc-utils:exercise`.
 
   Details in `SPEC.md` 5.2.
+- **Eye Exercise page** (owner, 2026-11-26): Page 3 became the Eye Exercise page (`#/eye-exercise`). Start plays the recording in `eye_exercise/` 5 times in total, with a 3-second break between plays. The recording is embedded in `index.html`, so the app stays self-contained (it grows from about 330 KB to about 530 KB).
+
+  Asked about the open points, the owner chose:
+  - the page's words in English;
+  - Start, Pause and Reset buttons;
+  - the ring design Claude proposed, with no other text on the page: the play's number ("2 of 5") during each play, a 3-2-1 countdown in another color during each break, and a done message at the end;
+  - each 3-second break counted from the end of the file, as it is. The recording has about 1 s of quiet before the voice and 1.4 s after it, so about 5½ s pass between voices;
+  - and, the owner's own addition, a big ding when the whole routine is done.
+
+  Details chosen by Claude:
+  - The 5 plays and the 3-second break are fixed, not settings. Nothing is saved.
+  - Resume carries on from the same point in the recording. A play stopped by Pause or Reset fades out over about 30 ms, and one resumed partway fades in over 15 ms, so neither clicks.
+  - The ring is blue during a play and green during a break (the Work Timer's work and rest shades), and grey while paused. Before starting, it shows the total time (1:31). At the end it shows ✓ and "Done".
+  - The big ding is a low bell, A4 with its octave A5 struck together, ringing for about 5 seconds. The recording is quiet (7 to 12 dB quieter than the Work Timer's), so the ding is set about 10 dB above the voice's loudest moments rather than at the other pages' levels, which would put it about 16 dB above the voice.
+  - The recording is decoded when the page is first shown, with an `OfflineAudioContext`, so the total time shows before Start without a click.
+  - The routine's time is kept on the audio clock, so the ring always matches what is heard, even if the audio starts late or stalls.
+  - The screen is kept on automatically while the routine runs, with no button, as on the Exercise page.
+  - Screen readers hear nothing during the routine, so they don't talk over the recording. The end is announced.
+  - The page leaves the browser tab's title alone.
+
+  Details in `SPEC.md` 5.3.
 
 ## Status
 - v1: blank shell with three placeholder pages (Page 1, Page 2, Page 3) and the shared tab navigation.
@@ -119,4 +141,5 @@ A change isn't finished until the code and all three files agree. When reporting
 - v8 (2026-11-22): the Work Timer plays the owner's recordings at the start and end of work, of rest and of each break, embedded in `index.html` as base64. The old dings are a setting, and the sidebar previews all six sounds.
 - v9 (2026-11-22): the Work Timer's settings are typed in by hand as whole numbers, with no up/down arrows, in narrower ranges (work 10–120 min, rest 3–30 min, break length 5–15 s, gaps 1–5 and 2–10 min), and the shortest gap always stays below the longest.
 - v10 (2026-11-24): Page 2 is now the Exercise page (`#/exercise`). It runs an exercise routine to follow along with: get-ready countdowns, timed holds and counted reps with dings, a progress list for picking where to go on while paused, and the screen kept on. Its routines come from `exercise_routines/`, embedded in `index.html`. Page 3 is still a placeholder.
-- Next: the owner will describe the utility for Page 3. More routines may be added to `exercise_routines/`, each one embedded in `index.html` too.
+- v11 (2026-11-26): Page 3 is now the Eye Exercise page (`#/eye-exercise`). Start plays the recording from `eye_exercise/`, embedded in `index.html`, 5 times with 3-second breaks, then a big ding. A ring shows the play ("2 of 5") and counts down each break, with Start, Pause/Resume and Reset. No placeholder pages are left. Claude tested it in headless Chrome only (timing, pause and resume, reset, light and dark, a narrow screen). It hasn't been tried in Safari or Firefox yet.
+- Next: nothing planned. More routines may be added to `exercise_routines/`, each one embedded in `index.html` too.
