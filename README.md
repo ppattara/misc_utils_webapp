@@ -56,13 +56,17 @@ A countdown for focused work and another for breaks. While you work, short break
 
 An exercise routine to follow along with. Pick a routine, press เริ่ม (Start), and follow it from beginning to end without touching anything. The page counts down each hold, counts your reps at the right pace, and dings to tell you when to start and stop. The page's words are in Thai, like the exercises.
 
-- **Routines:** pick one from the ชุดท่า drop-down. For now there is one: หมอชวนฟิต แก้ปวดคอบ่าไหล่, 13 neck and shoulder exercises taking about 6½ minutes, from a video by หมอชวนฟิต [DeDoctor]. Its link is in `exercise_routines/DD_neck_shoulder.txt`. The page remembers your choice.
+- **Routines:** pick one from the ชุดท่า drop-down. There are four, all from videos by หมอชวนฟิต [DeDoctor]. Each video's link is at the top of its file in `exercise_routines/`. The page remembers your choice.
+  - หมอชวนฟิต แก้ปวดคอบ่าไหล่: 13 neck and shoulder exercises, about 6½ minutes.
+  - หมอชวนฟิต ปวดคอไม่ง้อยา 1: breathing and gentle moves for the neck and shoulders, 11 exercises, about 7½ minutes. Done standing, with no equipment.
+  - หมอชวนฟิต ปวดคอไม่ง้อยา 2: stretches and strengthening, 15 exercises, about 13 minutes. Done standing, with a light resistance band and a small water bottle (about 0.5 kg) in each hand. Without them, do the same moves with empty hands.
+  - หมอชวนฟิต ปวดคอไม่ง้อยา 3: stretches, 14 cardio moves of about a minute each (the first two, half a minute) and a cool-down, 23 exercises, about 18½ minutes. Done sitting on a stable chair, with no equipment. In the video you do the cardio moves at your own pace; the page counts them at the pace the doctor kept.
 - **Start:** first comes a 5-second countdown (เตรียมตัว) to get ready. Then the routine runs by itself to the end. Before each later exercise, and before switching sides, a 3-second countdown shows what comes next (ต่อไป) and gives you time to get into position.
 - **Holds:** the ring counts the hold down in seconds. For exercises done on each side, the page shows ข้างขวา or ข้างซ้าย, and for one done twice, รอบที่ 1 จาก 2.
 - **Reps:** the ring counts your reps (for example 2 จาก 10) at the routine's pace. In alternating moves (สลับไปมา), each movement one way counts as one rep, so 10 reps means 5 each way.
 - **Dings:** one ding when an exercise starts, a falling two-note ding when it ends, and a softer, shorter ding at each new rep. The countdowns are silent.
 - **On screen:** the exercise's name in large type, with its description beside the ring. Above the name are the side, the set, and the hold time or reps. The ring's color shows what's happening: amber during a countdown, blue during an exercise, grey while paused. Before you start, the ring shows the total time.
-- **The list:** on the right (below, on a phone) are all of the routine's exercises in small type, grouped into warm-up, stretches and strengthening, with the total time at the top. The bar beside them fills as you go. Finished exercises turn grey, and the current one is bold.
+- **The list:** on the right (below, on a phone) are all of the routine's exercises in small type, grouped into the routine's parts (warm-up, stretches and so on), with the total time at the top. The bar beside them fills as you go. Finished exercises turn grey, and the current one is bold.
 - **Pause and resume:** หยุดชั่วคราว (Pause) stops everything where it is. ทำต่อ (Resume) carries on from that moment, straight away. Or, while paused, click an exercise in the list to continue from there instead. Resume then gives you the 3-second countdown and starts that exercise from the beginning.
 - **Start partway:** before starting, click an exercise in the list to start from it. The ring shows the time from there to the end.
 - **When it's done:** the page shows ครบทุกท่าแล้ว. Press เริ่ม to do it again.
@@ -83,7 +87,7 @@ An eye exercise recording, played five times in a row with no break in between, 
 
 ## More
 
-- `exercise_routines/`: the exercise routines, one text file each. The app has its own copies built in, so after changing a file, it needs to be copied into `index.html` again (see `SPEC.md` 5.2).
+- `exercise_routines/`: the exercise routines, one text file each. The app has its own copies built in, so after adding or changing a file, it needs to be copied into `index.html` again (see `SPEC.md` 5.2).
 - `eye_exercise/`: the Eye Exercise recording. The app has its own copy built in, so after replacing it, it needs to be copied into `index.html` again (see `SPEC.md` 5.3).
 - `SPEC.md`: the full description of how the app works, detailed enough to rebuild it.
 - `CLAUDE.md`: working rules for developing this project with Claude Code.

@@ -398,12 +398,22 @@ The script fills in every text.
 - **Embedding:** the page never reads `exercise_routines/`. Each routine is a `<script type="text/plain" class="ex-routine">` element under the comment headed `Exercise routines` (see 2), holding the file's whole text as it is, from the line after the opening tag. Its `data-file` is the file's name without `.txt`, and is the routine's id. The `text/plain` type keeps the browser from running it, and the text must not contain `</script`. The drop-down lists the routines in the order of their elements.
 - **Adding or changing a routine:** add or edit its file in `exercise_routines/`, then paste the file's whole text into its element (adding an element for a new one). After renaming a file, change its element's `data-file` to the new name.
 - The elements come after the page script, so the script reads them on `DOMContentLoaded`, or at once if the page has already loaded.
+- **The routines:** four, all listed from videos by หมอชวนฟิต [DeDoctor] (each file's header gives its video's link). Their elements come in this order, so the drop-down lists them in it, and the first is shown when no choice is saved:
+
+| `data-file` | Title (drop-down) | Sections | Exercises | Steps | Exercise time | In all | Dings |
+|---|---|---|---|---|---|---|---|
+| `DD_neck_shoulder` | หมอชวนฟิต แก้ปวดคอบ่าไหล่ | วอร์มอัพ, ยืดกล้ามเนื้อ, เสริมความแข็งแรง | 13 | 19 | 332 s | 6:31 | 74 |
+| `DD_neck_pain_no_drug_1` | หมอชวนฟิต ปวดคอไม่ง้อยา 1 | หายใจ, ขยับกล้ามเนื้อ, หายใจผ่อนคลาย | 11 | 11 | 406 s | 7:21 | 121 |
+| `DD_neck_pain_no_drug_2` | หมอชวนฟิต ปวดคอไม่ง้อยา 2 | วอร์มอัพ, ยืดกล้ามเนื้อ, เสริมความแข็งแรง, คูลดาวน์ | 15 | 21 | 712 s | 12:57 | 169 |
+| `DD_neck_pain_no_drug_3` | หมอชวนฟิต ปวดคอไม่ง้อยา 3 | วอร์มอัพ, คาร์ดิโอ, คูลดาวน์ | 23 | 32 | 1021.2 s | 18:39 | 533 |
+
+  "In all" is the total time from Start at the first exercise (see Steps and timing), and "Dings" the number of dings that Start schedules for the whole routine (see Sounds).
 
 #### Steps and timing
 
 - A routine runs as steps: one per set and side of each exercise, in order (set by set, and in each set the first side, then the other). A hold's step lasts its hold time, and a reps step lasts the number of reps times the seconds per rep.
 - Before each step comes a get-ready countdown: 5 seconds before the first step after Start, and 3 seconds before every other step, including one picked from the list while paused.
-- The total time from a starting step is 5 seconds, plus every step from there, plus 3 seconds before each step after the first. The neck and shoulder routine (`DD_neck_shoulder.txt`) has 13 exercises in 19 steps, with 332 seconds of exercise: 6:31 in all.
+- The total time from a starting step is 5 seconds, plus every step from there, plus 3 seconds before each step after the first. For example, the neck and shoulder routine (`DD_neck_shoulder.txt`) has 13 exercises in 19 steps, with 332 seconds of exercise: 6:31 in all. The other routines' totals are in the table under Routines.
 
 #### Running
 
@@ -461,7 +471,7 @@ The dings are generated with the Web Audio API, in the Work Timer's soft bell: t
 
 - So a single ding starts a step, a falling pair ends it, and the rep ding is the start ding, much quieter and shorter. The countdowns are silent, and Resume makes no sound.
 - **Playback:** the page has its own `AudioContext`, created by the first Start (browsers allow audio only after a user gesture), with a master gain of 0.9. Each ding gets its own gain node (its bus) into the master, disconnected when all its oscillators have ended or when it's cancelled.
-- **Scheduling:** Start and Resume schedule every ding of the rest of the routine ahead on the audio clock (a whole routine has about 75), so they play on time even in a background tab. The plan's `performance.now()` times become audio-clock times through a pair of matching readings (`ctx.currentTime` and `performance.now()`) taken when they're scheduled. If the context wasn't running yet, they are scheduled again as soon as it runs. Pause and a routine change cancel the dings that haven't started, and one already ringing rings out.
+- **Scheduling:** Start and Resume schedule every ding of the rest of the routine ahead on the audio clock (a whole routine has from 74 to 533, see the table under Routines), so they play on time even in a background tab. The plan's `performance.now()` times become audio-clock times through a pair of matching readings (`ctx.currentTime` and `performance.now()`) taken when they're scheduled. If the context wasn't running yet, they are scheduled again as soon as it runs. Pause and a routine change cancel the dings that haven't started, and one already ringing rings out.
 - **Staying in step:** on every tick, if the audio clock has drifted 0.15 seconds or more from that pair (it stalls while a computer sleeps, for example), the dings still ahead are scheduled again. Those whose time has passed are dropped.
 - The audio context is suspended 5 seconds after the routine stops (Pause, or the end), once no ding is still ringing. If one is, it checks again every 5 seconds. The next Start or Resume wakes it.
 
@@ -512,6 +522,7 @@ Every rule is scoped under `#exercise`. The page's colors are custom properties 
 - In a background tab, the dings stay on time, and the display catches up when the page is shown again. The routine's end registers when the slowed-down interval next runs.
 - Delays in the audio output, such as Bluetooth headphones' (often 0.1 to 0.3 seconds), make each ding come a little after its count changes.
 - In a browser without Web Audio, the routine runs silently.
+- The dings scheduled ahead cost CPU time until they play, so a long routine costs more, most of all at its start. Start on ปวดคอไม่ง้อยา 3 schedules 533 dings: 2,260 oscillators, each with its own gain node. Measured in headless Firefox 161 on an Apple Silicon Mac, with the page in a background tab so that nothing was redrawn, Firefox used about 38% of a CPU core in the routine's first seconds, against about 15% for the neck and shoulder routine (74 dings) and about 1% with no routine running. The cost falls as the dings play out. Scheduling the dings a limited time ahead, topped up as the routine runs, would bound it.
 
 ### 5.3 Eye Exercise
 
