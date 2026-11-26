@@ -11,6 +11,8 @@ A web app that collects miscellaneous utilities for everyday use. It is a static
 - `exercise_routines/`: the Exercise page's routines, one plain-text file per routine (format in `SPEC.md` 5.2, Routines). They are the source of the copies embedded in `index.html`. The app never reads this folder, so after adding or changing a file, embed it again by pasting its whole text into its `script.ex-routine` element, and after renaming one, change that element's `data-file` to match. More routines may be added.
   - `DD_neck_shoulder.txt`: a neck and shoulder routine, listed from a YouTube video (source and notation in the file's header). Its title, shown in the drop-down, is หมอชวนฟิต แก้ปวดคอบ่าไหล่. Each exercise has a name and description in Thai, and its hold time or reps.
 - `eye_exercise/`: the Eye Exercise page's recording, `eye_exercise.m4a`, the source of the copy embedded in `index.html`. The app never reads this folder. Leave the file as it is unless the owner asks for a change. To change it, replace the file and embed it again (`SPEC.md` 5.3, Recording).
+- `.gitignore`: keeps `.tools/` out of git.
+- `.tools/`: local tools for working on the project (video downloads, ffmpeg, text recognition), ignored by git. It exists only on the machine where it was set up, so it may be missing. See Local tools.
 
 ## Ground rules (always follow)
 
@@ -38,6 +40,24 @@ A change isn't finished until the code and all three files agree. When reporting
 - To check a change, open `index.html` in a browser. There is no server or build step.
 - `index.html` ends with about 400 KB of base64: the embedded recordings, five very long lines under the comment headed `Embedded data`. Read only the code above them, for example with a line limit that stops at that comment (`grep -n 'Embedded data' index.html` gives its line), and never print or hand-edit them. A plain `grep` over the whole file prints those lines too when they match, so limit it to the code (for example with `awk` on line numbers) or use `grep -o` with a short pattern. `SPEC.md` 5.1 (Sounds) and 5.3 (Recording) say how to replace a recording.
 - Just above the `Embedded data` comment, under one headed `Exercise routines`, are the Exercise page's routines, as readable text. Each must stay an exact copy of its file in `exercise_routines/` (`SPEC.md` 5.2, Routines).
+
+## Local tools (`.tools/`)
+Tools for looking at videos and other media while working on the project, for example to list an exercise routine from a YouTube video. They aren't part of the app, and `.gitignore` keeps them out of git.
+- **Local:** `.tools/` exists only on the machine where it was set up: the owner's Apple Silicon Mac, on 2026-11-27, with yt-dlp 2026.11.23, Deno 2.9.8 and ffmpeg 9.1. On another machine, or in a fresh clone, it's missing: set it up again as below if the owner wants it. Never commit it or refer to it from the app.
+- **Use:** run the launchers in `.tools/bin/`: `yt-dlp`, `ffmpeg`, `ffprobe`, `deno` and `ocr` (`ocr <folder>` prints the text macOS Vision finds in each PNG in that folder). Put downloads and other work files in Claude's scratch folder, not in the project.
+- **Freedom** (owner, 2026-11-24 and 2026-11-27): the Mac's proxy setting points to the Freedom site blocker (`127.0.0.1:7769`), which cuts YouTube off. The owner chose to have yt-dlp go around it: `.tools/bin/yt-dlp` passes `--proxy ""`, so it connects directly. (`curl` ignores that setting anyway.)
+- **Updates** (owner, 2026-11-27): don't update the tools automatically or as routine. Update one only when it's needed, for example when yt-dlp stops working with YouTube (YouTube's changes regularly break older versions), and tell the owner. Deno's own update check is off.
+- **No git:** ffmpeg's build runs `git describe` to name its version. Build it with a stand-in `git` that just exits with an error first in `PATH`, so that no git command runs (ground rule 2).
+
+To set it up again (macOS on Apple Silicon, with Apple's command line tools: `xcode-select -p`), fill each folder of `.tools/`:
+1. `yt-dlp/`: `yt-dlp_macos` and `SHA2-256SUMS` from the latest release on github.com/yt-dlp/yt-dlp. Check the checksum (`grep ' yt-dlp_macos$' SHA2-256SUMS | shasum -a 256 -c -`) and make it executable.
+2. `deno/`: `deno-aarch64-apple-darwin.zip` and its `.sha256sum` from the latest release on github.com/denoland/deno. Check it (`shasum -a 256 -c`), then unzip it. yt-dlp needs a JavaScript runtime for YouTube.
+3. `ffmpeg/`: `ffmpeg` and `ffprobe`, built from the latest source release on ffmpeg.org/releases, because the only macOS build ffmpeg.org links to (evermeet.cx) is Intel-only and this Mac has no Rosetta. Build in the scratch folder, with the stand-in `git`: `./configure --disable-doc --disable-ffplay --disable-debug`, then `make -j$(sysctl -n hw.ncpu)` (about 1½ minutes). Copy the two programs in, then delete the build. They use only macOS's own libraries.
+4. `ocr/`: `ocr.swift`, a short program that runs Vision's `VNRecognizeTextRequest` (accurate level, no language correction, minimum text height 0.1) on each PNG in a folder and prints `file<TAB>text | text`. Compile it with `swiftc -O -o ocr ocr.swift`.
+5. `bin/`: `yt-dlp` and `deno` are short `sh` launchers. Each finds `.tools/` from its own path, sets `DENO_DIR` to `.tools/deno/cache` and `DENO_NO_UPDATE_CHECK=1`, and runs the real program. yt-dlp also gets `--js-runtimes deno:<.tools>/deno/deno --ffmpeg-location <.tools>/ffmpeg --proxy ""`. `ffmpeg`, `ffprobe` and `ocr` are relative symlinks to the programs.
+6. Check: `.tools/bin/yt-dlp -v` (with no URL) lists the ffmpeg, ffprobe and Deno versions, and the proxy map `{'all': '__noproxy__'}`.
+
+Tip: exercise videos often show italic counters, and Vision can swap an italic 6 and 9. Shear the crops upright and invert them first (`-vf "format=gray,negate,scale=iw*2:ih*2,shear=shx=-0.22:fillcolor=white"`): then 6 and 9 come back blank instead of swapped, and can be filled in from the count's sequence.
 
 ## Decisions
 - **Saved settings** (owner, 2026-11-22): pages may remember their settings in the browser's `localStorage` only, never in files, a database or an account. If the browser's data is cleared, settings simply return to their defaults. Keep this simple. The convention is in `SPEC.md` section 3.4.

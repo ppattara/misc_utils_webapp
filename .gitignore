@@ -1,0 +1,3 @@
+# Local tools for working on this project: video downloads, ffmpeg and text recognition.
+# They exist only on the machine where they're set up. See CLAUDE.md, Local tools.
+.tools/
