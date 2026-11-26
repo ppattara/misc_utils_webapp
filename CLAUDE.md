@@ -108,7 +108,7 @@ A change isn't finished until the code and all three files agree. When reporting
   - The chosen routine is saved under `misc-utils:exercise`.
 
   Details in `SPEC.md` 5.2.
-- **Eye Exercise page** (owner, 2026-11-26): Page 3 became the Eye Exercise page (`#/eye-exercise`). Start plays the recording in `eye_exercise/` 5 times in total, with a 3-second break between plays. The recording is embedded in `index.html`, so the app stays self-contained (it grows from about 330 KB to about 530 KB).
+- **Eye Exercise page** (owner, 2026-11-26): Page 3 became the Eye Exercise page (`#/eye-exercise`). Start plays the recording in `eye_exercise/` 5 times in total, with a 3-second break between plays (later removed, see No break between plays). The recording is embedded in `index.html`, so the app stays self-contained (it grows from about 330 KB to about 530 KB).
 
   Asked about the open points, the owner chose:
   - the page's words in English;
@@ -130,6 +130,12 @@ A change isn't finished until the code and all three files agree. When reporting
 
   Details in `SPEC.md` 5.3.
 - **Routine file and name** (owner, 2026-11-26): the owner renamed the neck and shoulder routine's file from `neck_shoulder_routine.txt` to `DD_neck_shoulder.txt`, and asked for its name in the drop-down to be exactly หมอชวนฟิต แก้ปวดคอบ่าไหล่ (it was ท่าบริหารคอ บ่า ไหล่). The drop-down shows a routine's first line, so that line changed in the file and in its copy in `index.html`. The copy's `data-file`, the routine's id, is now `DD_neck_shoulder`. A choice saved under the old id falls back to the first routine, which is this one while it's the only routine.
+- **No break between plays** (owner, 2026-11-26): the owner asked for the Eye Exercise's 3-second break between plays to be removed altogether. The recording now plays 5 times back to back, each play starting the moment the one before it ends, then the big ding. Details chosen by Claude:
+  - The recording itself is unchanged, so its quiet ends stay: about 2.4 s pass between one play's voice and the next.
+  - The ring shows only plays now: blue, running down through each play and full again as the next one starts. The break's green look and its 3-2-1 countdown are gone, along with their colors (`--ee-break` and `--ee-break-pale`) and the script's `GAP`.
+  - The total time shown before Start went from 1:31 to 1:19.
+
+  Details in `SPEC.md` 5.3.
 
 ## Status
 - v1: blank shell with three placeholder pages (Page 1, Page 2, Page 3) and the shared tab navigation.
@@ -143,4 +149,5 @@ A change isn't finished until the code and all three files agree. When reporting
 - v9 (2026-11-22): the Work Timer's settings are typed in by hand as whole numbers, with no up/down arrows, in narrower ranges (work 10–120 min, rest 3–30 min, break length 5–15 s, gaps 1–5 and 2–10 min), and the shortest gap always stays below the longest.
 - v10 (2026-11-24): Page 2 is now the Exercise page (`#/exercise`). It runs an exercise routine to follow along with: get-ready countdowns, timed holds and counted reps with dings, a progress list for picking where to go on while paused, and the screen kept on. Its routines come from `exercise_routines/`, embedded in `index.html`. Page 3 is still a placeholder.
 - v11 (2026-11-26): Page 3 is now the Eye Exercise page (`#/eye-exercise`). Start plays the recording from `eye_exercise/`, embedded in `index.html`, 5 times with 3-second breaks, then a big ding. A ring shows the play ("2 of 5") and counts down each break, with Start, Pause/Resume and Reset. No placeholder pages are left. Claude tested it in headless Chrome only (timing, pause and resume, reset, light and dark, a narrow screen). It hasn't been tried in Safari or Firefox yet.
+- v12 (2026-11-26): the Eye Exercise plays its recording 5 times back to back, with no break between plays, then the big ding, so it takes 1:19 instead of 1:31. The ring's green break countdown is gone. Claude tested it in headless Chrome only (the timing of the plays and the ding, pause and resume, including just before a play ends, reset, light and dark).
 - Next: nothing planned. More routines may be added to `exercise_routines/`, each one embedded in `index.html` too.

@@ -106,7 +106,7 @@ The shared script needs no changes.
 |---|---|---|---|
 | Work Timer | `work-timer` | Work and rest countdowns, with random short breaks during work | See 5.1 |
 | Exercise | `exercise` | Follow-along exercise routines: get-ready countdowns, hold countdowns and rep counters, with dings | See 5.2 |
-| Eye Exercise | `eye-exercise` | Plays an eye exercise recording five times, with a 3-second break between plays, then a big ding | See 5.3 |
+| Eye Exercise | `eye-exercise` | Plays an eye exercise recording five times in a row, then a big ding | See 5.3 |
 
 ### 5.1 Work Timer
 
@@ -515,7 +515,7 @@ Every rule is scoped under `#exercise`. The page's colors are custom properties 
 
 ### 5.3 Eye Exercise
 
-Plays an eye exercise recording five times, with a 3-second break after each play but the last, then rings a big ding. Start, Pause and Reset control it. A ring like the Work Timer's shows which play is on ("2 of 5") and counts down each break. The page shows no other text: no description or instructions. The recording is embedded in the page, so it still works offline as one file. The page's words are in English. The page's ids and classes start with `ee-`. Its styles sit under `/* ---------- Eye Exercise (#eye-exercise) ---------- */` in the page-specific styles, after the Exercise page's, and its script is the third page script.
+Plays an eye exercise recording five times in a row, with no break between plays, then rings a big ding. Start, Pause and Reset control it. A ring like the Work Timer's shows which play is on ("2 of 5") and how much of it is left. The page shows no other text: no description or instructions. The recording is embedded in the page, so it still works offline as one file. The page's words are in English. The page's ids and classes start with `ee-`. Its styles sit under `/* ---------- Eye Exercise (#eye-exercise) ---------- */` in the page-specific styles, after the Exercise page's, and its script is the third page script.
 
 #### Markup
 
@@ -538,34 +538,32 @@ Inside `<section class="page" id="eye-exercise" data-title="Eye Exercise">`, in 
 
 #### Running
 
-- **The routine:** the recording plays 5 times, with a 3-second break after each play but the last: play, break, play, break, play, break, play, break, play. Each break counts from the end of the file, so with the recording's quiet ends, about 5½ seconds pass between the voice of one play and the next. With this recording the routine lasts about 91 seconds (5 × 15.8 + 4 × 3), shown as 1:31. Chrome decodes the file as 15.83 s, as it keeps the AAC encoder's 44 ms of priming at its start. The 5 plays and the 3 seconds are constants in the script (`PLAYS` and `GAP`), not settings.
+- **The routine:** the recording plays 5 times back to back, with no break between plays: each play starts the moment the one before it ends. The recording's own quiet ends stay, so about 2.4 seconds pass between the voice of one play and the next. With this recording the routine lasts about 79 seconds (5 × 15.8), shown as 1:19. Chrome decodes the file as 15.83 s, as it keeps the AAC encoder's 44 ms of priming at its start. The 5 plays are a constant in the script (`PLAYS`), not a setting.
 - When the last play ends (at the end of the file), the big ding rings and the routine is done.
 - The routine is idle (not started), running, paused or done.
 - **Start** (when idle or done) runs the routine from the first play, at once (50 ms after the click, `LEAD`).
-- **Pause** (only while running) stops the routine where it is, mid-play or mid-break. A play in progress fades out over about 30 ms, so it doesn't click, and the plays and the big ding still to come are cancelled.
-- **Resume:** while paused, the Start button reads Resume and carries on from where the routine paused, at once. A play picks up at the same point in the recording, fading in over 15 ms (`FADE`), and a break counts down the rest of its time.
+- **Pause** (only while running) stops the routine where it is, even partway through a play. A play in progress fades out over about 30 ms, so it doesn't click, and the plays and the big ding still to come are cancelled.
+- **Resume:** while paused, the Start button reads Resume and carries on from where the routine paused, at once. The play picks up at the same point in the recording, fading in over 15 ms (`FADE`), and the plays after it follow back to back.
 - **Reset** (while running or paused) stops the routine silently, as Pause does, and puts it back to the start, idle.
 - **Done:** when the last play ends. Start then runs the routine again from the first play.
 - Nothing is saved: the routine is idle on every load.
-- **How it's timed:** the routine's time is kept on the audio clock (`ctx.currentTime`), so the display always matches what plays. If the audio starts a moment late, or its clock stalls (while a computer sleeps, for example), the display waits with it. Start and Resume schedule the rest of the routine ahead on the audio clock: each play still to come through its own `AudioBufferSourceNode` (`start(time)`, or `start(time, offset)` for the play resumed partway), and the big ding at the end. So everything plays on time even in a background tab. While the routine runs, it is `ctx.currentTime − origin` seconds in, where Start and Resume set `origin` (the moment the routine started, or would have started). It never shows a moment before the one it started or resumed from (`at`). While it doesn't run, `at` holds where it stands: 0 when idle, or the paused moment.
+- **How it's timed:** the routine's time is kept on the audio clock (`ctx.currentTime`), so the display always matches what plays. If the audio starts a moment late, or its clock stalls (while a computer sleeps, for example), the display waits with it. Start and Resume schedule the rest of the routine ahead on the audio clock: each play still to come through its own `AudioBufferSourceNode` (`start(time)`, or `start(time, offset)` for the play resumed partway), and the big ding at the end. So everything plays on time even in a background tab. While the routine runs, it is `ctx.currentTime − origin` seconds in, where Start and Resume set `origin` (the moment the routine started, or would have started). It never shows a moment before the one it started or resumed from (`at`). While it doesn't run, `at` holds where it stands: 0 when idle, or the paused moment. Play *n* (counting from 0) is scheduled at `origin + n × L`, where L is the recording's length, so each play starts exactly as the one before it ends, and the big ding at `origin + 5 × L`.
 - **Redrawing:** while running, the display is redrawn on every animation frame, so the arc moves smoothly. Animation frames stop in a background tab, so a 500 ms interval (`tick`) also runs: it wakes the audio context if it was suspended, and ends the routine on time. Both are safe to call at any time.
 
 #### Display
 
-- **Ring:** built like the Work Timer's (see 5.1, Ring), `min(300px, 100cqi)` square. Its arc shows the share left of the play or break in progress: full when one begins, running back toward the top as it goes. It is drawn with `stroke-dasharray` the same way (C = 2π × 45), written only when it changes. The script sets one of these classes on `#ee-ring`:
+- **Ring:** built like the Work Timer's (see 5.1, Ring), `min(300px, 100cqi)` square. Its arc shows the share left of the play in progress: full when the play begins and running back toward the top as it goes, then full again as the next play begins. It is drawn with `stroke-dasharray` the same way (C = 2π × 45), written only when it changes. The script sets one of these classes on `#ee-ring`:
   - `is-idle`: full and blue.
   - `is-play`: blue, while the recording plays.
-  - `is-break`: green, during a break.
-  - `is-paused`, added to `is-play` or `is-break` while paused: grey, with the track `--border`, the arc `--muted` and the count `--muted`.
+  - `is-paused`, added to `is-play` while paused: grey, with the track `--border`, the arc `--muted` and the count `--muted`.
   - `is-done`: full and blue.
   - `is-off`: grey and empty, when the recording can't be played.
 - **Count and label:** the count in the middle and the label under it:
 
 | State | Count | Label |
 |---|---|---|
-| Idle | The routine's total time, `m:ss` (1:31) | Total time |
+| Idle | The routine's total time, `m:ss` (1:19) | Total time |
 | A play | Its number, 1 to 5 | of 5 |
-| A break | The seconds left, rounded up (3, 2, 1) | Break |
 | Done | ✓ | Done |
 
   While paused, they show the paused moment. Until the recording is decoded, both are empty.
@@ -593,16 +591,14 @@ Inside `<section class="page" id="eye-exercise" data-title="Eye Exercise">`, in 
 
 #### Styles
 
-Every rule is scoped under `#eye-exercise`. The page's colors are custom properties on `#eye-exercise`, with dark values in its own `prefers-color-scheme: dark` media query. They are the Work Timer's work and rest shades:
+Every rule is scoped under `#eye-exercise`. The page's colors are custom properties on `#eye-exercise`, with dark values in its own `prefers-color-scheme: dark` media query. They are the Work Timer's work shades:
 
 | Variable | Light | Dark | Used for |
 |---|---|---|---|
 | `--ee-play` | `#2f6fde` | `#5b8ef0` | The ring's arc while a play is on, idle and done, the Start button and the buttons' hover border (the same blue as `--accent`) |
 | `--ee-play-pale` | `#c1d4f5` | `#2e4266` | The ring's track under the blue arc |
-| `--ee-break` | `#318454` | `#53ae77` | The ring's arc during a break (the Work Timer's Rest green) |
-| `--ee-break-pale` | `#c1dacc` | `#2f4a38` | Its track |
 
-- Contrast, light and dark: the blue arc is 3.15:1 against its track in both, and the green arc 3.11:1 and 3.56:1. Against the card, the blue is 4.72:1 and 5.05:1, and the green 4.61:1 and 5.91:1. The grey arc (paused) is 4.13:1 and 4.97:1 against its track. The Start button's `--accent-text` label is 4.72:1 and 5.92:1 on the blue.
+- Contrast, light and dark: the blue arc is 3.15:1 against its track in both, and 4.72:1 and 5.05:1 against the card. The grey arc (paused) is 4.13:1 and 4.97:1 against its track. The Start button's `--accent-text` label is 4.72:1 and 5.92:1 on the blue.
 - `[hidden]` inside the page is forced to `display: none`. Buttons inherit the font and color, enabled buttons have a pointer cursor, and focus shows a 2px `--accent` outline with a 2px offset.
 - `.ee-main` is a centered flex column with a 16px gap and `container-type: inline-size`.
 - `.ee-ring`, like the Work Timer's: a size container and a one-cell grid (`grid-template: minmax(0, 1fr) / minmax(0, 1fr)`), `min(300px, 100cqi)` on each side (`cqi` here is the width of `.ee-main`). Both children sit in the cell, centered. The SVG fills it (`overflow: visible`), and the track and arc have no fill and a stroke width of 6.

@@ -16,7 +16,7 @@ A small personal web app that collects everyday utilities in one place, one per 
 |---|---|
 | Work Timer | Work and rest countdowns, with random short breaks during work |
 | Exercise | Exercise routines to follow along with: holds are timed and reps counted, with dings |
-| Eye Exercise | An eye exercise recording, played five times with short breaks, then a big ding |
+| Eye Exercise | An eye exercise recording, played five times in a row, then a big ding |
 
 ## Work Timer
 
@@ -71,11 +71,11 @@ An exercise routine to follow along with. Pick a routine, press เริ่ม 
 
 ## Eye Exercise
 
-An eye exercise recording, played five times in a row with a 3-second break between plays, and a big ding when it's all done. It takes about 1½ minutes.
+An eye exercise recording, played five times in a row with no break in between, and a big ding when it's all done. It takes about 1 minute 20 seconds.
 
 - **Start, Pause, Reset:** Start plays it from the beginning. Pause stops it right where it is, even mid-sentence, and the Start button then reads Resume, which carries on from that point. Reset stops it and goes back to the beginning.
-- **The ring:** while the recording plays, the middle shows which play it is (for example 2 of 5), and the ring's blue strip runs down as that play goes. During each break the ring turns green and counts down 3, 2, 1. It turns grey while paused. Before you start, it shows the total time, and at the end a ✓.
-- **The breaks:** each 3-second break starts when the recording ends. The recording has a second or so of quiet at each end, so about 5 seconds pass between one play's voice and the next.
+- **The ring:** the middle shows which play it is (for example 2 of 5), and the ring's blue strip runs down as that play goes, then fills up again as the next one starts. It turns grey while paused. Before you start, it shows the total time, and at the end a ✓.
+- **No breaks:** each play starts the moment the one before it ends. The recording has a second or so of quiet at each end, so about 2½ seconds pass between one play's voice and the next.
 - **Sounds:** the recording plays at its own volume. When the last play ends, a big, low ding rings out for a few seconds, clearly louder than the voice. The recording is built into the page, so it works offline too.
 - **Screen stays on:** while it plays, the page stops the screen from turning off, in browsers that allow it, and lets it go when you pause, reset or finish.
 - **In the background:** on a computer, it keeps playing on time while you use another tab or utility. Phones usually pause web pages when the screen locks or you switch apps, so keep the page on screen. If the sound doesn't come back when you return, press Pause and then Resume. On an iPhone, silent mode may mute it.

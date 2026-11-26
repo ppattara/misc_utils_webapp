@@ -728,21 +728,16 @@
     }
 
     /* ---------- Eye Exercise (#eye-exercise) ---------- */
-    /* The ring is blue (the accent) while the recording plays and green during the breaks between
-       plays, each over a pale track of its own color (the Work Timer's work and rest shades), and grey
+    /* The ring is blue (the accent) over a pale blue track, the Work Timer's work shades, and grey
        while paused. */
     #eye-exercise {
       --ee-play: #2f6fde;
       --ee-play-pale: #c1d4f5;
-      --ee-break: #318454;
-      --ee-break-pale: #c1dacc;
     }
     @media (prefers-color-scheme: dark) {
       #eye-exercise {
         --ee-play: #5b8ef0;
         --ee-play-pale: #2e4266;
-        --ee-break: #53ae77;
-        --ee-break-pale: #2f4a38;
       }
     }
     #eye-exercise [hidden] { display: none !important; }
@@ -773,8 +768,6 @@
     #eye-exercise .ee-ring-arc { fill: none; stroke-width: 6; }
     #eye-exercise .ee-ring-track { stroke: var(--ee-play-pale); }
     #eye-exercise .ee-ring-arc { stroke: var(--ee-play); }
-    #eye-exercise .ee-ring.is-break .ee-ring-track { stroke: var(--ee-break-pale); }
-    #eye-exercise .ee-ring.is-break .ee-ring-arc { stroke: var(--ee-break); }
     #eye-exercise .ee-ring.is-paused .ee-ring-track,
     #eye-exercise .ee-ring.is-off .ee-ring-track { stroke: var(--border); }
     #eye-exercise .ee-ring.is-paused .ee-ring-arc,
@@ -2586,9 +2579,8 @@
     })();
   </script>
 
-  <!-- Eye Exercise: plays its recording five times, with a 3-second break between plays, then a big
-       ding. A ring shows which play is on and counts down each break. The recording is embedded at the
-       end of the page. -->
+  <!-- Eye Exercise: plays its recording five times back to back, then a big ding. A ring shows which
+       play is on and how much of it is left. The recording is embedded at the end of the page. -->
   <script>
     (() => {
       const page = document.getElementById('eye-exercise');
@@ -2605,8 +2597,7 @@
       const noteEl = $('#ee-note');
       const liveEl = $('#ee-live');
 
-      const PLAYS = 5;     // times the recording plays
-      const GAP = 3;       // seconds of break after each play but the last, from the end of the file
+      const PLAYS = 5;     // times the recording plays, back to back
       const LEAD = 0.05;   // seconds from a click to the sounds it starts
       const FADE = 0.015;  // seconds of fade when a play is paused or resumed partway, so it doesn't click
       const CIRCUMFERENCE = 2 * Math.PI * 45;  // of the ring, in viewBox units
@@ -2619,7 +2610,7 @@
 
       let recording = null;  // the decoded recording (an AudioBuffer)
       let playLength = 0;    // its length, in seconds
-      let total = 0;         // the routine's length: the plays and the breaks between them
+      let total = 0;         // the routine's length: the plays, back to back
       let prepared = false;
       let unplayable = false;
 
@@ -2643,7 +2634,7 @@
           .then((buffer) => {
             recording = buffer;
             playLength = buffer.duration;
-            total = PLAYS * playLength + (PLAYS - 1) * GAP;
+            total = PLAYS * playLength;
             render();
           })
           .catch(cantPlay);
@@ -2766,24 +2757,21 @@
       }
 
       // ---------- Running ----------
-      // state is 'idle', 'running', 'paused' or 'done'. The routine is the plays of the recording, with a
-      // break after each one but the last. Its time is kept on the audio clock, so what shows always
-      // matches what plays, even if the audio starts late or its clock stalls: while the routine runs,
-      // it is ctx.currentTime - origin seconds in. `at` is where it stands while it doesn't run (0 when
-      // idle), and where it last started from while it runs.
+      // state is 'idle', 'running', 'paused' or 'done'. The routine is the plays of the recording, back
+      // to back: each one starts as the one before it ends. Its time is kept on the audio clock, so what
+      // shows always matches what plays, even if the audio starts late or its clock stalls: while the
+      // routine runs, it is ctx.currentTime - origin seconds in. `at` is where it stands while it doesn't
+      // run (0 when idle), and where it last started from while it runs.
 
       let state = 'idle';
       let origin = 0;
       let at = 0;
 
-      // What is on at `t` seconds into the routine (before its end): the play (0 for the first),
-      // whether it's the break after that play, and the seconds left of that play or break.
-      function partAt(t) {
-        const play = Math.min(PLAYS - 1, Math.floor(t / (playLength + GAP)));
-        const into = t - play * (playLength + GAP);
-        return into < playLength
-          ? { play, inBreak: false, left: playLength - into, length: playLength }
-          : { play, inBreak: true, left: GAP - (into - playLength), length: GAP };
+      // The play on at `t` seconds into the routine (before its end): its number (0 for the first) and
+      // the seconds left of it.
+      function playAt(t) {
+        const play = Math.min(PLAYS - 1, Math.floor(t / playLength));
+        return { play, left: playLength - (t - play * playLength) };
       }
 
       // Runs the routine from `from` seconds in (0 on Start): schedules the plays still to come, the rest
@@ -2799,7 +2787,7 @@
         origin = t0 - from;
         at = from;
         for (let i = 0; i < PLAYS; i++) {
-          const start = origin + i * (playLength + GAP);
+          const start = origin + i * playLength;
           if (start + playLength <= t0) continue;  // played already
           if (start >= t0) playRecording(start, 0);
           else playRecording(t0, t0 - start);      // resumed partway through
@@ -2902,7 +2890,7 @@
         let look = 'is-idle';
         let count = '';
         let label = '';
-        let share = 1;  // of the ring's arc: the share of the play or break left
+        let share = 1;  // of the ring's arc: the share of the play left
         if (unplayable) {
           look = 'is-off';
         } else if (state === 'done') {
@@ -2923,18 +2911,11 @@
               return;
             }
           }
-          const part = partAt(t);
-          share = part.left / part.length;
-          if (part.inBreak) {
-            look = 'is-break';
-            count = String(Math.ceil(part.left));
-            label = 'Break';
-          } else {
-            look = 'is-play';
-            count = String(part.play + 1);
-            label = 'of ' + PLAYS;
-          }
-          if (state === 'paused') look += ' is-paused';
+          const { play, left } = playAt(t);
+          share = left / playLength;
+          look = state === 'paused' ? 'is-play is-paused' : 'is-play';
+          count = String(play + 1);
+          label = 'of ' + PLAYS;
         }
 
         const ringClass = 'ee-ring ' + look;
