@@ -1,0 +1,29 @@
+หมอชวนฟิต ปวดคอไม่ง้อยา 1
+Source: https://www.youtube.com/watch?v=9ZlfVBWovQM
+by หมอชวนฟิต [DeDoctor], uploaded 2025-06-20. Listed from the video on 2026-11-27.
+Done standing, with no equipment.
+
+One exercise per line, in the video's order: name | description | timing
+- "10 reps x 2.4 s": 10 repetitions, each taking about 2.4 seconds.
+- In the head tilts and the one-sided shrugs, one rep is the right side, then
+  the left.
+Rep counts come from the video's on-screen counter. The seconds per rep were
+measured from the video. The breathing has no counter: its pace comes from the
+video's breathing cue.
+
+# หายใจ
+ฝึกหายใจ | ประสานมือไว้ที่ท้อง หายใจเข้าทางจมูกลึกๆ ให้ท้องป่อง หายใจออกยาวๆ ให้ท้องแฟบ | 10 reps x 7.2 s
+
+# ขยับกล้ามเนื้อ
+หมุนไหล่ไปข้างหน้า | แขนแนบลำตัว ค่อยๆ วาดหัวไหล่เป็นวงกลมไปทางด้านหน้า | 10 reps x 2.4 s
+หมุนไหล่ไปข้างหลัง | แอ่นอก หลังตรง วาดหัวไหล่ไปทางด้านหลังให้กว้างที่สุด | 10 reps x 2 s
+เอนศีรษะ มือไขว้หลัง | มือไขว้หลัง กดไหล่ลง เอนศีรษะไปทางขวาแล้วกลับ ต่อด้วยทางซ้าย | 10 reps x 4.6 s
+ยักไหล่ทีละข้าง | ตัวตรง คอตรง ยกไหล่ขวาขึ้นให้สุดแล้ววางลง ต่อด้วยไหล่ซ้าย | 10 reps x 4.7 s
+หุบ-กางศอก | ประสานมือไว้หลังศีรษะ หุบศอกเข้าหากัน แล้วกางออกให้สุดจนตึงอก | 10 reps x 3 s
+ยกแขนเป็นตัว Y | ยืนแยกขา โน้มตัวไปหน้าเล็กน้อย ยกแขนเฉียงขึ้นด้านหน้าเป็นตัว Y | 10 reps x 2.7 s
+กางแขนเป็นตัว T | ท่าเดิม กางแขนออกด้านข้างเป็นตัว T แล้วลดลง | 10 reps x 2.4 s
+ยกแขนขึ้นแล้วกางออก | ยื่นแขนไปข้างหน้า ยกขึ้นเหนือศีรษะ กางออกด้านข้าง แล้วกลับมา | 10 reps x 4.2 s
+เก็บคาง | ใช้นิ้วแตะคาง ดันคางกลับไปด้านหลังแล้วปล่อย | 10 reps x 2.5 s
+
+# หายใจผ่อนคลาย
+ฝึกหายใจ | ประสานมือไว้ที่ท้อง หายใจเข้าลึกๆ ให้ท้องป่อง หายใจออกยาวๆ ให้ท้องแฟบ | 10 reps x 4.9 s

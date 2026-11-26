@@ -1,0 +1,47 @@
+หมอชวนฟิต ปวดคอไม่ง้อยา 3
+Source: https://www.youtube.com/watch?v=tr7j2hdpPig
+by หมอชวนฟิต [DeDoctor], uploaded 2025-08-22. Listed from the video on 2026-11-27.
+Done sitting on a stable chair, with no equipment.
+
+One exercise per line, in the video's order: name | description | timing
+- "hold 10 s": hold the position for 10 seconds.
+- "each side, left first": do it on the left, then on the right. The side is
+  the one the head or body leans or turns toward, and the hand on the head.
+- "2 times": do it twice, as two sets. With "each side", each set does both
+  sides.
+- "26 reps x 2.3 s": 26 repetitions, each taking about 2.3 seconds.
+- "alternating": each movement to one side counts as one rep (one punch, one
+  knee, one arm), so 50 reps is 25 each side.
+In the video, each cardio move lasts 1 minute (the first two, 30 seconds each),
+done at your own pace. Their reps and seconds per rep are what the doctor did
+in that time, measured from the video. The other hold times and rep counts
+come from the video's on-screen counter.
+
+# วอร์มอัพ
+ยืดคอด้านข้าง มือไขว้หลัง | นั่งหลังตรง มือหนึ่งไขว้หลัง อีกมือดึงศีรษะเอนไปด้านข้าง เปิดอก | hold 10 s, each side, left first, 2 times
+ยืดคอมองรักแร้ | มือหนึ่งไขว้หลัง ก้มมองรักแร้อีกข้าง ใช้มือข้างนั้นกดศีรษะลงเบาๆ | hold 10 s, each side, left first, 2 times
+ยื่นคอ-หดคอ | นั่งตัวตรง ยื่นคอไปข้างหน้าเล็กน้อยแล้วหดกลับ ไม่ก้มไม่เงย | 5 reps x 3.6 s
+ยืดหลัง ประสานมือยกขึ้น | ประสานมือยื่นไปข้างหน้า แล้วยกขึ้นเหนือศีรษะ จนรู้สึกตึงหลัง | hold 10 s
+เอนตัวด้านข้าง | ประสานมือเหนือศีรษะ เอนลำตัวไปด้านข้าง ตัวไม่บิด | hold 10 s, each side, right first
+
+# คาร์ดิโอ
+หมุนแขนไปข้างหน้า | กางแขน หงายมือ หมุนแขนเป็นวงกว้างไปข้างหน้า ให้สะบักขยับด้วย | 21 reps x 1.4 s
+หมุนไหล่ไปข้างหลัง | มือจับหัวไหล่ หมุนศอกเป็นวงกว้างไปทางด้านหลัง | 23 reps x 1.3 s
+กาง-หุบแขน | ยกแขนตั้งศอกตั้งฉาก กางออกให้สุด แล้วหุบเข้าหากันด้านหน้า หลังตรง | 32 reps x 1.9 s
+ดึงแขนลงเป็นตัว W | ยกแขนขึ้นเหนือศีรษะ แล้วดึงศอกลงหนีบข้างลำตัวเป็นตัว W เก็บคอ | 26 reps x 2.3 s
+ยักไหล่ | ยกไหล่ทั้งสองข้างขึ้นให้สุดแล้วลง หลังตรง ไม่กระตุก | 26 reps x 2.3 s
+กระโดดตบ (นั่ง) | นั่งหลังตรง ยกแขนขึ้นเหนือศีรษะแล้วลง เหมือนกระโดดตบ | 27 reps x 2.2 s
+ไขว้แขนแล้วยกเป็นตัว Y | ไขว้แขนลงด้านหน้า แล้วยกแขนข้างหนึ่งเฉียงขึ้นสูง สลับข้าง | 22 reps x 2.7 s, alternating
+ชกมวย | ต่อยหมัดตรงไปข้างหน้าสลับซ้าย-ขวา ยืดแขนให้สุดจากสะบัก ไม่กระแทก | 50 reps x 1.2 s, alternating
+ดึงแขนลงตั้งฉาก | ชูแขนขึ้นเหนือศีรษะ แล้วดึงศอกลงจนแขนตั้งฉาก แอ่นอก | 25 reps x 2.4 s
+กอดตัว-กางแขน | กอดตัวเองให้สุด แล้วกางแขนออกให้สุด ไม่ยกไหล่ | 21 reps x 2.9 s
+บิดตัวตบมือ | กางแขน บิดตัวนำมือมาตบกันด้านหนึ่ง แล้วสลับอีกด้าน เกร็งท้อง | 32 reps x 1.9 s, alternating
+อัปเปอร์คัต | ชกหมัดเสยขึ้นสลับซ้าย-ขวา ออกแรงจากหัวไหล่ | 43 reps x 1.4 s, alternating
+ยกเข่า | นั่งหลังตรง มือจับเก้าอี้ ยกเข่าขึ้นสูงสลับซ้าย-ขวา เกร็งท้อง | 43 reps x 1.4 s, alternating
+หุบแขนก้มตัว-กางแขน | ประสานมือเหนือศีรษะ หุบแขนพร้อมก้มตัว แล้วยืดตัวกางแขนออก | 23 reps x 2.6 s
+
+# คูลดาวน์
+คว่ำ-หงายมือ | กางแขน มือหนึ่งคว่ำ อีกมือหงาย แล้วหมุนสลับให้สุด | 46 reps x 1.3 s, alternating
+เอนศีรษะ มือไขว้หลัง | มือไขว้หลัง ตัวตรง เอนศีรษะไปด้านข้างแล้วกลับ | 5 reps x 2 s, each side, right first
+หันศีรษะ | ตัวตรง หันหน้าไปด้านข้างให้สุดเท่าที่ไม่เจ็บ แล้วกลับ | 5 reps x 2.2 s, each side, right first
+ยื่นคอ-หดคอ | ยื่นคอไปข้างหน้าแล้วหดกลับ อกตั้งตรง | 5 reps x 2.2 s

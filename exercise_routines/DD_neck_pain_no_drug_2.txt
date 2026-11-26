@@ -1,0 +1,42 @@
+หมอชวนฟิต ปวดคอไม่ง้อยา 2
+Source: https://www.youtube.com/watch?v=Oqofjj82uN8
+by หมอชวนฟิต [DeDoctor], uploaded 2025-07-04. Listed from the video on 2026-11-27.
+Done standing. Equipment: a light resistance band, and a small water bottle
+(about 0.5 kg) in each hand. Without them, do the same moves with empty hands.
+
+One exercise per line, in the video's order: name | description | timing
+- "hold 15 s": hold the position for 15 seconds.
+- "each side, left first": do it on the left, then on the right. The side is
+  the one the head leans or turns toward, and the hand on the head.
+- "2 times": do it twice, as two sets. With "each side", each set does both
+  sides.
+- "10 reps x 2.7 s": 10 repetitions, each taking about 2.7 seconds. Where a rep
+  includes a hold of 3 to 5 seconds, the hold is part of the time per rep.
+- "alternating": each movement to one side counts as one rep, so 20 reps is 10
+  each side.
+- In the shrugs, one rep is the right shoulder, then the left.
+Hold times and rep counts come from the video's on-screen timer and counter.
+The seconds per rep were measured from the video.
+
+# วอร์มอัพ
+เอนศีรษะซ้าย-ขวา | ยืนตรง เปิดไหล่ ไหล่นิ่ง เอนศีรษะไปด้านข้างให้สุดแล้วกลับช้าๆ | 20 reps x 2.5 s, alternating
+หมุนไหล่ไปข้างหลัง | ยกไหล่ขึ้นแล้วหมุนไปทางด้านหลังเป็นวงกว้าง | 10 reps x 2.7 s
+ดันมือไปหน้า-ดึงกลับ | ประสานมือยื่นไปข้างหน้าให้สุด กดไหล่ลง แล้วดึงกลับบีบสะบัก | 10 reps x 3.8 s
+กางแขนบีบสะบัก | โน้มตัวไปหน้าเล็กน้อย หลังตรง ชูนิ้วโป้ง วาดแขนออกด้านข้าง บีบสะบัก | 10 reps x 3.1 s
+
+# ยืดกล้ามเนื้อ
+ยืดบ่า มือไขว้หลัง | มือหนึ่งไขว้หลัง เปิดไหล่ เอนศีรษะไปอีกข้าง ใช้มือจับศีรษะยืดเบาๆ | hold 15 s, each side, left first, 2 times
+ยืดคอมองรักแร้ | หันมองรักแร้ ใช้มือข้างเดียวกันกดศีรษะลงเบาๆ จนตึงคอด้านหลัง | hold 15 s, each side, left first
+ยืดอก | ประสานมือไว้หลังศีรษะ กางศอกออกให้สุดจนตึงหน้าอก ตัวนิ่ง | hold 15 s, 2 times
+
+# เสริมความแข็งแรง
+หมุนแขนออก บีบสะบัก | ศอกชิดลำตัว กดไหล่ลง หมุนแขนออกด้านนอก บีบสะบัก ค้างไว้ 5 วินาที | 10 reps x 8.6 s
+หมุนแขนออก ใช้ยางยืด | กำยางยืด ศอกชิดลำตัว ดึงยางออกด้านข้าง บีบสะบัก ค้างไว้ 3-5 วินาที | 10 reps x 5.4 s
+ยักไหล่ถือขวดน้ำ | ถือขวดน้ำข้างลำตัว ยักไหล่ขวาขึ้นแล้ววางลง ต่อด้วยซ้าย ช้าๆ | 10 reps x 5.6 s, 2 times
+ยกแขนเป็นตัว Y | โน้มตัวไปหน้าเล็กน้อย ชูนิ้วโป้ง ยกแขนเป็นตัว Y ค้างไว้ 5 วินาที แล้ววางลง | 10 reps x 7.2 s
+กางแขนเป็นตัว T | ท่าเดิม กางแขนออกเป็นตัว T นิ้วโป้งชี้ไปด้านหลัง ค้างไว้ 5 วินาที | 10 reps x 5.7 s
+
+# คูลดาวน์
+เอนศีรษะซ้าย-ขวา | ยืนตรง ไหล่นิ่ง เอนศีรษะไปด้านข้างแล้วกลับ สลับซ้าย-ขวา | 10 reps x 2.2 s, alternating
+หมุนไหล่ไปข้างหลัง | ยกไหล่ขึ้นแล้วหมุนไปทางด้านหลัง | 10 reps x 1.8 s
+ดันมือไปหน้า-ดึงกลับ | ประสานมือยื่นไปข้างหน้า แล้วดึงกลับช้าๆ | 10 reps x 2.5 s
