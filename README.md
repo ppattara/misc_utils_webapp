@@ -56,7 +56,7 @@ A countdown for focused work and another for breaks. While you work, short break
 
 An exercise routine to follow along with. Pick a routine, press เริ่ม (Start), and follow it from beginning to end without touching anything. The page counts down each hold, counts your reps at the right pace, and dings to tell you when to start and stop. The page's words are in Thai, like the exercises.
 
-- **Routines:** pick one from the ชุดท่า drop-down. For now there is one: ท่าบริหารคอ บ่า ไหล่, 13 neck and shoulder exercises taking about 6½ minutes, from a video by หมอชวนฟิต [DeDoctor]. Its link is in `exercise_routines/neck_shoulder_routine.txt`. The page remembers your choice.
+- **Routines:** pick one from the ชุดท่า drop-down. For now there is one: หมอชวนฟิต แก้ปวดคอบ่าไหล่, 13 neck and shoulder exercises taking about 6½ minutes, from a video by หมอชวนฟิต [DeDoctor]. Its link is in `exercise_routines/DD_neck_shoulder.txt`. The page remembers your choice.
 - **Start:** first comes a 5-second countdown (เตรียมตัว) to get ready. Then the routine runs by itself to the end. Before each later exercise, and before switching sides, a 3-second countdown shows what comes next (ต่อไป) and gives you time to get into position.
 - **Holds:** the ring counts the hold down in seconds. For exercises done on each side, the page shows ข้างขวา or ข้างซ้าย, and for one done twice, รอบที่ 1 จาก 2.
 - **Reps:** the ring counts your reps (for example 2 จาก 10) at the routine's pace. In alternating moves (สลับไปมา), each movement one way counts as one rep, so 10 reps means 5 each way.

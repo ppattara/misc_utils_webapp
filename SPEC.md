@@ -396,14 +396,14 @@ The script fills in every text.
   - The timing, in any case: first `hold N s` (N seconds, decimals allowed) or `N reps x S s` (N whole reps of S seconds each; `rep` and `×` also work). Then, separated by commas, any of: `alternating` (each movement one way counts as one rep), `each side` (done on one side, then the other), `right first` or `left first` (which side comes first; right if neither), and `K times` (done K times, as sets). With both `each side` and `K times`, each set does both sides.
   - A line that can't be read is skipped, with the console warning `Exercise: skipped a line of "<title>": <line>`. A routine with no exercises isn't listed.
 - **Embedding:** the page never reads `exercise_routines/`. Each routine is a `<script type="text/plain" class="ex-routine">` element under the comment headed `Exercise routines` (see 2), holding the file's whole text as it is, from the line after the opening tag. Its `data-file` is the file's name without `.txt`, and is the routine's id. The `text/plain` type keeps the browser from running it, and the text must not contain `</script`. The drop-down lists the routines in the order of their elements.
-- **Adding or changing a routine:** add or edit its file in `exercise_routines/`, then paste the file's whole text into its element (adding an element for a new one).
+- **Adding or changing a routine:** add or edit its file in `exercise_routines/`, then paste the file's whole text into its element (adding an element for a new one). After renaming a file, change its element's `data-file` to the new name.
 - The elements come after the page script, so the script reads them on `DOMContentLoaded`, or at once if the page has already loaded.
 
 #### Steps and timing
 
 - A routine runs as steps: one per set and side of each exercise, in order (set by set, and in each set the first side, then the other). A hold's step lasts its hold time, and a reps step lasts the number of reps times the seconds per rep.
 - Before each step comes a get-ready countdown: 5 seconds before the first step after Start, and 3 seconds before every other step, including one picked from the list while paused.
-- The total time from a starting step is 5 seconds, plus every step from there, plus 3 seconds before each step after the first. The neck and shoulder routine has 13 exercises in 19 steps, with 332 seconds of exercise: 6:31 in all.
+- The total time from a starting step is 5 seconds, plus every step from there, plus 3 seconds before each step after the first. The neck and shoulder routine (`DD_neck_shoulder.txt`) has 13 exercises in 19 steps, with 332 seconds of exercise: 6:31 in all.
 
 #### Running
 
@@ -473,7 +473,7 @@ The dings are generated with the Web Audio API, in the Work Timer's soft bell: t
 
 #### Saved settings
 
-- The chosen routine is saved to `localStorage` under `misc-utils:exercise` when the drop-down changes, as JSON like `{"routine":"neck_shoulder_routine"}`, the routine's id (its `data-file`). On load, it is used if it names a listed routine. Otherwise the first routine is shown.
+- The chosen routine is saved to `localStorage` under `misc-utils:exercise` when the drop-down changes, as JSON like `{"routine":"DD_neck_shoulder"}`, the routine's id (its `data-file`). On load, it is used if it names a listed routine. Otherwise the first routine is shown, as happens to a choice saved before its routine's file was renamed.
 
 #### Styles
 

@@ -8,8 +8,8 @@ A web app that collects miscellaneous utilities for everyday use. It is a static
 - `SPEC.md`: the full description of the app, detailed enough to rebuild it (or something very close) from that file alone.
 - `README.md`: the project summary, which doubles as the user manual.
 - `timer_sound/`: the owner's recordings for the Work Timer's sounds, the source of the copies embedded in `index.html`. The app never reads this folder. Leave the files as they are unless the owner asks for a change. To change a sound, replace its file and embed it again (`SPEC.md` 5.1, Sounds).
-- `exercise_routines/`: the Exercise page's routines, one plain-text file per routine (format in `SPEC.md` 5.2, Routines). They are the source of the copies embedded in `index.html`. The app never reads this folder, so after adding or changing a file, embed it again by pasting its whole text into its `script.ex-routine` element. More routines may be added.
-  - `neck_shoulder_routine.txt`: a neck and shoulder routine, listed from a YouTube video (source and notation in the file's header). Each exercise has a name and description in Thai, and its hold time or reps.
+- `exercise_routines/`: the Exercise page's routines, one plain-text file per routine (format in `SPEC.md` 5.2, Routines). They are the source of the copies embedded in `index.html`. The app never reads this folder, so after adding or changing a file, embed it again by pasting its whole text into its `script.ex-routine` element, and after renaming one, change that element's `data-file` to match. More routines may be added.
+  - `DD_neck_shoulder.txt`: a neck and shoulder routine, listed from a YouTube video (source and notation in the file's header). Its title, shown in the drop-down, is หมอชวนฟิต แก้ปวดคอบ่าไหล่. Each exercise has a name and description in Thai, and its hold time or reps.
 - `eye_exercise/`: the Eye Exercise page's recording, `eye_exercise.m4a`, the source of the copy embedded in `index.html`. The app never reads this folder. Leave the file as it is unless the owner asks for a change. To change it, replace the file and embed it again (`SPEC.md` 5.3, Recording).
 
 ## Ground rules (always follow)
@@ -129,6 +129,7 @@ A change isn't finished until the code and all three files agree. When reporting
   - The page leaves the browser tab's title alone.
 
   Details in `SPEC.md` 5.3.
+- **Routine file and name** (owner, 2026-11-26): the owner renamed the neck and shoulder routine's file from `neck_shoulder_routine.txt` to `DD_neck_shoulder.txt`, and asked for its name in the drop-down to be exactly หมอชวนฟิต แก้ปวดคอบ่าไหล่ (it was ท่าบริหารคอ บ่า ไหล่). The drop-down shows a routine's first line, so that line changed in the file and in its copy in `index.html`. The copy's `data-file`, the routine's id, is now `DD_neck_shoulder`. A choice saved under the old id falls back to the first routine, which is this one while it's the only routine.
 
 ## Status
 - v1: blank shell with three placeholder pages (Page 1, Page 2, Page 3) and the shared tab navigation.
