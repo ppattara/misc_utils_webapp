@@ -46,6 +46,7 @@ A change isn't finished until the code and all three files agree. When reporting
   - A preload script (`script.addPreloadScript`) that puts a zero gain in front of every `AudioContext`'s destination, so no sound plays, and counts the oscillators created.
   - `script.evaluate` with `userActivation: true` to press buttons that start audio, and `browsingContext.captureScreenshot` for screenshots.
   - Send Firefox's output to a file through `sh -c 'exec … >log 2>&1'`: piping it into Deno lost it. Wait for "WebDriver BiDi listening" in that file before connecting.
+  - Pitfalls (2026-11-28): keys sent with `input.performActions` reach a focused button but don't click it (the Work Timer's Start too), so press buttons with `.click()`; arrow keys on tabs do work. Navigating to the page's own URL doesn't reload it, so use `browsingContext.reload`. Oscillator frequencies read back as 32-bit floats (261.63 Hz as 261.6300048828125), so compare them with a tolerance. A ring redrawn on every frame costs about a core in headless Firefox, which draws in software (the Eye Exercise's ring too), so measure a page's CPU cost with it in a background tab.
 - `index.html` ends with about 400 KB of base64: the embedded recordings, five very long lines under the comment headed `Embedded data`. Read only the code above them, for example with a line limit that stops at that comment (`grep -n 'Embedded data' index.html` gives its line), and never print or hand-edit them. A plain `grep` over the whole file prints those lines too when they match, so limit it to the code (for example with `awk` on line numbers) or use `grep -o` with a short pattern. `SPEC.md` 5.1 (Sounds) and 5.3 (Recording) say how to replace a recording.
 - Just above the `Embedded data` comment, under one headed `Exercise routines`, are the Exercise page's routines, as readable text. Each must stay an exact copy of its file in `exercise_routines/` (`SPEC.md` 5.2, Routines).
 
@@ -169,6 +170,32 @@ Tip: exercise videos often show italic counters, and Vision can swap an italic 6
   - Found while testing: Start schedules every ding of the routine at once, and episode 3 has 533 (the neck and shoulder routine has 74). In Firefox they cost noticeable CPU until they play (`SPEC.md` 5.2, Known limits). It was left as it is, for the owner to decide whether to schedule the dings a limited time ahead instead.
 
   The routines and their totals are in `SPEC.md` 5.2, Routines.
+- **Breathing page** (owner, 2026-11-28): a fourth page, Breathing (`#/breathing`), with a tab per breathing exercise: box breathing (inhale 5 s, hold 5 s, exhale 5 s, hold 5 s) and 4-7-8 breathing (inhale 4 s, hold 7 s, exhale 8 s). More exercises may be added as tabs later. Each runs as a timer, 5 minutes by default. A ring shows the progress of each cycle, each part keeping its color as the arc fills: blue to inhale, yellow to hold, green to exhale. Three generated dings, one per kind of part, distinct, pleasant and not too sharp: a louder one at the start of each part and a quieter one at each second after it.
+
+  Asked about the open points, the owner chose:
+  - a session always finishes its last cycle, so it can run a little over the set time (5 minutes of 4-7-8 is 5:04);
+  - the session length from a drop-down of 3, 5, 10, 15, 20, 25, 30 and 60 minutes, plus Other, which shows a box to type the minutes in;
+  - the page's words in English, with the tabs "Box breathing" and "4-7-8 breathing";
+  - Start, Pause/Resume and Reset buttons;
+  - Resume starts again from the inhale of the cycle that was paused, so the time left goes back to that cycle's start;
+  - a silent 3-second get-ready countdown after Start and after Resume;
+  - a closing chime at the end, longer and fuller than the dings, and ✓ Done in the ring;
+  - the tabs and the session length locked while a session runs, and switching tabs while paused ends the session, like Reset;
+  - a color key under the ring that also spells out the cycle.
+
+  Details chosen by Claude:
+  - The screen is kept on while a session runs, with no button, as on the other two exercise pages.
+  - Before the arc reaches a part, the part shows in a pale shade of its color, so the whole cycle shows ahead, with small gaps between the parts. Box breathing shows as four quarters. Each cycle starts the ring empty.
+  - The session's time left is in the middle of the ring, with the part's name under it in bold. Before Start it shows the real total, labelled "Total time".
+  - The blue and green are the Work Timer's work and rest shades. The yellow is a golden yellow (`#c59711` light, `#dab33a` dark). In light it is only 2.7:1 against white, because a yellow dark enough for 3:1 looks brown. The part's name says which part it is anyway.
+  - The dings are three notes of the chord of C major: E5 to inhale, G4 to hold, C4 to exhale, in a softer bell than the other pages' (three partials, a 10 ms attack). They're balanced so the three sound about as loud, with the quiet ones about 12 dB below. The end chime is the chord, rolled up from C4.
+  - A length typed under Other is 1 to 60 whole minutes, checked like the Work Timer's settings. Each exercise keeps its own length, and the page remembers the exercise on show, under `misc-utils:breathing`.
+  - On Pause, the ring and the time already show where Resume starts: the paused cycle's beginning, in grey.
+  - The dings are scheduled only 6 seconds ahead and topped up as the session runs, so a long session never has more than about 7 waiting. This is the approach the Exercise page's open question proposes.
+  - The exercises are one line each in the page's script (`EXERCISES`), so adding one adds its tab, ring and key.
+  - On narrow screens (340px or less), the tabs get less padding, so the two fit on one line on a 375px phone.
+
+  Details in `SPEC.md` 5.4.
 
 ## Status
 - v1: blank shell with three placeholder pages (Page 1, Page 2, Page 3) and the shared tab navigation.
@@ -184,4 +211,5 @@ Tip: exercise videos often show italic counters, and Vision can swap an italic 6
 - v11 (2026-11-26): Page 3 is now the Eye Exercise page (`#/eye-exercise`). Start plays the recording from `eye_exercise/`, embedded in `index.html`, 5 times with 3-second breaks, then a big ding. A ring shows the play ("2 of 5") and counts down each break, with Start, Pause/Resume and Reset. No placeholder pages are left. Claude tested it in headless Chrome only (timing, pause and resume, reset, light and dark, a narrow screen). It hasn't been tried in Safari or Firefox yet.
 - v12 (2026-11-26): the Eye Exercise plays its recording 5 times back to back, with no break between plays, then the big ding, so it takes 1:19 instead of 1:31. The ring's green break countdown is gone. Claude tested it in headless Chrome only (the timing of the plays and the ding, pause and resume, including just before a play ends, reset, light and dark).
 - v13 (2026-11-27): the Exercise page has four routines: หมอชวนฟิต แก้ปวดคอบ่าไหล่ (6:31), then the three episodes of หมอชวนฟิต ปวดคอไม่ง้อยา (7:21, 12:57 and 18:39). Claude tested it in headless Firefox 161 only, since this Mac has no Chrome. Tested: every routine read with no skipped lines; the totals and each exercise's side, sets and timing; a run of episode 3 with pause, picking an exercise while paused and resume; light and dark; a narrow screen; the saved choice across a reload; and the CPU cost of the dings scheduled ahead. Not tried in Safari or Chrome.
-- Next: more routines may be added to `exercise_routines/`, each one embedded in `index.html` too. Open for the owner: whether the Exercise page should schedule its dings a limited time ahead (say a minute) instead of all at Start, to bound their CPU cost on long routines (see More routines under Decisions).
+- v14 (2026-11-28): Page 4 is the Breathing page (`#/breathing`), with box breathing and 4-7-8 breathing on its own tabs. A session runs whole cycles for a chosen length (a drop-down from 3 to 60 minutes, or Other), after a 3-second get-ready countdown. A ring shows each cycle in blue, yellow and green as it fills, and generated dings mark every second, loud at the start of each part, then a closing chime. Claude tested it in headless Firefox 161 only. Tested: every ding's time, note and loudness through a 4-7-8 session with pause and resume, and a box cycle; the totals; the get-ready countdowns; the end; light and dark; 375 and 320px screens; entries under Other; saved settings across a reload, including bad ones; tab switching while running and paused; the arrow keys on the tabs; no console errors; and a session in a background tab (dings on time, about 9% CPU against 6% idle). Not tried in Safari or Chrome, nor heard: the owner should listen to the dings.
+- Next: more routines may be added to `exercise_routines/`, each one embedded in `index.html` too, and more breathing exercises to the Breathing page, one line each in its script. Open for the owner: whether the Exercise page should schedule its dings a limited time ahead (say a minute) instead of all at Start, to bound their CPU cost on long routines (see More routines under Decisions). The Breathing page already does this, 6 seconds ahead.

@@ -17,6 +17,7 @@ A small personal web app that collects everyday utilities in one place, one per 
 | Work Timer | Work and rest countdowns, with random short breaks during work |
 | Exercise | Exercise routines to follow along with: holds are timed and reps counted, with dings |
 | Eye Exercise | An eye exercise recording, played five times in a row, then a big ding |
+| Breathing | Box breathing and 4-7-8 breathing for a set time, with a colored ring and a ding every second |
 
 ## Work Timer
 
@@ -84,6 +85,25 @@ An eye exercise recording, played five times in a row with no break in between, 
 - **Screen stays on:** while it plays, the page stops the screen from turning off, in browsers that allow it, and lets it go when you pause, reset or finish.
 - **In the background:** on a computer, it keeps playing on time while you use another tab or utility. Phones usually pause web pages when the screen locks or you switch apps, so keep the page on screen. If the sound doesn't come back when you return, press Pause and then Resume. On an iPhone, silent mode may mute it.
 - If your browser can't play the recording, the page says so and the Start button stays off.
+
+## Breathing
+
+Breathing exercises to do for a set time, with a ring to watch and a ding every second to breathe along with. Each exercise has its own tab:
+
+- **Box breathing:** inhale for 5 seconds, hold 5, exhale 5, hold 5, and again.
+- **4-7-8 breathing:** inhale for 4 seconds, hold 7, exhale 8, and again.
+
+The page remembers the tab you were on.
+
+- **Session length:** pick 3, 5, 10, 15, 20, 25, 30 or 60 minutes from the drop-down. Or pick Other… and type a whole number of minutes, from 1 to 60, in the box beside it. It applies when you press Enter or leave the box. Each exercise remembers its own length, 5 minutes to start with. A session always finishes its last cycle, so it can run a little longer than you picked: 5 minutes of 4-7-8 breathing is 16 cycles, 5:04. Before you start, the ring shows the real total.
+- **Start:** a 3-second countdown (Get ready) comes first, then the first inhale.
+- **The ring:** it shows one cycle, starting at the top and going clockwise, with a stretch for each part: blue to inhale, yellow to hold, green to exhale. The part you're in fills up in its color as you go, and the ring starts empty again with each new cycle. In the middle is the session's time left, and under it what to do now: Inhale, Hold or Exhale. The line under the ring lists the cycle's parts, with their colors and seconds.
+- **Dings:** one every second. Each part starts with a louder ding, and every second after that gets a quieter one of the same kind. Each kind has its own note, high to inhale, middle to hold and low to exhale, so you can follow along with your eyes closed. In box breathing, for example, you hear a loud inhale ding and 4 quiet ones, then a loud hold ding and 4 quiet ones, and so on. When the session ends, a closing chime rings for a few seconds.
+- **Pause and resume:** Pause stops everything, and the ring turns grey. Resume gives you the 3-second countdown again, then starts the cycle you were in again from its inhale, since your breath won't be where you left it. The time left goes back to the start of that cycle. Reset goes back to the beginning.
+- **Changing things:** while a session runs, you can't change the tab or the session length. While it's paused, switching tabs or picking a new length ends the session, as Reset does.
+- **When it's done:** the ring fills up and shows ✓ Done. Press Start to go again.
+- **Screen stays on:** while a session runs, the page stops the screen from turning off, in browsers that allow it, and lets it go when you pause, reset or finish.
+- **In the background:** on a computer, the dings stay on time while you use another tab or utility, and the screen catches up when you come back. Phones usually pause web pages when the screen locks or you switch apps, and the session waits with them, so keep the page on screen. On an iPhone, silent mode may mute the dings.
 
 ## More
 

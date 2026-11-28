@@ -817,6 +817,195 @@
       border: 0;
     }
 
+    /* ---------- Breathing (#breathing) ---------- */
+    /* Each kind of part has its own color: blue to inhale, yellow to hold and green to exhale. On the
+       ring, a part's stretch is a pale shade of its color until the arc fills it in the solid color.
+       The blue and green are the Work Timer's work and rest shades. In light, the yellow is a deep
+       golden yellow, since a bright one barely shows on white. The ring turns grey while paused. */
+    #breathing {
+      --br-inhale: #2f6fde;
+      --br-inhale-pale: #c1d4f5;
+      --br-hold: #c59711;
+      --br-hold-pale: #eee0b8;
+      --br-exhale: #318454;
+      --br-exhale-pale: #c1dacc;
+    }
+    @media (prefers-color-scheme: dark) {
+      #breathing {
+        --br-inhale: #5b8ef0;
+        --br-inhale-pale: #2e4266;
+        --br-hold: #dab33a;
+        --br-hold-pale: #4d4122;
+        --br-exhale: #53ae77;
+        --br-exhale-pale: #2f4a38;
+      }
+    }
+    #breathing [hidden] { display: none !important; }
+    #breathing button,
+    #breathing select,
+    #breathing input { font: inherit; color: inherit; }
+    #breathing button:not(:disabled) { cursor: pointer; }
+    #breathing :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    #breathing .br-main {
+      container-type: inline-size;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    #breathing .br-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+    }
+
+    /* The exercises' tabs: a switch like the Work Timer's Work/Rest. It wraps if they don't fit. */
+    #breathing .br-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2px;
+      max-width: 100%;
+      padding: 3px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--bg);
+    }
+    #breathing .br-tabs button {
+      min-width: 92px;
+      padding: 6px 18px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: none;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    #breathing .br-tabs button:not(:disabled):hover { color: var(--text); }
+    #breathing .br-tabs button[aria-selected="true"] {
+      border-color: var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 600;
+    }
+    #breathing .br-tabs button:disabled:not([aria-selected="true"]) { opacity: 0.45; }
+    @container (max-width: 340px) {
+      #breathing .br-tabs button { min-width: 0; padding: 6px 12px; }
+    }
+
+    /* Session length: a drop-down, and under Other a box beside it to type the minutes in. */
+    #breathing .br-length {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px 10px;
+    }
+    #breathing .br-length label { color: var(--muted); }
+    #breathing .br-length select,
+    #breathing .br-other input {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+    #breathing .br-length select { padding: 6px 10px; }
+    #breathing .br-other { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+    /* Typed-in whole minutes: a text input, so there are no up/down arrows. */
+    #breathing .br-other input { width: 3.5em; padding: 5px 8px; color: var(--text); text-align: right; }
+    #breathing .br-length select:disabled,
+    #breathing .br-other input:disabled { opacity: 0.6; }
+
+    /* The ring shows one cycle, from the top and clockwise: a stretch per part, each as long as its
+       share of the cycle, with a small gap between. The count and the label under it are sized from
+       the ring (a size container), so they scale with it. */
+    #breathing .br-ring {
+      container-type: size;
+      display: grid;
+      grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+      place-items: center;
+      width: min(300px, 100cqi);
+      height: min(300px, 100cqi);
+    }
+    #breathing .br-ring > * { grid-area: 1 / 1; }
+    #breathing .br-ring-svg { width: 100%; height: 100%; overflow: visible; }
+    #breathing .br-ring-svg path { fill: none; stroke-width: 6; }
+    #breathing .br-track .is-inhale { stroke: var(--br-inhale-pale); }
+    #breathing .br-track .is-hold { stroke: var(--br-hold-pale); }
+    #breathing .br-track .is-exhale { stroke: var(--br-exhale-pale); }
+    #breathing .br-fill .is-inhale { stroke: var(--br-inhale); }
+    #breathing .br-fill .is-hold { stroke: var(--br-hold); }
+    #breathing .br-fill .is-exhale { stroke: var(--br-exhale); }
+    #breathing .br-ring.is-paused .br-track path { stroke: var(--border); }
+    #breathing .br-ring-text { display: flex; flex-direction: column; align-items: center; }
+    #breathing .br-count {
+      font-size: 22cqmin;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    #breathing .br-ring.is-ready .br-count,
+    #breathing .br-ring.is-done .br-count { font-size: 30cqmin; }
+    #breathing .br-ring.is-paused .br-count { color: var(--muted); }
+    #breathing .br-ring-label { color: var(--muted); font-size: max(13px, 8cqmin); line-height: 1.3; }
+    #breathing .br-ring.is-breathing .br-ring-label { color: var(--text); font-weight: 600; }
+
+    /* The color key: the parts of one cycle, in order, each after a dot in its color. */
+    #breathing .br-key {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px 16px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    #breathing .br-key li { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    #breathing .br-key li::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--br-dot);
+    }
+    #breathing .br-key .is-inhale { --br-dot: var(--br-inhale); }
+    #breathing .br-key .is-hold { --br-dot: var(--br-hold); }
+    #breathing .br-key .is-exhale { --br-dot: var(--br-exhale); }
+
+    #breathing .br-controls { display: flex; gap: 8px; width: 100%; max-width: 360px; margin-top: 8px; }
+    #breathing .br-btn {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      font-weight: 600;
+    }
+    #breathing .br-btn:not(:disabled):hover { border-color: var(--accent); }
+    #breathing .br-btn-primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+    #breathing .br-btn:disabled { opacity: 0.45; }
+
+    /* Visually hidden, but read by screen readers. */
+    #breathing .br-sr {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
   </style>
 </head>
 <body>
@@ -991,6 +1180,37 @@
         </div>
         <p class="ee-note" id="ee-note" role="status"></p>
         <p class="ee-sr" id="ee-live" role="status"></p>
+      </div>
+    </section>
+
+    <section class="page" id="breathing" data-title="Breathing">
+      <h1>Breathing</h1>
+      <div class="br-main">
+        <div class="br-tabs" id="br-tabs" role="tablist" aria-label="Exercises"></div>
+        <div class="br-panel" id="br-panel" role="tabpanel">
+          <div class="br-length">
+            <label for="br-length">Session length</label>
+            <select id="br-length"></select>
+            <span class="br-other" id="br-other" hidden><input type="text" id="br-other-min" inputmode="numeric" autocomplete="off" aria-label="Session length in minutes"> min</span>
+          </div>
+          <div class="br-ring" id="br-ring">
+            <svg class="br-ring-svg" viewBox="0 0 100 100" aria-hidden="true">
+              <g class="br-track" id="br-track"></g>
+              <g class="br-fill" id="br-fill"></g>
+            </svg>
+            <div class="br-ring-text">
+              <div class="br-count" id="br-count" role="timer"></div>
+              <div class="br-ring-label" id="br-ring-label"></div>
+            </div>
+          </div>
+          <ol class="br-key" id="br-key" aria-label="One cycle"></ol>
+          <div class="br-controls">
+            <button type="button" class="br-btn br-btn-primary" id="br-start">Start</button>
+            <button type="button" class="br-btn" id="br-pause" disabled>Pause</button>
+            <button type="button" class="br-btn" id="br-reset" disabled>Reset</button>
+          </div>
+          <p class="br-sr" id="br-live" role="status"></p>
+        </div>
       </div>
     </section>
   </main>
@@ -2990,6 +3210,621 @@
 
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
       else init();
+    })();
+  </script>
+
+  <!-- Breathing: breathing exercises, one tab each, run for a chosen time. A ring shows each cycle,
+       each part in its own color, and a ding marks every second, a louder one at the start of each
+       part. -->
+  <script>
+    (() => {
+      const page = document.getElementById('breathing');
+      if (!page) return;
+      const $ = (selector) => page.querySelector(selector);
+
+      // ---------- The exercises ----------
+      // One tab each, in this order. A session repeats the exercise's cycle: its parts, in order. Each
+      // part is [kind, seconds]. The kind is 'inhale', 'hold' or 'exhale', each with its own color,
+      // label and ding. The seconds are a whole number, at least 1, since a ding marks every second.
+      // To add an exercise, add a line here: its tab comes with it.
+      const EXERCISES = [
+        { id: 'box', name: 'Box breathing', parts: [['inhale', 5], ['hold', 5], ['exhale', 5], ['hold', 5]] },
+        { id: '4-7-8', name: '4-7-8 breathing', parts: [['inhale', 4], ['hold', 7], ['exhale', 8]] },
+      ];
+      const LABELS = { inhale: 'Inhale', hold: 'Hold', exhale: 'Exhale' };
+
+      const PRESETS = [3, 5, 10, 15, 20, 25, 30, 60];  // the session lengths in the drop-down, in minutes
+      const DEFAULT_MIN = 5;
+      const OTHER_LIMITS = [1, 60];  // [lowest, highest] for a length typed in under Other, in minutes
+      const READY = 3;    // seconds of get-ready countdown, after Start and after Resume
+      const LEAD = 0.05;  // seconds from a click to the countdown's start
+      const AHEAD = 6;    // seconds of sounds scheduled ahead on the audio clock
+      const GAP = 1.2;    // between the ring's parts, in viewBox units along the ring
+      const CIRCUMFERENCE = 2 * Math.PI * 45;  // of the ring, in viewBox units
+      const RING_PATH = 'M50 5a45 45 0 1 1 0 90a45 45 0 1 1 0-90z';  // the ring, from the top, clockwise
+
+      const tabList = $('#br-tabs');
+      const panel = $('#br-panel');
+      const lengthSel = $('#br-length');
+      const otherBox = $('#br-other');
+      const otherInput = $('#br-other-min');
+      const ringEl = $('#br-ring');
+      const trackEl = $('#br-track');
+      const fillEl = $('#br-fill');
+      const countEl = $('#br-count');
+      const ringLabel = $('#br-ring-label');
+      const keyEl = $('#br-key');
+      const startBtn = $('#br-start');
+      const pauseBtn = $('#br-pause');
+      const resetBtn = $('#br-reset');
+      const liveEl = $('#br-live');
+
+      // ---------- Settings, remembered in localStorage ----------
+      // The exercise on show, and each exercise's session length: its minutes, and whether they are
+      // typed in under Other.
+
+      const STORAGE_KEY = 'misc-utils:breathing';
+
+      // Rounds to a whole number and clamps to the limits. Returns null if n isn't a number.
+      const clean = (n, [lo, hi]) =>
+        typeof n === 'number' && Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n))) : null;
+      const isObject = (x) => x !== null && typeof x === 'object';
+
+      function loadSettings() {
+        let saved = null;
+        try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch (e) { /* storage unavailable or unreadable: use the defaults */ }
+        if (!isObject(saved)) saved = {};
+        const sessions = isObject(saved.sessions) ? saved.sessions : {};
+        const s = {
+          exercise: EXERCISES.some((ex) => ex.id === saved.exercise) ? saved.exercise : EXERCISES[0].id,
+          sessions: {},
+        };
+        for (const ex of EXERCISES) {
+          const one = isObject(sessions[ex.id]) ? sessions[ex.id] : {};
+          const min = clean(one.min, OTHER_LIMITS) ?? DEFAULT_MIN;
+          // A length that isn't in the drop-down can only show under Other.
+          s.sessions[ex.id] = { min, other: one.other === true || !PRESETS.includes(min) };
+        }
+        return s;
+      }
+
+      function saveSettings() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); } catch (e) { /* not saved, which is fine */ }
+      }
+
+      const settings = loadSettings();
+      let exercise = EXERCISES.find((ex) => ex.id === settings.exercise);
+      let cycle = 0;  // the length of one cycle of the exercise on show, in seconds
+      let total = 0;  // the session's length in seconds: whole cycles, at least the chosen minutes
+
+      function measure() {
+        cycle = exercise.parts.reduce((sum, part) => sum + part[1], 0);
+        total = Math.ceil((settings.sessions[exercise.id].min * 60) / cycle) * cycle;
+      }
+
+      // ---------- Sounds ----------
+      // Every sound is a mellow bell, generated with the Web Audio API: three sine partials with a
+      // 10 ms attack and an exponential fade, the higher ones quieter and shorter. It is softer than the
+      // other pages' bell, which has a fourth, inharmonic partial and a 5 ms attack. Each kind of part
+      // has its own note, all three from the chord of C major: E5 to inhale, G4 to hold and C4 to
+      // exhale. A loud ding starts each part, and a quiet, shorter one marks each second after that.
+      // The lower notes are set a little higher, so that the three sound about as loud.
+      const PARTIALS = [
+        { ratio: 1, level: 1, fade: 1 },
+        { ratio: 2, level: 0.3, fade: 0.55 },
+        { ratio: 3, level: 0.1, fade: 0.35 },
+      ];
+      const ATTACK = 0.01;  // seconds
+      const DINGS = {       // [frequency (Hz), loud level, quiet level]
+        inhale: [659.25, 0.36, 0.15],
+        hold: [392, 0.44, 0.18],
+        exhale: [261.63, 0.53, 0.22],
+      };
+      const LOUD_FADE = 2.4;   // seconds
+      const QUIET_FADE = 0.7;
+      // The end of a session: the chord of C major, rolled up from C4, ringing for about 5 seconds.
+      // Each note: [start (s), frequency (Hz), peak level, fade time (s)].
+      const END_CHIME = [[0, 261.63, 0.28, 5], [0.09, 392, 0.25, 4.5], [0.18, 523.25, 0.23, 4], [0.27, 659.25, 0.2, 3.5]];
+
+      let ctx = null;            // the AudioContext, created by the first Start
+      let master = null;
+      let suspendTimer = 0;
+      const sounds = new Set();  // sounds scheduled or playing, until they end or are cancelled
+
+      // Returns the audio context, creating or waking it, or null without Web Audio. Browsers allow
+      // sound only after a user gesture, so the first call comes from a click on Start.
+      function audio() {
+        clearTimeout(suspendTimer);
+        if (!ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return null;
+          ctx = new AudioCtx();
+          master = ctx.createGain();
+          master.gain.value = 0.9;
+          master.connect(ctx.destination);
+        }
+        if (ctx.state !== 'running') ctx.resume().catch(() => {});
+        return ctx;
+      }
+
+      // Lets the audio device idle once no session runs and the last sound has ended.
+      function suspendSoon() {
+        clearTimeout(suspendTimer);
+        if (!ctx) return;
+        suspendTimer = setTimeout(() => {
+          if (state === 'running') return;
+          if (sounds.size) suspendSoon();
+          else ctx.suspend().catch(() => {});
+        }, 5000);
+      }
+
+      // Keeps a sound, starting at `at` on the audio clock, in `sounds` until all of its sources have
+      // ended. Then its bus (its own gain node into the master) is disconnected.
+      function track(at, sources, bus) {
+        const sound = { at, sources, bus };
+        let left = sources.length;
+        sources.forEach((src) => { src.onended = () => { if (--left === 0) drop(sound); }; });
+        sounds.add(sound);
+      }
+
+      function drop(sound) {
+        if (sounds.delete(sound)) sound.bus.disconnect();
+      }
+
+      // Rings a bell at `t` on the audio clock. Each note: [start (s, from t), frequency (Hz), peak
+      // level, fade time (s)].
+      function bell(t, notes) {
+        const bus = ctx.createGain();
+        bus.connect(master);
+        const oscillators = [];
+        for (const [offset, freq, level, fade] of notes) {
+          const t0 = t + offset;
+          for (const p of PARTIALS) {
+            const t1 = t0 + fade * p.fade;
+            const osc = ctx.createOscillator();
+            const env = ctx.createGain();
+            osc.frequency.value = freq * p.ratio;
+            env.gain.setValueAtTime(0, t0);
+            env.gain.linearRampToValueAtTime(level * p.level, t0 + ATTACK);
+            env.gain.exponentialRampToValueAtTime(0.0001, t1);
+            osc.connect(env);
+            env.connect(bus);
+            osc.start(t0);
+            osc.stop(t1 + 0.05);
+            oscillators.push(osc);
+          }
+        }
+        track(t, oscillators, bus);
+      }
+
+      // Cancels the sounds that haven't started yet. One already ringing rings out.
+      function cancelSounds() {
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        for (const sound of [...sounds]) {
+          if (sound.at <= now) continue;
+          sound.sources.forEach((src) => { try { src.stop(); } catch (e) { /* already stopped */ } });
+          drop(sound);
+        }
+      }
+
+      // ---------- Running ----------
+      // state is 'idle', 'running' (the get-ready countdown, then the breathing), 'paused' or 'done'.
+      // The session's time is kept on the audio clock, so what shows always matches what plays: while
+      // it runs, it is clockNow() - origin seconds in. `from` is where it starts: 0 on Start, or on
+      // Resume the start of the cycle that Pause interrupted, since that cycle starts again from its
+      // inhale. The get-ready countdown fills the READY seconds before `from`. Without Web Audio, the
+      // session runs silently, on performance.now().
+
+      let state = 'idle';
+      let origin = 0;
+      let from = 0;
+      let nextDing = 0;  // the next whole second of the session whose sound isn't scheduled yet
+
+      const clockNow = () => (ctx ? ctx.currentTime : performance.now() / 1000);
+
+      // The part on at s seconds into the session (0 <= s < total): its index in the cycle, and the
+      // share of it done.
+      function partAt(s) {
+        const parts = exercise.parts;
+        let u = s - Math.floor(s / cycle) * cycle;
+        for (let i = 0; i < parts.length - 1; i++) {
+          if (u < parts[i][1]) return { part: i, share: u / parts[i][1] };
+          u -= parts[i][1];
+        }
+        const last = parts.length - 1;
+        return { part: last, share: Math.min(1, u / parts[last][1]) };
+      }
+
+      // Runs the session from `start` seconds in (0, or the start of a cycle), after the get-ready
+      // countdown.
+      function run(start) {
+        audio();
+        from = start;
+        origin = clockNow() + LEAD + READY - start;
+        nextDing = start;
+        state = 'running';
+        scheduleSounds();
+        startTicking();
+        keepAwake();
+        render();
+      }
+
+      // Schedules the sounds of the next AHEAD seconds on the audio clock: a ding at every whole second
+      // of the session, loud at the start of each part and quiet after, and the end chime when the last
+      // cycle ends. Run and every tick top them up, so even a long session never has more than a few
+      // seconds of sounds waiting, and they play on time in a background tab. A sound whose time has
+      // passed (if the ticks were held up) is skipped.
+      function scheduleSounds() {
+        if (!ctx || state !== 'running') return;
+        const now = ctx.currentTime;
+        for (; nextDing <= total && origin + nextDing < now + AHEAD; nextDing++) {
+          const t = origin + nextDing;
+          if (t < now - 0.1) continue;
+          if (nextDing === total) {
+            bell(t, END_CHIME);
+          } else {
+            const { part, share } = partAt(nextDing);
+            const [freq, loud, quiet] = DINGS[exercise.parts[part][0]];
+            bell(t, [share === 0 ? [0, freq, loud, LOUD_FADE] : [0, freq, quiet, QUIET_FADE]]);
+          }
+        }
+      }
+
+      // Stops the session. Resume starts again from the inhale of the cycle in progress, after the
+      // get-ready countdown. Paused during the countdown, it stays where it was.
+      function pause() {
+        if (state !== 'running') return;
+        const s = clockNow() - origin;
+        if (s >= total) {
+          finish();
+          return;
+        }
+        if (s > from) from = Math.floor(s / cycle) * cycle;
+        state = 'paused';
+        cancelSounds();
+        stopped();
+      }
+
+      // Back to the start, silently. If the session has just reached its end, the end chime rings out.
+      function reset() {
+        cancelSounds();
+        state = 'idle';
+        from = 0;
+        stopped();
+      }
+
+      // Runs when the last cycle ends. The end chime is already ringing from its schedule.
+      function finish() {
+        const hadFocus = document.activeElement === pauseBtn || document.activeElement === resetBtn;
+        state = 'done';
+        from = 0;
+        stopped();
+        announce('Breathing session done');
+        if (hadFocus) startBtn.focus();
+      }
+
+      function stopped() {
+        stopTicking();
+        releaseScreen();
+        suspendSoon();
+        render();
+      }
+
+      // Ends a session that is paused or done, for a tab switch or a new length. Nothing is scheduled
+      // then, so there is nothing to cancel.
+      function toIdle() {
+        if (state !== 'paused' && state !== 'done') return;
+        state = 'idle';
+        from = 0;
+      }
+
+      // Reads a message out to screen readers. The live region is emptied first, so that the same
+      // message is announced again if it repeats.
+      function announce(message) {
+        liveEl.textContent = '';
+        setTimeout(() => { liveEl.textContent = message; }, 100);
+      }
+
+      // ---------- Ticking ----------
+      // While a session runs, the display is redrawn on every animation frame, so the arc moves
+      // smoothly. Animation frames stop in a background tab, so a 500 ms interval also ticks, and with
+      // it a chain of silent one-second ConstantSourceNodes, as on the Work Timer: their "ended" events
+      // aren't slowed down in background tabs. Each tick wakes the audio if needed, tops up the sounds
+      // and ends the session on time. All of them are safe to call at any time.
+
+      let frameId = 0;
+      let intervalId = 0;
+      let audioTicking = false;
+
+      function startTicking() {
+        if (!intervalId) intervalId = setInterval(tick, 500);
+        if (!frameId) frameId = requestAnimationFrame(onFrame);
+        if (!audioTicking && ctx && ctx.createConstantSource) {
+          audioTicking = true;
+          audioTick();
+        }
+      }
+
+      function audioTick() {
+        if (state !== 'running') {
+          audioTicking = false;
+          return;
+        }
+        const src = ctx.createConstantSource();
+        src.offset.value = 0;
+        src.connect(ctx.destination);
+        src.onended = () => {
+          src.disconnect();
+          tick();
+          audioTick();
+        };
+        src.start();
+        src.stop(ctx.currentTime + 1);
+      }
+
+      function stopTicking() {
+        clearInterval(intervalId);
+        intervalId = 0;  // the silent chain stops by itself at its next step
+        cancelAnimationFrame(frameId);
+        frameId = 0;
+      }
+
+      function onFrame() {
+        frameId = 0;
+        if (state !== 'running') return;
+        render();
+        if (state === 'running') frameId = requestAnimationFrame(onFrame);
+      }
+
+      function tick() {
+        if (state !== 'running') return;
+        if (ctx && ctx.state !== 'running' && ctx.state !== 'closed') ctx.resume().catch(() => {});
+        scheduleSounds();
+        render();
+      }
+
+      // ---------- Display ----------
+
+      const setText = (el, text) => { if (el.textContent !== text) el.textContent = text; };
+      const setAttr = (el, name, value) => { if (el.getAttribute(name) !== value) el.setAttribute(name, value); };
+      // Whole seconds as m:ss.
+      const clock = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+      // A dash `len` long along the ring, with a gap after it longer than the ring.
+      const dash = (len) => len.toFixed(2) + ' ' + CIRCUMFERENCE.toFixed(2);
+
+      let fills = [];  // the arcs of the exercise on show, one per part: { el, len }
+
+      // Builds the ring and the color key of the exercise on show. Each part is a stretch of the ring as
+      // long as its share of the cycle, less a small gap: its pale track, and its arc on top. Each is the
+      // whole ring's path drawn as a single dash, moved along by its stroke-dashoffset.
+      function buildExercise() {
+        measure();
+        trackEl.textContent = '';
+        fillEl.textContent = '';
+        keyEl.textContent = '';
+        fills = [];
+        let at = 0;
+        for (const [kind, sec] of exercise.parts) {
+          const start = (at / cycle) * CIRCUMFERENCE + GAP / 2;
+          const len = (sec / cycle) * CIRCUMFERENCE - GAP;
+          trackEl.append(stretch(kind, start, len));
+          const fill = stretch(kind, start, 0);
+          fillEl.append(fill);
+          fills.push({ el: fill, len });
+          const item = document.createElement('li');
+          item.className = 'is-' + kind;
+          item.textContent = LABELS[kind] + ' ' + sec + ' s';
+          keyEl.append(item);
+          at += sec;
+        }
+      }
+
+      function stretch(kind, start, len) {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', RING_PATH);
+        path.setAttribute('class', 'is-' + kind);
+        path.setAttribute('stroke-dashoffset', (-start).toFixed(2));
+        path.setAttribute('stroke-dasharray', dash(len));
+        return path;
+      }
+
+      function render() {
+        let look = 'is-idle';
+        let count = clock(total);
+        let label = 'Total time';
+        let part = -1;  // the part in progress: its arc is `share` filled, and those before it are full
+        let share = 0;
+        if (state === 'done') {
+          look = 'is-done';
+          count = '✓';
+          label = 'Done';
+          part = fills.length;
+        } else if (state === 'paused') {
+          look = 'is-paused';
+          count = clock(total - from);
+          label = 'Paused';
+        } else if (state === 'running') {
+          const s = clockNow() - origin;
+          if (s >= total) {
+            finish();
+            return;
+          }
+          if (s < from) {
+            look = 'is-ready';
+            count = String(Math.min(READY, Math.ceil(from - s)));
+            label = 'Get ready';
+          } else {
+            ({ part, share } = partAt(s));
+            look = 'is-breathing';
+            count = clock(Math.ceil(total - s));
+            label = LABELS[exercise.parts[part][0]];
+          }
+        }
+
+        setAttr(ringEl, 'class', 'br-ring ' + look);
+        fills.forEach((fill, i) => {
+          setAttr(fill.el, 'stroke-dasharray', dash(i < part ? fill.len : i === part ? fill.len * share : 0));
+        });
+        setText(countEl, count);
+        setText(ringLabel, label);
+
+        const running = state === 'running';
+        tabs.forEach((tab, i) => {
+          const selected = EXERCISES[i] === exercise;
+          setAttr(tab, 'aria-selected', String(selected));
+          setAttr(tab, 'tabindex', selected ? '0' : '-1');
+          if (tab.disabled !== running) tab.disabled = running;
+          if (selected) setAttr(panel, 'aria-labelledby', tab.id);
+        });
+        lengthSel.disabled = otherInput.disabled = running;
+        startBtn.disabled = running;
+        setText(startBtn, state === 'paused' ? 'Resume' : 'Start');
+        pauseBtn.disabled = !running;
+        resetBtn.disabled = !running && state !== 'paused';
+      }
+
+      // ---------- Tabs ----------
+      // One per exercise. While a session runs they are disabled. Showing another exercise ends a
+      // session that is paused or done.
+
+      const tabs = EXERCISES.map((ex) => {
+        const tab = document.createElement('button');
+        tab.type = 'button';
+        tab.id = 'br-tab-' + ex.id;
+        tab.setAttribute('role', 'tab');
+        tab.setAttribute('aria-controls', 'br-panel');
+        tab.textContent = ex.name;
+        tabList.append(tab);
+        return tab;
+      });
+
+      function showExercise(ex) {
+        if (ex === exercise || state === 'running') return;
+        toIdle();
+        exercise = ex;
+        settings.exercise = ex.id;
+        saveSettings();
+        buildExercise();
+        fillLength();
+        render();
+      }
+
+      tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => showExercise(EXERCISES[i]));
+        tab.addEventListener('keydown', (e) => {
+          const last = tabs.length - 1;
+          const next = { ArrowLeft: i === 0 ? last : i - 1, ArrowRight: i === last ? 0 : i + 1, Home: 0, End: last }[e.key];
+          if (next === undefined) return;
+          e.preventDefault();
+          showExercise(EXERCISES[next]);
+          tabs[next].focus();
+        });
+      });
+
+      // ---------- Session length ----------
+      // Each exercise has its own: one of the drop-down's lengths, or under Other a number of minutes
+      // typed into the box beside it. A new length applies at once, and ends a session that is paused
+      // or done. While a session runs, both are disabled.
+
+      for (const min of PRESETS) lengthSel.add(new Option(min + ' min', String(min)));
+      lengthSel.add(new Option('Other…', 'other'));
+
+      function fillLength() {
+        const session = settings.sessions[exercise.id];
+        lengthSel.value = session.other ? 'other' : String(session.min);
+        otherBox.hidden = !session.other;
+        otherInput.value = String(session.min);
+      }
+
+      function setMinutes(min) {
+        const session = settings.sessions[exercise.id];
+        if (min !== session.min) {
+          session.min = min;
+          toIdle();
+          measure();
+        }
+        saveSettings();
+        render();
+      }
+
+      // Choosing Other shows the box with the current minutes, ready to type over.
+      lengthSel.addEventListener('change', () => {
+        const session = settings.sessions[exercise.id];
+        session.other = lengthSel.value === 'other';
+        if (session.other) {
+          saveSettings();
+          fillLength();
+          otherInput.focus();
+          otherInput.select();
+        } else {
+          setMinutes(Number(lengthSel.value));
+          fillLength();
+        }
+      });
+
+      // Checked when an entry is committed (Enter, or leaving the box). An empty box or anything that
+      // isn't a number puts the previous value back. A number is rounded to whole minutes and kept
+      // between 1 and 60.
+      otherInput.addEventListener('change', () => {
+        const min = clean(otherInput.value.trim() === '' ? NaN : Number(otherInput.value), OTHER_LIMITS);
+        if (min !== null) setMinutes(min);
+        fillLength();
+      });
+
+      // ---------- Keeping the screen on (Screen Wake Lock API) ----------
+      // While a session runs, the page asks to keep the screen on, so it can be followed without
+      // touching the device. Browsers drop the lock while the page is hidden, so it is asked for again
+      // on return. Where that isn't supported or allowed, the session runs anyway.
+
+      let wakeLock = null;
+      let wakePending = false;
+
+      async function keepAwake() {
+        if (!('wakeLock' in navigator) || wakeLock || wakePending) return;
+        if (document.visibilityState !== 'visible') return;
+        wakePending = true;
+        try {
+          const lock = await navigator.wakeLock.request('screen');
+          if (state !== 'running') {  // stopped while the request was pending
+            lock.release().catch(() => {});
+          } else {
+            wakeLock = lock;
+            lock.addEventListener('release', () => { if (wakeLock === lock) wakeLock = null; });
+          }
+        } catch (e) { /* not allowed: the session runs anyway */ }
+        wakePending = false;
+      }
+
+      function releaseScreen() {
+        if (!wakeLock) return;
+        wakeLock.release().catch(() => {});
+        wakeLock = null;
+      }
+
+      // ---------- Controls ----------
+
+      // If the clicked button disables itself, move focus on so keyboard users aren't stranded.
+      function onPress(button, action, focusNext) {
+        button.addEventListener('click', () => {
+          const hadFocus = document.activeElement === button;
+          action();
+          if (hadFocus && button.disabled) focusNext.focus();
+        });
+      }
+
+      onPress(startBtn, () => run(state === 'paused' ? from : 0), pauseBtn);
+      onPress(pauseBtn, pause, startBtn);
+      onPress(resetBtn, reset, startBtn);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible' || state !== 'running') return;
+        keepAwake();
+        tick();
+      });
+
+      buildExercise();
+      fillLength();
+      render();
     })();
   </script>
 

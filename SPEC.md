@@ -18,7 +18,7 @@ In order:
 2. `<header class="app-header">` containing a `.container` with an empty `<nav class="tabs" id="tabs" aria-label="Pages">` that the shared script fills. The app has no name, so the header shows only the tabs.
 3. `<main class="container">` containing the pages, one `<section class="page">` each.
 4. The shared navigation `<script>`.
-5. Page scripts, one `<script>` element per page that needs one: the Work Timer's, then the Exercise page's, then the Eye Exercise's.
+5. Page scripts, one `<script>` element per page that needs one: the Work Timer's, then the Exercise page's, then the Eye Exercise's, then the Breathing page's.
 6. Exercise routines, under a comment headed `Exercise routines`: one `<script type="text/plain" class="ex-routine">` element per routine, holding a copy of its file's text (see 5.2, Routines). This is readable text, a few KB per routine.
 7. Embedded data, under a comment headed `Embedded data`: the Work Timer's recordings, one `<script type="text/plain" class="wt-recording">` element each (see 5.1, Sounds), then the Eye Exercise's recording, in a `<script type="text/plain" class="ee-recording">` element (see 5.3, Recording). Each is one very long line of base64, about 400 KB in all, so they come last and the code above reads without scrolling past them.
 
@@ -107,6 +107,7 @@ The shared script needs no changes.
 | Work Timer | `work-timer` | Work and rest countdowns, with random short breaks during work | See 5.1 |
 | Exercise | `exercise` | Follow-along exercise routines: get-ready countdowns, hold countdowns and rep counters, with dings | See 5.2 |
 | Eye Exercise | `eye-exercise` | Plays an eye exercise recording five times in a row, then a big ding | See 5.3 |
+| Breathing | `breathing` | Breathing exercises (box and 4-7-8) for a chosen time: a ring in each part's color and a ding every second | See 5.4 |
 
 ### 5.1 Work Timer
 
@@ -630,3 +631,158 @@ Every rule is scoped under `#eye-exercise`. The page's colors are custom propert
 - In a background tab on a computer, the recording and the ding stay on time, and the display catches up when the page is shown again. The routine's end registers when the slowed-down interval next runs.
 - Delays in the audio output, such as Bluetooth headphones' (often 0.1 to 0.3 seconds), make the display run a little ahead of what's heard.
 - The recording is AAC, which current Chrome, Edge, Safari and Firefox decode (Firefox through the operating system's decoders, so on Linux it needs the system's FFmpeg). In a browser that can't decode it, or has no Web Audio, the page can't play it (see Recording).
+
+### 5.4 Breathing
+
+Breathing exercises, one per tab: box breathing and 4-7-8 breathing. A session repeats the exercise's cycle (inhale, hold, exhale and so on) for a chosen length, rounded up to whole cycles. A ring shows one cycle, a stretch for each part in its kind's color (blue to inhale, yellow to hold, green to exhale), and the part in progress fills as it goes. A ding marks every second: a loud one at the start of each part and a quiet one at each second after, each kind of part with its own note. A 3-second get-ready countdown comes before the first inhale, and again on Resume, which starts the interrupted cycle again. A closing chime ends the session. Start, Pause and Reset control it. The sounds are generated, so nothing is embedded. The page's words are in English. The page's ids and classes start with `br-`. Its styles sit under `/* ---------- Breathing (#breathing) ---------- */` in the page-specific styles, after the Eye Exercise's, and its script is the fourth page script.
+
+#### Markup
+
+Inside `<section class="page" id="breathing" data-title="Breathing">`, in order:
+
+1. `<h1>Breathing</h1>`.
+2. `div.br-main`, holding:
+   - `div#br-tabs.br-tabs` with `role="tablist"` and `aria-label="Exercises"`, empty: the script adds a tab per exercise (see Exercises).
+   - `div#br-panel.br-panel` with `role="tabpanel"`, holding:
+     - `div.br-length`: `<label for="br-length">Session length</label>`, an empty `<select id="br-length">`, which the script fills (see Session length), and `span#br-other.br-other`, starting `hidden`, holding `input#br-other-min` followed by " min". The input is `<input type="text" inputmode="numeric" autocomplete="off" aria-label="Session length in minutes">`, typed into by hand like the Work Timer's settings, so it has no up/down arrows.
+     - `div#br-ring.br-ring`: an inline `svg.br-ring-svg` with `viewBox="0 0 100 100"` and `aria-hidden="true"`, holding the empty groups `g#br-track.br-track` and then `g#br-fill.br-fill`, in which the script draws the parts (see Display); then `div.br-ring-text`, holding `div#br-count.br-count` (`role="timer"`) and `div#br-ring-label.br-ring-label`.
+     - `ol#br-key.br-key` with `aria-label="One cycle"`, empty: the color key, which the script fills.
+     - `div.br-controls` with three buttons: `#br-start.br-btn.br-btn-primary` "Start", `#br-pause.br-btn` "Pause" and `#br-reset.br-btn` "Reset", the last two starting disabled.
+     - `p#br-live.br-sr` (`role="status"`), a visually hidden live region for announcements.
+
+The script fills in every text. It needs nothing that comes after it in the file, so it runs at once.
+
+#### Exercises
+
+- The exercises are a list in the script (`EXERCISES`), one tab each, in its order. Each has an `id`, a `name` (its tab's label) and `parts`, its cycle: `[kind, seconds]` pairs in order. The kind is `inhale`, `hold` or `exhale`, and the seconds are a whole number, at least 1, since a ding marks every second.
+
+| id | Tab | Cycle | Cycle length |
+|---|---|---|---|
+| `box` | Box breathing | inhale 5 s, hold 5 s, exhale 5 s, hold 5 s | 20 s |
+| `4-7-8` | 4-7-8 breathing | inhale 4 s, hold 7 s, exhale 8 s | 19 s |
+
+- Each kind has its own label (Inhale, Hold, Exhale), color (see Styles) and note (see Sounds). Box breathing's two holds are the same kind.
+- **Tabs:** each is a `button#br-tab-<id>` with `role="tab"`, `aria-controls="br-panel"` and the exercise's name, built like the Work Timer's Work/Rest switch. The tab on show has `aria-selected="true"` and `tabindex="0"`, the others `false` and `-1`, and the panel's `aria-labelledby` names it. On a tab, Left and Right arrows go to the previous and next tab, wrapping around, and Home and End to the first and last, showing that exercise at once.
+- **Adding an exercise:** add a line to `EXERCISES`. Its tab, ring and color key come with it, and it starts with the default session length.
+
+#### Session length
+
+- Each exercise has its own session length, in whole minutes: one from the drop-down, or one typed in under Other. The default is 5.
+- The script fills the drop-down with the lengths in `PRESETS`, 3, 5, 10, 15, 20, 25, 30 and 60 minutes (options "3 min" to "60 min", with values "3" to "60"), then "Other…" (value `other`).
+- **Other:** choosing it shows the box beside the drop-down, holding the current minutes, focused and selected, ready to type over. The length doesn't change until an entry is committed. Choosing a length from the list hides the box again and applies that length. A length typed under Other stays under Other, even one that is also in the list.
+- The box is checked on `change`, which fires when an entry is committed (Enter, or leaving the box), like the Work Timer's settings: an empty box (spaces only, too) or anything `Number()` can't read, such as "abc", puts the previous value back. A number is rounded to the nearest whole number and clamped to 1 to 60 (2.6 becomes 3, 0 becomes 1, 75 becomes 60). The box then shows the value in use.
+- **Whole cycles:** a session always ends at the end of a cycle. It runs as many whole cycles as it takes to reach at least the chosen length: total = ⌈minutes × 60 ÷ cycle length⌉ × cycle length. Box breathing's 20-second cycle fits any whole number of minutes. 4-7-8's 19 seconds rarely does: 5 minutes is 16 cycles, 5:04, 3 minutes is 3:10 and 60 minutes 60:10.
+- A new length applies at once. A session that is paused or done ends, as on Reset, so the new length shows. While a session runs, the drop-down and the box are disabled.
+
+#### Running
+
+- The session is idle (not started), running (the get-ready countdown, then the breathing), paused or done.
+- **Start** (when idle or done) begins a 3-second get-ready countdown (`READY`) 50 ms after the click (`LEAD`), and then the session, from the first cycle's inhale.
+- **Pause** (only while running) stops the session. The dings that haven't started are cancelled, and one already ringing rings out. Since Resume starts the interrupted cycle again, the session goes back to the start of the cycle in progress. Paused during a get-ready countdown, it stays where it was.
+- **Resume:** while paused, the Start button reads Resume. It gives the 3-second get-ready countdown, then starts the interrupted cycle again, from its inhale. So the time left goes back to what it was when that cycle began.
+- **Reset** (while running or paused) stops the session silently and puts it back to the start, idle. If the session has just reached its end, the end chime rings out.
+- **Done:** when the last cycle ends, with the end chime. Start then begins a new session.
+- **Tabs:** disabled while a session runs. While one is paused or done, showing another exercise ends it, as on Reset, and the other exercise shows idle.
+- **How it's timed:** like the Eye Exercise (5.3), the session's time is kept on the audio clock (`ctx.currentTime`), so the ring and the count always match the dings, even if the audio starts late or its clock stalls (while a computer sleeps, for example). While running, the session is `ctx.currentTime − origin` seconds in. `from` is where it starts: 0 on Start, or on Resume the start of the cycle that was interrupted. Start and Resume set `origin` to the current time + `LEAD` + `READY` − `from`, so the get-ready countdown fills the 3 seconds before `from`. Without Web Audio, the session runs silently, on `performance.now()`.
+- **Ticking:** while a session runs, the display is redrawn on every animation frame, so the arc moves smoothly. Animation frames stop in a background tab, so a 500 ms interval (`tick`) also runs, along with a chain of silent one-second `ConstantSourceNode`s (offset 0, connected to the output), as on the Work Timer (5.1, Keeping time in a background tab): their `ended` events aren't slowed down in background tabs, and each calls `tick` and starts the next. `tick` wakes the audio context if it was suspended, tops up the scheduled sounds (see Sounds) and ends the session on time. Both are safe to call at any time.
+
+#### Display
+
+- **Ring:** `min(300px, 100cqi)` square, a circle of radius 45 on a 100 × 100 viewBox with a stroke width of 6, like the Work Timer's (5.1, Ring), but drawn in parts. For each part of the cycle, the script adds a `path` to `g.br-track` (the part's track, in its pale shade) and one to `g.br-fill` (its arc, in the solid color), each with the class `is-<kind>`, `is-inhale` for example. Each path is the whole ring (`d="M50 5a45 45 0 1 1 0 90a45 45 0 1 1 0-90z"`, from the top and clockwise) drawn as one dash: `stroke-dasharray` is `<length> <C>` and `stroke-dashoffset` is `−<start>`, with 2 decimals, where C = 2π × 45 ≈ 282.74 (the circumference). A part's stretch starts at the share of the cycle before it × C, plus half a gap, and its length is its own share × C, less a gap (`GAP`, 1.2 units, about 1.5°). So a small gap separates the parts, and box breathing shows as four equal quarters.
+- **Filling:** the arc of the part in progress is filled by the share of it done, so it grows clockwise, smoothly. The arcs of the cycle's earlier parts are full, and the later ones empty (a dash of length 0). Each cycle starts empty. Arcs are written only when they change.
+- The script sets one of these classes on `#br-ring`:
+  - `is-idle`: the tracks only.
+  - `is-ready`: the tracks only, during a get-ready countdown.
+  - `is-breathing`: while a part runs.
+  - `is-paused`: grey: every track is `--border`, and the arcs are empty.
+  - `is-done`: every arc full.
+- **Count and label:** the count in the middle and the label under it:
+
+| State | Count | Label |
+|---|---|---|
+| Idle | The session's length, `m:ss` (5:00, or 5:04 for 5 minutes of 4-7-8) | Total time |
+| Get-ready countdown | The seconds left, rounded up: 3, 2, 1 | Get ready |
+| A part | The session's time left, `m:ss`, rounded up | Inhale, Hold or Exhale |
+| Paused | The time left from the start of the cycle that Resume starts again, `m:ss` | Paused |
+| Done | ✓ | Done |
+
+  Minutes can go past 59 (60:10). The count changes with each ding.
+- **Color key** (`#br-key`): one `li` per part of the cycle, in order, with the class `is-<kind>` and text such as "Inhale 4 s", each after a dot in its kind's solid color. It spells out the cycle: "Inhale 5 s, Hold 5 s, Exhale 5 s, Hold 5 s" for box breathing.
+- **Buttons:** Start is enabled unless a session runs, and reads Resume while paused and Start otherwise. Pause is enabled only while a session runs, and Reset while it runs or is paused.
+- Texts and attributes are written only when they change.
+- The page doesn't change the browser tab's title. The Work Timer's countdown still takes it while that timer runs (see 3.2).
+
+#### Sounds
+
+- Every sound is generated with the Web Audio API, in a mellow bell, softer than the other pages' (5.1, Dings): three sine partials, with no inharmonic fourth one.
+
+| Partial | Frequency | Peak (× note level) | Fade (× note fade time) |
+|---|---|---|---|
+| 1 | f | 1 | 1 |
+| 2 | 2f | 0.3 | 0.55 |
+| 3 | 3f | 0.1 | 0.35 |
+
+  Each partial's gain starts at 0, rises linearly to its peak in 10 ms (the other pages' bell takes 5 ms), then falls exponentially to 0.0001 by the end of its fade. Its oscillator stops 50 ms after that.
+- **Dings:** one at every whole second of the session: a loud ding at the start of each part, and a quiet one, shorter, at each second after it. Each kind of part has its own note, all three from the chord of C major, high to inhale, middle to hold and low to exhale, so the parts can be told apart with eyes closed:
+
+| Kind | Note | Loud: level, fade time | Quiet: level, fade time |
+|---|---|---|---|
+| Inhale | E5 (659.25 Hz) | 0.36, 2.4 s | 0.15, 0.7 s |
+| Hold | G4 (392 Hz) | 0.44, 2.4 s | 0.18, 0.7 s |
+| Exhale | C4 (261.63 Hz) | 0.53, 2.4 s | 0.22, 0.7 s |
+
+  - So box breathing goes: a loud inhale ding, 4 quiet inhale dings, a loud hold ding, 4 quiet hold dings, a loud exhale ding, 4 quiet exhale dings, a loud hold ding and 4 quiet hold dings, then the next cycle. 4-7-8 goes: a loud inhale ding and 3 quiet, a loud hold ding and 6 quiet, a loud exhale ding and 7 quiet.
+  - The lower notes are set higher, so the three sound about as loud: measured on their loudest 400 ms, averaging K weighting (ITU-R BS.1770) and A weighting, the three loud dings are within 0.1 dB of each other, and the three quiet ones within 0.2 dB, about 12 dB below them. The loud dings are about 1 dB softer than the Exercise page's start ding. They peak at about −8.8, −7.0 and −5.4 dBFS, after the master gain.
+- **End chime:** when the last cycle ends, where the next inhale would have started, the chord of C major rolls up from C4: C4 (261.63 Hz) at 0 s, level 0.28, fade 5 s; G4 (392 Hz) at 0.09 s, 0.25, 4.5 s; C5 (523.25 Hz) at 0.18 s, 0.23, 4 s; and E5 (659.25 Hz) at 0.27 s, 0.2, 3.5 s. It rings for about 5 seconds, about 2.5 dB louder than a loud ding, and peaks at about −4.9 dBFS.
+- The get-ready countdowns are silent, and so is Resume.
+- **Playback:** the page has its own `AudioContext`, created by the first Start (browsers allow audio only after a user gesture), with a master gain of 0.9. Each sound gets its own gain node (its bus) into the master, disconnected when all its oscillators have ended or when it's cancelled. The script keeps the set of sounds scheduled or playing.
+- **Scheduling:** the sounds are scheduled ahead on the audio clock, so they play on time even in a background tab, but only the next 6 seconds of them (`AHEAD`): Start and Resume schedule the first ones, and every tick schedules more. So however long the session, no more than about 7 dings wait at once, each 3 oscillators with their gain nodes. A sound whose time has passed by more than 0.1 s (if the ticks were held up) is skipped rather than played late. Pause and Reset cancel the ones that haven't started.
+- The audio context is suspended 5 seconds after the session stops (Pause, Reset or the end), once no sound is still ringing. If one is, it checks again every 5 seconds. The next Start or Resume wakes it. Since the session's time is on the audio clock, nothing is lost while the audio wakes.
+
+#### Keeping the screen on
+
+- As on the Exercise page (5.2), while a session runs, the page asks for a screen wake lock, with no button. It asks again when the page is shown again while a session runs, and lets go on Pause, on Reset and at the end. If the API is missing or the request is refused, nothing shows and the session runs anyway.
+
+#### Saved settings
+
+- The exercise on show and each exercise's session length are saved to `localStorage` under `misc-utils:breathing`, on a tab switch and on a length change, as JSON like `{"exercise":"box","sessions":{"box":{"min":5,"other":false},"4-7-8":{"min":7,"other":true}}}`: the id of the exercise on show, and for each exercise its minutes (`min`) and whether they are under Other (`other`).
+- On load, `exercise` is used if it names an exercise, otherwise the first is shown. Each `min` is used if it is a finite number, rounded and clamped to 1 to 60, otherwise it is 5. `other` is true if it was saved as `true`, or if `min` isn't one of the drop-down's lengths, since such a length can only show under Other.
+
+#### Styles
+
+Every rule is scoped under `#breathing`. The page's colors are custom properties on `#breathing`, with dark values in its own `prefers-color-scheme: dark` media query:
+
+| Variable | Light | Dark | Used for |
+|---|---|---|---|
+| `--br-inhale` | `#2f6fde` | `#5b8ef0` | Inhale arcs and key dots (the Work Timer's work blue, the same as `--accent`) |
+| `--br-inhale-pale` | `#c1d4f5` | `#2e4266` | Inhale tracks (the Work Timer's work track) |
+| `--br-hold` | `#c59711` | `#dab33a` | Hold arcs and key dots: a golden yellow |
+| `--br-hold-pale` | `#eee0b8` | `#4d4122` | Hold tracks |
+| `--br-exhale` | `#318454` | `#53ae77` | Exhale arcs and key dots (the Work Timer's rest green) |
+| `--br-exhale-pale` | `#c1dacc` | `#2f4a38` | Exhale tracks (the Work Timer's rest track) |
+
+- The yellow is OKLCH lightness 0.70, chroma 0.14 and hue 86 in light, and 0.78, 0.14 and 90 in dark. Its pale shades are made like the Work Timer's (5.1, Timer colors): in light, the yellow mixed 30% into white; in dark, a dim yellow at OKLCH lightness 0.38 (chroma 0.05) in its own hue.
+- Contrast: the blue and green arcs are at least 3.1:1 against their tracks, as on the Work Timer. The yellow is 8.1:1 against the card and 5.0:1 against its track in dark, but only 2.7:1 and 2.1:1 in light: a yellow dark enough for 3:1 on white looks brown. The part's name under the time says which part it is anyway. The count and texts use `--text` and `--muted`.
+- `[hidden]` inside the page is forced to `display: none`. Buttons, the drop-down and the box inherit the font and color, enabled buttons have a pointer cursor, and focus shows a 2px `--accent` outline with a 2px offset.
+- `.br-main` is a centered flex column with a 16px gap and `container-type: inline-size`. `.br-panel` is the same column (16px gap), full width.
+- **Tabs:** `.br-tabs` is styled like the Work Timer's `.wt-tabs`: a flex row with a 2px gap and 3px padding, a 1px `--border` border and a `--bg` background, here centered, wrapping if the tabs don't fit, no wider than the page, with a 22px radius (a pill on one line, a rounded box on more). Each tab: at least 92px wide, 6px × 18px padding, pill-shaped, a transparent 1px border, no background, `--muted` text on one line, turning `--text` on hover. The selected tab has a `--border` border, a `--surface` background, `--text` and weight 600. While a session runs, the other tabs are at 45% opacity. When `.br-main` is 340px wide or less (`@container`), tabs have 6px × 12px padding and no minimum width, so the two fit on one line on a 375px-wide phone.
+- **Session length:** `.br-length` is a centered, wrapping flex row with an 8px × 10px gap. The label is `--muted`. The drop-down has 6px × 10px padding, and `.br-other` is an inline flex row with a 6px gap in `--muted`, whose box is 3.5em wide with 5px × 8px padding, `--text` and right-aligned text. The drop-down and the box have a 1px `--border` border, 8px radius and a `--surface` background, at 60% opacity when disabled.
+- **Ring:** `.br-ring`, like the Eye Exercise's, is a size container and a one-cell grid (`grid-template: minmax(0, 1fr) / minmax(0, 1fr)`), `min(300px, 100cqi)` on each side (`cqi` here is the width of `.br-main`). Both children sit in the cell, centered. The SVG fills it (`overflow: visible`), and its paths have no fill, a stroke width of 6 and flat (butt) ends. `.br-ring-text` is a centered flex column. `.br-count`: `font-size: 22cqmin` (`30cqmin` during a get-ready countdown and when done), weight 600, `font-variant-numeric: tabular-nums`, letter spacing −0.02em, line height 1.1, `--muted` while paused. `.br-ring-label`: `--muted`, `font-size: max(13px, 8cqmin)`, line height 1.3, and `--text` at weight 600 while a part runs. At the full 300px, the count is 66px (90px for the countdown and ✓) and the label 24px.
+- **Color key:** `.br-key` is a centered, wrapping flex row with a 4px × 16px gap, no margin, padding or list markers, in `--muted` at 0.95rem. Each item is an inline flex row with a 6px gap, kept on one line, whose `::before` is a 10px round dot in `--br-dot`, which `.is-inhale`, `.is-hold` and `.is-exhale` set to their kind's solid color.
+- `.br-controls` is a flex row with an 8px gap, full width up to 360px, and an 8px top margin. `.br-btn` is styled like the Eye Exercise's `.ee-btn`: equal widths, 9px × 10px padding, pill-shaped, a 1px `--border` border, `--surface` background, weight 600, the border turning `--accent` on hover, and 45% opacity when disabled. `.br-btn-primary` has an `--accent` background and border and `--accent-text` text.
+- `.br-sr` is visually hidden, like the Work Timer's `.wt-sr`.
+
+#### Accessibility
+
+- The tabs follow the usual tabs pattern: `role="tablist"`, `tab` and `tabpanel`, `aria-selected`, only the selected tab in the tab order, and the arrow keys, Home and End (see Exercises).
+- `role="timer"` on the count keeps screen readers from reading out every change. The ring's SVG is hidden from them. The color key is a list labelled "One cycle", so the cycle is read out as text.
+- `#br-live` announces "Breathing session done" at the end. It is emptied first and filled 100 ms later, so a repeated message is read again. Nothing is announced during a session: the dings mark the parts.
+- When Start, Pause or Reset disables the button that had focus, focus moves on: from Start to Pause, from Pause to Start, and from Reset to Start. When the session ends by itself, focus on Pause or Reset moves to Start.
+
+#### Known limits
+
+- Phones usually suspend a page when the screen locks or the browser goes to the background. Since the session's time is on the audio clock, the session waits meanwhile rather than running on. The page keeps the screen on while a session runs, where the browser allows it. On an iPhone, silent mode may mute the dings.
+- In a background tab on a computer, the dings stay on time, and the display catches up when the page is shown again. Tested in headless Firefox 161, with the page in a background tab: the dings stayed exactly one second apart, each scheduled about 6 seconds ahead, and Firefox used about 9% of a CPU core, against about 6% with no session running.
+- Delays in the audio output, such as Bluetooth headphones' (often 0.1 to 0.3 seconds), make each ding come a little after its count changes.
+- In a browser without Web Audio, the session runs silently.
+- In light, the yellow is weaker against the white card than the other colors (see Styles).
