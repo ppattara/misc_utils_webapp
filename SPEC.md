@@ -97,7 +97,7 @@ The shared script needs no changes.
 - Header: `--surface` background with a 1px `--border` bottom border. It holds only the tab bar, a wrapping flex row with 8px gaps and 12px padding above and below.
 - Tabs: pill-shaped links with 6px × 14px padding, a 1px `--border` border, 999px radius, `--text` color, no underline, and no line breaks inside a label. On hover, the border turns `--accent`. The active tab has an `--accent` background and border, and `--accent-text` text.
 - `<main>`: 24px padding above and 48px below.
-- Page card: `--surface` background, 1px `--border` border, `--radius` corners, 20px padding. The page's `<h1>` is 1.5rem, with no top margin and 20px below. A page may give its card its own background: the Work Timer's card takes a very soft shade of its timer's color, or a bright green during a short break (5.1).
+- Page card: `--surface` background, 1px `--border` border, `--radius` corners, 20px padding. The page's `<h1>` is 1.5rem, with no top margin and 20px below. A page may give its card its own background: the Work Timer's card takes a very soft shade of its timer's color, or of a short break's yellow (5.1).
 - `.placeholder`: text in `--muted`, used for "nothing here yet" notes.
 
 ## 5. Pages
@@ -111,7 +111,7 @@ The shared script needs no changes.
 
 ### 5.1 Work Timer
 
-A countdown for work and one for rest on a single page, each with its own color: blue for work and green for rest. The card behind the timer takes a very soft shade of the color of the timer on show. The time sits in the middle of a ring whose arc runs down as the session goes. While the work timer runs, short breaks come at random moments: a sound starts each one and another ends it, and in between the card turns a bright green of its own and counts the break down, so the break is noticed even with the sound off. Each start and end, of a session or a break, has its own recorded sound, embedded in the file, with generated dings as an option. On a computer, the timer can also pop out into a small floating window that stays on top of other windows. The page's ids and classes start with `wt-`. Its styles sit under `/* ---------- Work Timer (#work-timer) ---------- */` in the page-specific styles, and its script is the first page script.
+A countdown for work and one for rest on a single page, each with its own color: blue for work and green for rest. The card behind the timer takes a very soft shade of the color of the timer on show. The time sits in the middle of a ring whose arc runs down as the session goes. While the work timer runs, short breaks come at random moments: a sound starts each one and another ends it, and in between the timer turns a golden yellow and counts the break down, so the break is noticed even with the sound off. Each start and end, of a session or a break, has its own recorded sound, embedded in the file, with generated dings as an option. On a computer, the timer can also pop out into a small floating window that stays on top of other windows. The page's ids and classes start with `wt-`. Its styles sit under `/* ---------- Work Timer (#work-timer) ---------- */` in the page-specific styles, and its script is the first page script.
 
 #### Markup
 
@@ -167,7 +167,7 @@ Inside `<section class="page" id="work-timer" data-title="Work Timer">`, in orde
 
 #### Timer colors
 
-Each timer has its own color, so the two look distinct: a soft blue for Work and a soft green for Rest, never pure `#0000ff` or `#00ff00`. Each color comes in three shades: the solid color, a lighter shade (pale) for the ring's track, and an even lighter, very soft shade (soft) for the card behind the timer. A short break during work has a green of its own, also in three shades (see Break colors below). They are custom properties on `#work-timer`, overridden inside a `prefers-color-scheme: dark` media query like the shared colors:
+Each timer has its own color, so the two look distinct: a soft blue for Work and a soft green for Rest, never pure `#0000ff` or `#00ff00`. Each color comes in three shades: the solid color, a lighter shade (pale) for the ring's track, and an even lighter, very soft shade (soft) for the card behind the timer. A short break during work has a color of its own, a golden yellow, in the same three shades (see Break colors below). They are custom properties on `#work-timer`, overridden inside a `prefers-color-scheme: dark` media query like the shared colors:
 
 | Variable | Light | Dark | Used for |
 |---|---|---|---|
@@ -177,27 +177,24 @@ Each timer has its own color, so the two look distinct: a soft blue for Work and
 | `--wt-rest` | `#318454` | `#53ae77` | Rest timer |
 | `--wt-rest-pale` | `#c1dacc` | `#2f4a38` | Rest timer's ring track |
 | `--wt-rest-soft` | `#ecf6ef` | `#1f2e24` | The card while Rest is on show |
-| `--wt-break-fill` | `#87d576` | `#316a23` | The card during a break |
-| `--wt-break-track` | `#d5f2cf` | `#22441a` | The ring's track during a break |
-| `--wt-break-ink` | `#26511c` | `#d3f2cd` | The ring's arc, the time and the card's grey text during a break |
+| `--wt-break` | `#c59711` | `#dab33a` | Short breaks (the Breathing page's hold yellow, 5.4) |
+| `--wt-break-pale` | `#eee0b8` | `#4d4122` | The ring's track during a break |
+| `--wt-break-soft` | `#f7f2e9` | `#2f2919` | The card during a break |
 
 - The green has about the same lightness as the blue (OKLCH lightness 0.55 against 0.56 in light, 0.68 against 0.66 in dark) but less chroma (0.11 to 0.12), which keeps it calm.
 - Pale (the track): in light, the solid color mixed 30% into `--surface` (white). In dark, a dim version of the color at OKLCH lightness 0.38, in the color's own hue, between the card and the solid color.
-- Soft (the card): the two colors share one OKLCH lightness and chroma, each in its own hue, so the two cards look equally soft: lightness 0.96 and chroma 0.013 in light, 0.28 and 0.028 in dark. The blue ones are the solid blue mixed 8% into `--surface`. The dark shades keep each color's own hue because mixing green into the bluish dark `--surface` would turn it teal.
-- Contrast: the Start button's `--accent-text` label is at least 4.6:1 on every timer color. Each timer color is at least 4.1:1 against its own card shade (the running time is large text, which needs 3:1). `--muted` text is at least 4.8:1 on every card shade, and the arc is at least 3.1:1 against its track.
+- Soft (the card): the three colors (Work's, Rest's and the break's) share one OKLCH lightness and chroma, each in its own hue, so the cards look equally soft: lightness 0.96 and chroma 0.013 in light, 0.28 and 0.028 in dark. The blue ones are the solid blue mixed 8% into `--surface`. The dark shades keep each color's own hue because mixing green into the bluish dark `--surface` would turn it teal.
+- Contrast: the Start button's `--accent-text` label is at least 4.6:1 on the Work and Rest colors. Each of them is at least 4.1:1 against its own card shade (the running time is large text, which needs 3:1), and its arc at least 3.1:1 against its track. `--muted` text is at least 4.8:1 on every card shade, the break's included. The break's yellow is weaker in light (see Break colors).
 - `--wt-color`, `--wt-color-pale` and `--wt-color-soft` hold the shades of the timer on show. `#work-timer` sets them to the Work shades, and `#work-timer.is-rest` to the Rest shades. Every render toggles the class `is-rest` on the page's `section#work-timer` and, while the floating window is open, on its `div#work-timer`, so the class is there while the Rest timer is on show, and everything inside follows. The Work/Rest tabs are the exception: `#wt-tab-work` and `#wt-tab-rest` set `--wt-color` to their own timer's color, so each tab's running dot keeps its own color whichever timer is on show.
 - `--wt-color-soft` is the background of `#work-timer`, replacing the shared `--surface`, so the page's card and the floating window take it. The other shades color the ring's arc and track, the time while running, the running dot on each tab, the background and border of the Start/Resume button (`.wt-btn-primary`), and the hover border of the timer buttons. The rest of the page keeps `--accent`: the gear and floating window buttons, the settings sidebar with its play buttons, Keep screen on, and the focus outline. The controls on the card keep their own backgrounds: `--surface` for the buttons, and `--bg` for the Work/Rest switch and the settings sidebar.
 - The card's shade changes whenever the timer on show does: on a Work/Rest tab switch, and when a session ends and the page shows the other timer. It also changes when a break starts or ends. While the timer floats, the page's card (behind "The timer is in a floating window.") keeps following the timer on show.
 
 Break colors:
 
-- The break's green is its own, distinct from Rest's: brighter and more vivid, leaning a little toward yellow (OKLCH hue 140, where Rest's is 155). Its shades swap roles with the timers': the card fills with the strong shade, and the ring and the time take a contrasting one (ink).
-  - Light: the fill is a bright green at OKLCH lightness 0.80 and chroma 0.15, so the page's dark text stays dark. The ink is a deep green (0.39, 0.095), and the track is paler than the fill (0.93, 0.056).
-  - Dark: the fill is a deep green (0.47, 0.12), so the page's light text stays light. The ink is a very light green (0.93, 0.06), and the track is dimmer than the fill (0.35, 0.08).
-  - Either way, the card changes a lot from the timers' near-white (or near-black) soft shades, which catches the eye even in a small window in a corner of the screen.
-- Contrast during a break, light and dark: `--text` on the fill is 8.8:1 and 5.4:1. The ink on the fill is 5.2:1 and 5.4:1, enough for the small text under the time and on the info line. The arc against its track is 7.7:1 and 9.1:1. The Start button's `--accent-text` label on the ink is at least 9:1.
-- `#work-timer.is-break`, after the `.is-rest` rule, sets `--wt-color`, `--wt-color-pale` and `--wt-color-soft` to the break's ink, track and fill. So the card's background (and the floating window's), the ring, the running time, the Start button and the timer buttons' hover border all follow. Every render toggles `is-break` on the page's `section#work-timer` and, while the floating window is open, on its `div#work-timer`, so the class is there while a break is in progress and the Work timer is on show. The Work tab's running dot stays blue.
-- During a break, the elements that are otherwise `--muted` take `--wt-break-ink`: `.wt-ring-label`, `.wt-info`, `.wt-wake`, `.wt-wake-note` and `.wt-away`. So do the border of `.wt-wake` on hover or when on, and the focus outline. The Work/Rest switch, the buttons and the settings sidebar keep their own backgrounds and colors.
+- A break looks just like a timer, in a golden yellow of its own: the Breathing page's hold yellow (5.4, Styles), at OKLCH lightness 0.70, chroma 0.14 and hue 86 in light, and 0.78, 0.14 and 90 in dark. Its pale shade, for the ring's track, is the Breathing page's hold track, made like the timers' pale shades (above). Its soft shade, for the card, has the timers' card lightness and chroma, in the yellow's own hue.
+- Contrast, light and dark: the yellow is 2.4:1 and 7.2:1 against the break's card, and 2.1:1 and 5.0:1 against its track. So in light, the running time (the break's countdown) is below the 3:1 that large text needs, and the arc is fainter than the timers', because a yellow dark enough for 3:1 looks brown, as on the Breathing page. The name under the time says "Break" anyway. `--muted` text is 4.9:1 and 5.7:1 on the break's card. The Start button's `--accent-text` label is only 2.7:1 on the light yellow (9.5:1 on the dark one), but Start is always disabled during a break, since the work timer is running.
+- `#work-timer.is-break`, after the `.is-rest` rule, sets `--wt-color`, `--wt-color-pale` and `--wt-color-soft` to the break's shades. So the card's background (and the floating window's), the ring, the running time, the Start button and the timer buttons' hover border all follow. Every render toggles `is-break` on the page's `section#work-timer` and, while the floating window is open, on its `div#work-timer`, so the class is there while a break is in progress and the Work timer is on show. The Work tab's running dot stays blue.
+- Everything else looks as it does during work: the name under the time, the info line and Keep screen on stay `--muted`, and the focus outline stays `--accent`.
 
 #### Random breaks
 
@@ -217,8 +214,8 @@ A short break during work, meant for stopping for a moment: standing up, stretch
 
 #### Tab icon
 
-- When it runs, the Work Timer script appends a `<link rel="icon">` to the document's `<head>`. During a break (whichever Work/Rest tab is on show), its `href` is a green dot. Otherwise it is a blank, transparent icon.
-- Both are SVG data URLs: `data:image/svg+xml,` followed by `encodeURIComponent` of `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">…</svg>`. The dot is `<circle cx="8" cy="8" r="7" fill="#479d32"/>`, a mid green at least 3:1 against white and dark tab bars. The blank icon has nothing inside. The `href` is written only when it changes, on every render.
+- When it runs, the Work Timer script appends a `<link rel="icon">` to the document's `<head>`. During a break (whichever Work/Rest tab is on show), its `href` is a yellow dot. Otherwise it is a blank, transparent icon.
+- Both are SVG data URLs: `data:image/svg+xml,` followed by `encodeURIComponent` of `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">…</svg>`. The dot is `<circle cx="8" cy="8" r="7" fill="#c59711"/>`, the break's yellow in its light shade, one color for every tab bar: it is 3.7:1 or more against dark tab bars and about 2.4 to 2.7:1 against light ones, where the dark theme's yellow would be 2:1 or less. The blank icon has nothing inside. The `href` is written only when it changes, on every render.
 - The icon is blank rather than missing, because browsers don't reliably bring back their default icon when a page removes its own, so a removed dot could stay on show. As a result, the app's browser tab shows no icon apart from the dot during a break.
 
 #### Sounds
@@ -362,7 +359,7 @@ Every rule is scoped under `#work-timer` and uses the shared color variables and
 - On an iPhone, silent mode may mute the sounds.
 - In a browser without Web Audio, the timers work silently, and breaks still show on screen.
 - The recordings are AAC, which current Chrome, Edge, Safari and Firefox decode (Firefox through the operating system's decoders, so on Linux it needs the system's FFmpeg). A browser that can't decode a recording plays that moment's ding instead.
-- Some browsers, Safari in particular, may not change a page's tab icon after it has loaded, so the green dot may not show there. The tab title still changes.
+- Some browsers, Safari in particular, may not change a page's tab icon after it has loaded, so the yellow dot may not show there. The tab title still changes.
 - The floating window needs the Document Picture-in-Picture API: desktop Chrome and Edge 116 or later, and Firefox 151 or later. Safari and phone browsers don't have it, so its button doesn't appear there. The browser decides where the window opens and sets its own smallest and largest sizes.
 
 ### 5.2 Exercise
@@ -756,8 +753,8 @@ Every rule is scoped under `#breathing`. The page's colors are custom properties
 |---|---|---|---|
 | `--br-inhale` | `#2f6fde` | `#5b8ef0` | Inhale arcs and key dots (the Work Timer's work blue, the same as `--accent`) |
 | `--br-inhale-pale` | `#c1d4f5` | `#2e4266` | Inhale tracks (the Work Timer's work track) |
-| `--br-hold` | `#c59711` | `#dab33a` | Hold arcs and key dots: a golden yellow |
-| `--br-hold-pale` | `#eee0b8` | `#4d4122` | Hold tracks |
+| `--br-hold` | `#c59711` | `#dab33a` | Hold arcs and key dots: a golden yellow (also the Work Timer's break color) |
+| `--br-hold-pale` | `#eee0b8` | `#4d4122` | Hold tracks (also the Work Timer's break track) |
 | `--br-exhale` | `#318454` | `#53ae77` | Exhale arcs and key dots (the Work Timer's rest green) |
 | `--br-exhale-pale` | `#c1dacc` | `#2f4a38` | Exhale tracks (the Work Timer's rest track) |
 

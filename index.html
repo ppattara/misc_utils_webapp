@@ -109,9 +109,8 @@
        behind the timer. --wt-color, --wt-color-pale and --wt-color-soft are the shades of the timer on
        show: Work by default, Rest while the card (the page, or the floating window) has the class
        is-rest. Each Work/Rest tab keeps its own timer's color, for its running dot.
-       A short break during work has its own, brighter green. While the card has the class is-break,
-       it fills with that green (fill), and the ring's arc and the time take a deep green (ink) over a
-       pale track. In dark mode the fill is a deep green, the ink a very light one and the track dim. */
+       A short break during work looks the same, in a golden yellow (the Breathing page's hold yellow)
+       in the same three shades, while the card has the class is-break. */
     #work-timer {
       position: relative;
       --wt-work: #2f6fde;
@@ -120,9 +119,9 @@
       --wt-rest: #318454;
       --wt-rest-pale: #c1dacc;
       --wt-rest-soft: #ecf6ef;
-      --wt-break-fill: #87d576;
-      --wt-break-track: #d5f2cf;
-      --wt-break-ink: #26511c;
+      --wt-break: #c59711;
+      --wt-break-pale: #eee0b8;
+      --wt-break-soft: #f7f2e9;
       --wt-color: var(--wt-work);
       --wt-color-pale: var(--wt-work-pale);
       --wt-color-soft: var(--wt-work-soft);
@@ -136,9 +135,9 @@
         --wt-rest: #53ae77;
         --wt-rest-pale: #2f4a38;
         --wt-rest-soft: #1f2e24;
-        --wt-break-fill: #316a23;
-        --wt-break-track: #22441a;
-        --wt-break-ink: #d3f2cd;
+        --wt-break: #dab33a;
+        --wt-break-pale: #4d4122;
+        --wt-break-soft: #2f2919;
       }
     }
     #work-timer.is-rest {
@@ -147,9 +146,9 @@
       --wt-color-soft: var(--wt-rest-soft);
     }
     #work-timer.is-break {
-      --wt-color: var(--wt-break-ink);
-      --wt-color-pale: var(--wt-break-track);
-      --wt-color-soft: var(--wt-break-fill);
+      --wt-color: var(--wt-break);
+      --wt-color-pale: var(--wt-break-pale);
+      --wt-color-soft: var(--wt-break-soft);
     }
     #work-timer #wt-tab-work { --wt-color: var(--wt-work); }
     #work-timer #wt-tab-rest { --wt-color: var(--wt-rest); }
@@ -456,17 +455,6 @@
       font-size: 0.875rem;
     }
     #work-timer .wt-back:hover { border-color: var(--accent); }
-
-    /* During a break, the card's grey text, the Keep screen on toggle and the focus outline take the
-       break's ink, so they stand out on the green. */
-    #work-timer.is-break .wt-ring-label,
-    #work-timer.is-break .wt-info,
-    #work-timer.is-break .wt-wake,
-    #work-timer.is-break .wt-wake-note,
-    #work-timer.is-break .wt-away { color: var(--wt-break-ink); }
-    #work-timer.is-break .wt-wake:hover,
-    #work-timer.is-break .wt-wake[aria-pressed="true"] { border-color: var(--wt-break-ink); }
-    #work-timer.is-break :focus-visible { outline-color: var(--wt-break-ink); }
 
     /* In the floating window, the timer column sits in a div#work-timer.is-floating that fills the
        window. Only the buttons that do something show, and the layout changes with the window's size. */
@@ -1835,13 +1823,13 @@
         }
       }
 
-      // The browser tab's icon: a green dot during a break, and otherwise a blank (transparent) icon.
+      // The browser tab's icon: a yellow dot during a break, and otherwise a blank (transparent) icon.
       // A blank icon rather than none, because browsers don't reliably bring back their default icon
       // when a page removes its own, so a removed dot could stay on show.
       const svgIcon = (shape) => 'data:image/svg+xml,' +
         encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">${shape}</svg>`);
       const ICON_BLANK = svgIcon('');
-      const ICON_BREAK = svgIcon('<circle cx="8" cy="8" r="7" fill="#479d32"/>');
+      const ICON_BREAK = svgIcon('<circle cx="8" cy="8" r="7" fill="#c59711"/>');
       const tabIcon = document.createElement('link');
       tabIcon.rel = 'icon';
       document.head.append(tabIcon);
@@ -1861,7 +1849,7 @@
         panel.setAttribute('aria-labelledby', tabs[view].id);
         // The card behind the timer (the page, and the floating window while it's open) and
         // everything on it take the colors of the timer on show (CSS: Work's, or Rest's with is-rest),
-        // or the break's own green during a break (is-break).
+        // or the break's yellow during a break (is-break).
         const onBreak = breakOnShow() !== null;
         page.classList.toggle('is-rest', view === 'rest');
         page.classList.toggle('is-break', onBreak);
